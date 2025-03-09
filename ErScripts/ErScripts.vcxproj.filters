@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{1a1e2700-1a05-4258-83e8-738581c8d606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{89053330-8b0e-4c62-aae1-6c35499773f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\UIAccess">
+      <UniqueIdentifier>{b105e09a-767e-4dbf-aeb3-961973e28b49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions">
+      <UniqueIdentifier>{5d0ea2df-c957-4162-afbb-cf7fce4016e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\Main">
+      <UniqueIdentifier>{241ff238-ae5d-4fff-aabf-574da5f5e6ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\GSI Server">
+      <UniqueIdentifier>{0084733d-ae86-42fd-b0e3-395ccdb38569}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Imgui">
+      <UniqueIdentifier>{072e0560-16c3-4c90-a725-0938fde4f045}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\Steam Tools">
+      <UniqueIdentifier>{fd6f62fa-be63-43a4-ae4c-78ad90e77355}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\Globals">
+      <UniqueIdentifier>{e702640f-ba0e-4133-99a6-f0bae39174b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\Logger">
+      <UniqueIdentifier>{acd99bb9-82b3-4177-af97-27c1d80d7a61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\File Monitor">
+      <UniqueIdentifier>{10f7d168-ed61-4380-b292-f6f07c9d0df5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\Functions">
+      <UniqueIdentifier>{ae2d8ada-5318-41b4-a128-a5ced24f6531}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\GradientManager">
+      <UniqueIdentifier>{efe16123-d2de-41b9-9192-11a75d28ae09}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Functions\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Config</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="CS2Functions.cpp">
+      <Filter>Functions\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="GSIServer.cpp">
+      <Filter>Functions\GSI Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Globals.cpp">
+      <Filter>Functions\Globals</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_dx11.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>Render\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Render.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamTools.cpp">
+      <Filter>Functions\Steam Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="FileMonitor.cpp">
+      <Filter>Functions\File Monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoAccept.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="UIAccess.c">
+      <Filter>Render\UIAccess</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayHelper.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelTrigger.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Crosshair.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="BombTime.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="RGBCrosshair.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="GradientManager.cpp">
+      <Filter>Functions\GradientManager</Filter>
+    </ClCompile>
+    <ClCompile Include="KnifeSwitch.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoPistol.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="AntiAfk.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="CS2Binds.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Logger.h">
+      <Filter>Functions\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Overlay.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2Functions.h">
+      <Filter>Functions\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="GSIServer.h">
+      <Filter>Functions\GSI Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Functions\Globals</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx11.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_win32.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>Render\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamTools.h">
+      <Filter>Functions\Steam Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="FileMonitor.h">
+      <Filter>Functions\File Monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="UIAccess.h">
+      <Filter>Render\UIAccess</Filter>
+    </ClInclude>
+    <ClInclude Include="ImagesShellCodes.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GradientManager.h">
+      <Filter>Functions\GradientManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
