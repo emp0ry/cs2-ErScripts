@@ -227,7 +227,7 @@ void Overlay::TriggerMenu() noexcept {
             ImGui::Text("Threshold ");
             ImGui::TableSetColumnIndex(1);
             ImGui::PushItemWidth(100.0f);
-            ImGui::SliderInt("##PixelTriggerThreshold", &cfg->triggerThreshold, 0, 255);
+            ImGui::SliderInt("##PixelTriggerThreshold", &cfg->triggerThreshold, 0, 100);
             ImGui::PopItemWidth();
 
             // Displacement Sliders (X and Y)
@@ -239,6 +239,15 @@ void Overlay::TriggerMenu() noexcept {
             ImGui::SliderInt("##PixelTriggerDisplacementX", &cfg->triggerDisplacement[0], 0, 20, "%d x");
             ImGui::SameLine();
             ImGui::SliderInt("##PixelTriggerDisplacementY", &cfg->triggerDisplacement[1], 0, 20, "%d y");
+            ImGui::PopItemWidth();
+
+            // Delay
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Delay ");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::PushItemWidth(100.0f);
+            ImGui::SliderInt("##PixelTriggerDelay", &cfg->triggerDelayMs, 0, 100, "%d ms");
             ImGui::PopItemWidth();
 
             ImGui::EndTable();
