@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+/ErScripts/configs
+/ErScripts/x64/Release
+/x64/Release
+/.vs/ErScripts/v17
