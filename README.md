@@ -1,125 +1,149 @@
-# ErScripts
-ErScripts is a multi-script tool designed for Counter-Strike 2 (CS2). It enhances gameplay with various features without interacting with game memory or injecting into the game, making it fully safe to use on Valve servers like Premier or Matchmaking.
+# ErScripts 🎮  
+### Elevate Your *Counter-Strike 2* Experience  
 
-## Overview
-ErScripts runs outside the game by:
-- Creating an overlay outside of CS2 and tracking its window position and size.
-- Sending commands through configs and binds (e.g., `bind "KEY" "exec erscripts"`).
-- Pulling game data via Valve’s [**Game State Integration (GSI)**](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration) and console logs.
+**ErScripts** is a lightweight, multi-feature tool designed to enhance your *Counter-Strike 2 (CS2)* gameplay. Designed to run outside the game, it steers clear of memory injection or game tampering (no reading or writing memory), making it **completely safe** for Valve servers like Premier and Matchmaking.
 
-## How ErScripts Works
+---
 
-### Core Mechanisms
-- **Overlay**: Tracks CS2’s window externally.
-- **Command Sending**: Uses config files (e.g., `erscripts.cfg`) and binds to control the game.
-- **Console Output**: Reads `console.log` with the `-condebug` parameter.
-- **Game State Integration (GSI)**: Creates `gamestate_integration_erscripts.cfg` for real-time data (e.g., weapons, bomb status).
-- **Game Path**: Fetched from the Windows Registry.
-- **Launch Options**: Pulled from Steam’s `localconfig.vdf`.
+## ✨ What is ErScripts?
 
-## Features
+**ErScripts** supercharges your CS2 experience with a sleek overlay, real-time game data, and smart automation. It taps into what the game provides, retrieving data through:
 
-Here’s what ErScripts brings to the table:
-- **Auto Accept**: Accepts match automatically.
-- **Pixel Trigger**: Fires when the center-screen color shifts (e.g., spotting enemies).
-- **Sniper Crosshair**: Draws a custom crosshair for snipers.
-- **Bomb Timer**: Counts down bomb explosions with defuse kit alerts.
-- **RGB Crosshair**: Adds a gradient effect to your crosshair.
-- **Knife Switch**: Flips knife hand based on your weapon.
-- **Auto Pistol**: Turns pistols into rapid-fire weapons.
-- **Anti AFK**: Stops you from getting kicked for inactivity.
-- **Keystrokes**: Displays your key presses (WASD, mouse).
-- **Long Jump**: Combines duck and jump for longer leaps.
-- **Jump Throw**: Jumps and throws grenades with one bind.
-- **Drop Bomb**: Drops the bomb fast and switches back.
-- **Watermark**: Shows game info (e.g., ping, time).
-- **Capture Bypass**: Makes the overlay invisible in recordings or streams.
-- **FPS Limiter**: Caps FPS for smoother performance.
+- **External Overlay**: Tracks CS2’s window position and size.
+- **Config & Binds**: Sends commands via `exec` binds (e.g., `bind "KEY" "exec erscripts"`).
+- **Game State Integration (GSI)**: Pulls live data like weapons and bomb status.
+- **Console Logs**: Reads `console.log` for game insights.
 
-## Installation
+No hacks, no bans—just pure, clean enhancement.
 
-1. Grab the latest release from [GitHub](https://github.com/emp0ry/ErScripts/releases).
-2. Unzip it wherever you want.
-3. Add this Command-Line Parameters `-conclearlog -condebug +bind scancode104 exec erscripts1` in CS2.
-4. For the first start, run `ErScripts.exe` without CS2 open.
-5. Configure settings in the menu and enjoy the game 😊.
+---
 
-## Configuration
+## 🚀 Features
 
-Customize these settings:
+Here’s what ErScripts brings to your arsenal:
+
+| Feature              | Description                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| **Auto Accept**      | Automatically clicks "Accept" when a match is found.                        |
+| **Pixel Trigger**    | Fires when the center-screen color changes (e.g., spotting enemies).        |
+| **Sniper Crosshair** | Custom crosshair overlay for snipers, synced with your crosshair settings.  |
+| **Bomb Timer**       | Real-time bomb countdown with defuse kit alerts.                            |
+| **RGB Crosshair**    | Adds a smooth gradient effect to your crosshair.                            |
+| **Knife Switch**     | Switches knife hand based on your weapon.                                   |
+| **Auto Pistol**      | Transforms pistols into rapid-fire beasts.                                  |
+| **Anti AFK**         | Keeps you in-game by preventing AFK kicks.                                  |
+| **Keystrokes**       | Displays WASD and mouse inputs on-screen.                                   |
+| **Long Jump**        | Combines duck + jump for longer leaps.                                      |
+| **Jump Throw**       | Combines jumps and throws for convenience.                                  |
+| **Drop Bomb**        | Drops the bomb instantly and switches back.                                 |
+| **Watermark**        | Shows ping, time, and game info.                                            |
+| **Capture Bypass**   | Keeps the overlay hidden from recordings/streams.                           |
+| **FPS Limiter**      | Limits overlay FPS for smoother performance.                                |
+
+---
+
+## 🛠️ Installation
+
+Get started in just a few steps:
+
+1. **Download**: Grab the latest release from [GitHub Releases](https://github.com/emp0ry/ErScripts/releases).
+2. **Extract**: Unzip the files to any folder.
+3. **Set Launch Options**: In Steam, add these `-conclearlog -condebug +bind scancode104 exec erscripts1` to CS2’s launch parameters:
+4. **First Run**: Launch `ErScripts.exe` *before opening CS2* (afterward, you can launch it with CS2 running).
+5. **Play**: Open CS2, tweak settings in the ErScripts menu, and dominate! 😎
+
+---
+
+## ⚙️ Configuration
+
+Customize ErScripts to fit your playstyle:
 
 ### Pixel Trigger
-- `Displacement`: X/Y offset from center of screen for getting pixels and it needs to be configured to avoid conflicts with crosshair.
-- `Threshold`: Color sensitivity.
-- `Delay`: Delay before firing.
+- **Displacement**: X/Y offset from screen center (avoids crosshair overlap).
+- **Threshold**: Color change sensitivity.
+- **Delay**: Time before firing.
 
 ### Auto Accept
-- `Waiting Time`: Waiting time in seconds until button is found.
+- **Waiting Time**: Seconds to wait while searching for the "Accept" button after maximizing CS2.
 
 ### Bomb Timer
-- `Scale`: Size.
-- `Gradient`: Gradient bomb icon on/off.
-- `Transparency`: Background opacity.
+- **Scale**: Timer size.
+- **Gradient**: Toggle gradient bomb icon.
+- **Transparency**: Background opacity.
 
 ### Sniper Crosshair
-- `Reload Icon`: Updates crosshair configuration.
+- **Reload Icon**: Syncs with your in-game crosshair settings.
 
 ### Keystrokes
-- `Scale`: Size.
-- `Gradient`: Gradient text on/off.
-- `Animation Speed`: Pressing animation speed.
-- `Pressed Color`: Pressed color.
-- `Released Color`: Released color.
-- `Transparency`: Opacity in released state.
+- **Scale**: Display size.
+- **Gradient**: Toggle gradient text.
+- **Animation Speed**: Keypress animation speed.
+- **Colors**: Set pressed/released colors.
+- **Transparency**: Opacity after released.
 
 ### Watermark
-- `Gradient`: Gradient text on/off.
-- `Transparency`: Opacity of background.
-- `Ping Update Rate`: Ping refresh rate.
+- **Gradient**: Toggle gradient text.
+- **Transparency**: Background opacity.
+- **Ping Update Rate**: How often the in-game ping refreshes.
 
-### FPS Limiter
-- `FPS Limiter`: Overlay FPS cap for more performance.
+### Gradient Manager (RGB Effects)
+- **Steps**: Smoothness of color transitions.
+- **Delay**: Speed of color shifts.
+- **Start/End Hue**: Pick your color range.
+- **Saturation**: Color intensity (0 = gray, 1 = vibrant).
+- **Value**: Brightness (0 = dark, 1 = bright).
 
-### Gradient Manager
-- `Steps`: Set how smooth the color fade is.
-- `Delay`: How fast it switches colors.
-- `Start Hue`: Pick the starting color tone (like a rainbow slider).
-- `End Hue`: Choose the ending color tone.
-- `Saturation`: Control how vivid the colors are (0 is gray, 1 is bold).
-- `Value*`: Adjust brightness (0 is dark, 1 is bright).
+*Other features (e.g., Knife Switch, Jump Throw, FPS Limiter) are easy to configure—no details needed here!*
 
-### RGB Crosshair, Knife Switch, Auto Pistol, Anti AFK, Long Jump, Jump Throw, Drop Bomb, Capture Bypass
-- Doesn't have config.
+---
 
-## How Features Work
+## 🧠 How It Works
 
-- **Auto Accept**: Gets the log of found match in `console.log` and clicks Accept.
-- **Pixel Trigger**: Watches center-screen color changes and shoots.
-- **Sniper Crosshair**: Detects sniper weapons via GSI, gets crosshair config by sending command via config and getting values from `console.log`, and draws crosshair like in CS2.
-- **Bomb Timer**: Tracks bomb status via GSI, highlights defuse limits by changing timer color.
-- **RGB Crosshair**: Changing crosshair colors with sending console commands via config.
-- **Knife Switch**: Flips hands with `switchhands` when knife’s out.
-- **Auto Pistol**: Spams `attack` via sending console command for pistol fire.
-- **Anti AFK**: Hits "W" at round start to unflag afk flag.
-- **Keystrokes**: Shows WASD/mouse inputs on-screen.
-- **Long Jump / Jump Throw / Drop Bomb**: Sends combo commands via sending console command.
-- **Watermark**: Displays game/system info.
-- **Capture Bypass**: Bypassing ErScripts overlay from recording and streaming.
+ErScripts is clever but safe:
 
-## Donation
+- **Auto Accept**: Reads `console.log` for match detection, then clicks Accept.
+- **Pixel Trigger**: Monitors center-screen pixels for color shifts, triggering shots.
+- **Sniper Crosshair**: Pulls active weapon data from GSI to detect sniper rifles, then mirrors your crosshair by sending commands through a config and reading data from `console.log`.
+- **Bomb Timer**: Tracks bomb state via GSI, changes color for defuse urgency.
+- **RGB Crosshair**: Cycles colors with console commands.
+- **Knife Switch**: Toggles hands with `switchhands` via configs.
+- **Auto Pistol**: Spams `attack` commands for rapid fire.
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/emp0ry)
+Everything runs externally—no game memory touched, no risks taken.
 
+---
 
-## Internal Libraries
+## 💖 Support the Project
 
-ErScripts uses:
-- **[Dear ImGui](https://github.com/ocornut/imgui)**: For the overlay and UI.
-- **[nlohmann/json](https://github.com/nlohmann/json)**: For GSI and config parsing.
-- **[cpp-httplib](https://github.com/yhirose/cpp-httplib)**: For GSI parsing.
-- **Windows API**: For registry, window tracking, and inputs.
-- **Standard C++**: For file handling and core logic.
+Love ErScripts? Fuel its development with a coffee!  
 
-## License
+[![Buy Me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/emp0ry)
 
-MIT License. See [LICENSE](LICENSE.txt) for details.
+---
+
+## 🛡️ Built With
+
+ErScripts relies on these awesome libraries:
+- **[Dear ImGui](https://github.com/ocornut/imgui)**: Slick overlay and UI.
+- **[nlohmann/json](https://github.com/nlohmann/json)**: GSI and config parsing.
+- **[cpp-httplib](https://github.com/yhirose/cpp-httplib)**: GSI data handling.
+- **Windows API**: Registry access, window tracking, and inputs.
+- **Standard C++**: Core logic and file management.
+
+---
+
+## 📜 License
+
+Released under the [MIT License](LICENSE.txt). Free to use, modify, and share—just include the original license and copyright notice. A link to the original project for credit is appreciated!
+
+---
+
+## 🌟 Get Involved
+
+Found a bug? Got a feature idea?  
+- Open an [Issue](https://github.com/emp0ry/ErScripts/issues) or submit a [Pull Request](https://github.com/emp0ry/ErScripts/pulls).  
+- Join the community and let’s make CS2 even better together!
+
+---
+
+Created with ❤️ by [emp0ry](https://github.com/emp0ry)

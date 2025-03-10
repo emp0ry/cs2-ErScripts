@@ -48,7 +48,7 @@ void Hotkey(bool* state, const char** key_name, int* key) {
                 *key_name = GetKeyName(i);
                 *key = i;
                 if (*key_name == "None")
-                    *key = 0x3A;
+                    *key = 0;
                 *state = false;
                 break;
             }
