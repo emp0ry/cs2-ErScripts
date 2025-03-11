@@ -64,6 +64,10 @@ public:
     /* Drop Bomb */
     int dropBombBind{ 0 };
 
+    /* Kill Say */
+    bool killSayState{ false };
+    std::string killSayText{ "1" };
+
     /* Watermark */
 	bool watermarkState{ true };
 	bool watermarkGradientState{ true };

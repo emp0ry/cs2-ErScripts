@@ -51,6 +51,7 @@ int main() {
     cs2.AutoPistol();
     cs2.AntiAfk();
     cs2.CS2Binds();
+    cs2.KillSay();
 
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;

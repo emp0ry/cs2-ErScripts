@@ -20,6 +20,7 @@ private:
     bool handlePistolState(const nlohmann::json& data);
     bool handleRoundStartState(const nlohmann::json& data);
     bool handleIsBombInWeapons(const nlohmann::json& data);
+    int handleLocalPlayerKills(const nlohmann::json& data);
 
 public:
     void run();

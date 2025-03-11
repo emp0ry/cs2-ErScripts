@@ -36,6 +36,7 @@ Here’s what ErScripts brings to your arsenal:
 | **Long Jump**        | Combines duck + jump for longer leaps.                                      |
 | **Jump Throw**       | Combines jumps and throws for convenience.                                  |
 | **Drop Bomb**        | Drops the bomb instantly and switches back.                                 |
+| **Kill Say**         | Sends a message after each kill.                                            |
 | **Watermark**        | Shows ping, time, and game info.                                            |
 | **Capture Bypass**   | Keeps the overlay hidden from recordings/streams.                           |
 | **FPS Limiter**      | Limits overlay FPS for smoother performance.                                |
@@ -51,6 +52,7 @@ Get started in just a few steps:
 3. **Set Launch Options**: In Steam, add these `-conclearlog -condebug +bind scancode104 exec erscripts1` to CS2’s launch parameters:
 4. **First Run**: Launch `ErScripts.exe` *before opening CS2* (afterward, you can launch it with CS2 running).
 5. **Play**: Open CS2, tweak settings in the ErScripts menu, and dominate! 😎
+6. **Exiting ErScripts**: To close the program, either click the "X" button in the ErScripts menu or press the "End" key on your keyboard.
 
 ---
 
@@ -64,7 +66,7 @@ Customize ErScripts to fit your playstyle:
 - **Delay**: Time before firing.
 
 ### Auto Accept
-- **Waiting Time**: Seconds to wait while searching for the "Accept" button after maximizing CS2.
+- **Waiting Time**: Set a timer in seconds for the time it takes to search for the "Accept" button.
 
 ### Bomb Timer
 - **Scale**: Timer size.
@@ -101,7 +103,7 @@ Customize ErScripts to fit your playstyle:
 
 ErScripts is clever but safe:
 
-- **Auto Accept**: Reads `console.log` for match detection, then clicks Accept.
+- **Auto Accept**: Reads `console.log` for match detection, then clicks Accept button.
 - **Pixel Trigger**: Monitors center-screen pixels for color shifts, triggering shots.
 - **Sniper Crosshair**: Pulls active weapon data from GSI to detect sniper rifles, then mirrors your crosshair by sending commands through a config and reading data from `console.log`.
 - **Bomb Timer**: Tracks bomb state via GSI, changes color for defuse urgency.

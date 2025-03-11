@@ -275,15 +275,16 @@ void toggleKey(int vkKey, bool& toggleState, ImGuiMouseButton_ imguiKey, ImGuiIO
 void toggleKey(int vkKey, bool& toggleState, ImGuiKey imguiKey, ImGuiKey imguiModKey, ImGuiIO& io) {
 	if (toggleState && (GetAsyncKeyState(vkKey) & 0x8000)) {
 		io.AddKeyEvent(imguiKey, true);
+
 		if (imguiModKey) {
-			ImGui::GetKeyData(imguiModKey)->Down = true; // with this working custom number input
+			ImGui::GetKeyData(imguiModKey)->Down = true; // With this working custom number input
 		}
 		toggleState = false;
 	}
 	else if (!toggleState && !(GetAsyncKeyState(vkKey) & 0x8000)) {
 		io.AddKeyEvent(imguiKey, false);
-		if (imguiModKey) {
 
+		if (imguiModKey) {
 			ImGui::GetKeyData(imguiModKey)->Down = false;
 		}
 		toggleState = true;

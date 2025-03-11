@@ -128,10 +128,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
@@ -142,6 +142,9 @@
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalDependencies>windowscodecs.lib;d3d11.lib;dxgi.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AntiAfk.cpp" />
@@ -163,6 +166,7 @@
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="KillSay.cpp" />
     <ClCompile Include="KnifeSwitch.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Menu.cpp" />
@@ -193,8 +197,15 @@
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Overlay.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SteamTools.h" />
     <ClInclude Include="UIAccess.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ErScripts.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="erscripts.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

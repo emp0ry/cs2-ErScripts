@@ -140,6 +140,9 @@
     <ClCompile Include="CS2Binds.cpp">
       <Filter>Functions\Functions</Filter>
     </ClCompile>
+    <ClCompile Include="KillSay.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -199,5 +202,16 @@
     <ClInclude Include="GradientManager.h">
       <Filter>Functions\GradientManager</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ErScripts.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="erscripts.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

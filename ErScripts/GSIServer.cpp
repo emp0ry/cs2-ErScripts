@@ -18,7 +18,7 @@ void GSIServer::gsiServer() {
         try {
             this->handleJsonPayload(nlohmann::json::parse(req.body));
             res.set_content("OK", "text/plain");
-            //system("cls");std::cout << std::endl << std::endl << req.body << std::endl << std::endl;
+            //system("cls"); std::cout << std::endl << std::endl << req.body << std::endl << std::endl;
         }
         catch (const nlohmann::json::exception& e) {
             Logger::logWarning(std::format("Error processing request: {}", e.what()));
@@ -42,6 +42,7 @@ void GSIServer::handleJsonPayload(const nlohmann::json& data) {
     globals::pistolState = handlePistolState(data);
     globals::roundStartState = handleRoundStartState(data);
     globals::isBombInWeapons = handleIsBombInWeapons(data);
+    globals::localPlayerKills = handleLocalPlayerKills(data);
 
     //static bool oneTimeGet = true;
     //if (oneTimeGet) {
@@ -193,4 +194,25 @@ bool GSIServer::handleIsBombInWeapons(const nlohmann::json& data) {
     }
 
     return false;
+}
+
+int GSIServer::handleLocalPlayerKills(const nlohmann::json& data) {
+    if (!data.contains("player") || !data.contains("provider")) {
+        return 0;
+    }
+    if (!data["player"].contains("steamid") || !data["provider"].contains("steamid")) {
+        return 0;
+    }
+    if (data["player"]["steamid"].get<std::string>() != data["provider"]["steamid"].get<std::string>()) {
+        return 0;
+    }
+    if (!data["player"].contains("match_stats") || !data["player"]["match_stats"].is_object()) {
+        return 0;
+    }
+
+    if (data["player"]["match_stats"].contains("kills")) {
+        return data["player"]["match_stats"].at("kills").get<int>();
+    }
+
+    return 0;
 }

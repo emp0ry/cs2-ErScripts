@@ -64,6 +64,7 @@ inline const char* jumpThrowKeyName = GetKeyName(cfg->jumpThrowBind);
 inline bool jumpThrowButtonState = false;
 inline const char* dropBombKeyName = GetKeyName(cfg->dropBombBind);
 inline bool dropBombButtonState = false;
+inline char killSayText[256]{};
 
 void Overlay::Menu() noexcept {
     // Custom style
@@ -134,6 +135,7 @@ void Overlay::Menu() noexcept {
         AutoPistolMenu();
         AntiAfkMenu();
         CustomBindsMenu();
+        KillSayMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -161,6 +163,8 @@ void Overlay::Menu() noexcept {
 
         if (ImGui::FindWindowByName(" Keystrokes"))
         ImGui::SetWindowPos(" Keystrokes", { cfg->keystrokesPos[0], cfg->keystrokesPos[1] });
+
+        strncpy_s(killSayText, cfg->killSayText.c_str(), sizeof(killSayText) - 1);
     }
 
 	ImGui::End();
@@ -467,6 +471,42 @@ void Overlay::CustomBindsMenu() noexcept {
             }
             Hotkey(&dropBombButtonState, &dropBombKeyName, &cfg->dropBombBind);
 
+            ImGui::EndTable();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void Overlay::KillSayMenu() noexcept {
+    static bool firstRun = true;
+    if (firstRun) {
+        strncpy_s(killSayText, cfg->killSayText.c_str(), sizeof(killSayText) - 1);
+        firstRun = false;
+    }
+
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Checkbox("Kill Say", &cfg->killSayState);
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImageButton("##KillSay", (ImTextureID)settingsTexture, { 24, 24 })) {
+        ImGui::OpenPopup("Kill Say Settings");
+    }
+
+    if (ImGui::BeginPopup("Kill Say Settings")) {
+        if (ImGui::BeginTable("Kill Say Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Chat Message ");
+            ImGui::TableSetColumnIndex(1);
+
+            ImGui::PushItemWidth(150);
+
+            ImGui::InputText("##KillSayText", killSayText, sizeof(killSayText), ImGuiInputTextFlags_EnterReturnsTrue);
+            cfg->killSayText = killSayText;
+            
+            ImGui::PopItemWidth();
             ImGui::EndTable();
         }
 

@@ -61,6 +61,10 @@ void Config::load(const std::string& filename) {
     /* Drop Bomb */
     read(json["drop-bomb"]["bind"], dropBombBind);
 
+    /* Kill Say */
+    read(json["kill-say"]["state"], killSayState);
+    read(json["kill-say"]["text"], killSayText);
+
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
     read(json["watermark"]["gradient"]["state"], watermarkGradientState);
@@ -139,6 +143,10 @@ void Config::save(const std::string& filename) const {
 
     /* Drop Bomb */
     json["drop-bomb"]["bind"] = dropBombBind;
+
+    /* Kill Say */
+    json["kill-say"]["state"] = killSayState;
+    json["kill-say"]["text"] = killSayText;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;

@@ -63,6 +63,7 @@ private:
 	void AutoPistolMenu() noexcept;
 	void AntiAfkMenu() noexcept;
 	void CustomBindsMenu() noexcept;
+	void KillSayMenu() noexcept;
 	void GradientManagerMenu() noexcept;
 	void WatermarkMenu() noexcept;
 	void FPSLimitMenu() noexcept;

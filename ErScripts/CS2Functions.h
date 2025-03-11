@@ -27,6 +27,7 @@ public:
 	void AutoPistol();
 	void AntiAfk();
 	void CS2Binds();
+	void KillSay();
 private:
 	static HWND hwnd;
 
