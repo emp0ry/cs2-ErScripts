@@ -22,5 +22,6 @@ private:
 
     bool loadFromBuffer(std::wstring& tempFile, const unsigned char* data, unsigned int size);
     std::wstring createTempFile(const unsigned char* data, unsigned int size);
+    bool removeTempFile(std::wstring& tempFile);
     static std::wstring generateAlias();
 };

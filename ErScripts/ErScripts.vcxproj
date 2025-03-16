@@ -154,7 +154,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Crosshair.cpp" />
     <ClCompile Include="CS2Binds.cpp" />
-    <ClCompile Include="CS2Functions.cpp" />
+    <ClCompile Include="ErScripts.cpp" />
     <ClCompile Include="FileMonitor.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="GradientManager.cpp" />
@@ -182,10 +182,11 @@
     <ClCompile Include="SteamTools.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIAccess.c" />
+    <ClCompile Include="Updater.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h" />
-    <ClInclude Include="CS2Functions.h" />
+    <ClInclude Include="ErScripts.h" />
     <ClInclude Include="FileMonitor.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="GradientManager.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="SimpleSound.h" />
     <ClInclude Include="SteamTools.h" />
     <ClInclude Include="UIAccess.h" />
+    <ClInclude Include="Updater.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ErScripts.rc" />

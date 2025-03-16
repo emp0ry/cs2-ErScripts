@@ -1,6 +1,6 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::KillSay() {
+void ErScripts::KillSay() {
     std::thread([this]() {
         int oldKills = globals::localPlayerKills;
         while (!globals::finish) {

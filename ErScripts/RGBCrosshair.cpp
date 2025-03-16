@@ -1,10 +1,10 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::RGBCrosshair() {
+void ErScripts::RGBCrosshair() {
 	std::thread([this]() {
 		while (!globals::finish) {
 			if (cfg->rgbCrosshairState) {
-				if ((CS2Functions::GetWindowState() && CS2Functions::GetCursorState()) /*|| globals::menuState*/) {
+				if ((ErScripts::GetWindowState() && ErScripts::GetCursorState()) /*|| globals::menuState*/) {
 					RGBColor color = gradient.getCurrentColor();
 					CommandsSender(2, std::format("cl_crosshaircolor 5; cl_crosshaircolor_r {}; cl_crosshaircolor_g {}; cl_crosshaircolor_b {}", color.r, color.g, color.b));
 				}

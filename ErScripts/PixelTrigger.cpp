@@ -1,6 +1,6 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::PixelTrigger() {
+void ErScripts::PixelTrigger() {
     std::thread([this]() {
         HDC hScreenDC = GetDC(nullptr);
         if (!hScreenDC) return;

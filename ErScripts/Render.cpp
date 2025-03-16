@@ -79,7 +79,7 @@ void Overlay::Render() noexcept {
         ImGui::End();
     }
 
-    if (CS2Functions::GetCursorState()) {
+    if (ErScripts::GetCursorState()) {
 		if (cfg->sniperCrosshairState && globals::sniperCrosshairState && !globals::isScope) {
 			RenderCrosshair(*globals::crosshair);
 		}

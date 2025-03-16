@@ -1,6 +1,6 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::BombTimer() {
+void ErScripts::BombTimer() {
 	std::thread([this]() {
 		while (!globals::finish) {
 			if (cfg->bombTimerState) {

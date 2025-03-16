@@ -1,14 +1,14 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::Crosshair() {
+void ErScripts::Crosshair() {
 	std::thread([this]() {
 		std::vector<int> blackColor = { 0, 0, 0 };
 		while (!globals::finish) {
-			if (CS2Functions::GetWindowState() && CS2Functions::GetCursorState()) {
+			if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
 
 				// No longer needed because the print_changed_convars command is used for it
 				/*if (globals::crosshairUpdaterState) {
-					CS2Functions::CommandsSender("host_writeconfig");
+					ErScripts::CommandsSender("host_writeconfig");
 					std::this_thread::sleep_for(std::chrono::milliseconds(200));
 					Logger::logInfo("Crosshair Updater");
 					globals::crosshair = SteamTools::getCrosshairSettings("730");
@@ -27,7 +27,7 @@ void CS2Functions::Crosshair() {
 				}
 
 				if (globals::crosshairUpdaterState) {
-					CS2Functions::CommandsSender(3, "print_changed_convars");
+					ErScripts::CommandsSender(3, "print_changed_convars");
 				}
 			}
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));

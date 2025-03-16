@@ -1,8 +1,8 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 #include "SimpleSound.h"
 #include "SoundsShellcodes.h"
 
-void CS2Functions::KillSound() {
+void ErScripts::KillSound() {
     std::thread([this]() {
         SimpleSound sound(hitSound, hitSoundLen);
         sound.secondBuffer(cfg->killSoundFileName);
@@ -30,7 +30,5 @@ void CS2Functions::KillSound() {
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-
-        sound.~SimpleSound();
     }).detach();
 }

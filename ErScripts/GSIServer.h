@@ -2,7 +2,7 @@
 
 #include <httplib/httplib.h>
 #include <nlohmann/json.hpp>
-#include "CS2Functions.h"
+#include "ErScripts.h"
 #include <thread>
 
 class GSIServer {

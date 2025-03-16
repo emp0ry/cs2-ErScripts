@@ -7,6 +7,8 @@
 
 #pragma comment(lib, "winmm.lib")
 
+namespace fs = std::filesystem;
+
 SimpleSound::SimpleSound(const unsigned char* data, unsigned int size) {
     if (!loadFromBuffer(tempDefaultFile_, data, size)) {
         Logger::logWarning("Failed to load sound from buffer (size: " + std::to_string(size) + ")");
@@ -16,7 +18,7 @@ SimpleSound::SimpleSound(const unsigned char* data, unsigned int size) {
 
 SimpleSound::~SimpleSound() {
     if (!tempDefaultFile_.empty()) {
-        std::filesystem::remove(tempDefaultFile_);
+        removeTempFile(tempDefaultFile_);
     }
 }
 
@@ -56,13 +58,13 @@ bool SimpleSound::secondBuffer(const std::string& filePath) {
         tempSecondFile_.clear();
     }
 
-    bool fileExists = std::filesystem::exists(filePath);
+    bool fileExists = fs::exists(filePath);
 
     if (fileExists) {
         tempSecondFile_ = std::wstring(filePath.begin(), filePath.end());
     }
     else {
-        fileExists = std::filesystem::exists(filePath + ".WAV");
+        fileExists = fs::exists(filePath + ".WAV");
 
         if (fileExists) {
             tempSecondFile_ = std::format(L"{}.WAV", std::wstring(filePath.begin(), filePath.end())).c_str();
@@ -106,13 +108,40 @@ std::wstring SimpleSound::createTempFile(const unsigned char* data, unsigned int
     if (!file.good()) {
         Logger::logWarning("Failed to write to temporary file");
         file.close();
-        std::filesystem::remove(tempFile);
+        removeTempFile(tempDefaultFile_);
         return L"";
     }
 
     file.close();
 
     return std::wstring(tempFile);
+}
+bool SimpleSound::removeTempFile(std::wstring& tempFile) {
+    auto startTime = std::chrono::steady_clock::now();
+    const auto timeout = std::chrono::seconds(3);
+
+    while (fs::exists(tempFile)) {
+        try {
+            fs::permissions(tempFile, fs::perms::all, fs::perm_options::remove);
+
+            // Attempt to remove the file
+            if (fs::remove(tempFile)) {
+                return true;
+            }
+        }
+        catch (...) {}
+
+        // Check if 3 seconds have passed
+        if (std::chrono::steady_clock::now() - startTime >= timeout) {
+            Logger::logWarning("Failed to remove file within 3 seconds.");
+            break;
+        }
+
+        // Wait a bit before retrying
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    return false;
 }
 
 std::wstring SimpleSound::generateAlias() {

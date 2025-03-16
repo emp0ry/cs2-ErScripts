@@ -1,4 +1,4 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 #include <unordered_set>
 #include <filesystem>
 #include <fstream>
@@ -6,13 +6,13 @@
 #include <cstdlib>
 #include <thread>
 
-HWND CS2Functions::hwnd = nullptr;
-std::wstring CS2Functions::config;
-bool CS2Functions::bindsInit = false;
+HWND ErScripts::hwnd = nullptr;
+std::wstring ErScripts::config;
+bool ErScripts::bindsInit = false;
 
 namespace fs = std::filesystem;
 
-void CS2Functions::Initalization() {
+void ErScripts::Initalization() {
     if (setPaths()) {
         Logger::logSuccess(std::format(L"CS2 Path: {}", path));
     }
@@ -82,7 +82,7 @@ void CS2Functions::Initalization() {
     Logger::logSuccess("CS2 initialization completed successfully");
 }
 
-void CS2Functions::ConsoleLogStream() {
+void ErScripts::ConsoleLogStream() {
     std::thread([this]() {
         FileMonitor monitor(consoleLog);
         monitor.start();
@@ -215,7 +215,7 @@ void CS2Functions::ConsoleLogStream() {
 }
 
 
-bool CS2Functions::setPaths() {
+bool ErScripts::setPaths() {
     // CS2-specific configuration
     SteamTools::GameConfig cs2Config{
         .possibleFolders = {
@@ -260,7 +260,7 @@ bool CS2Functions::setPaths() {
     }
 }
 
-bool CS2Functions::configsValidation() {
+bool ErScripts::configsValidation() {
     std::string gamestateContent = \
 R"("GSI Config for ErScripts"
 {
@@ -344,7 +344,7 @@ R"("GSI Config for ErScripts"
     return returnState;
 }
 
-void CS2Functions::InitBinds() {
+void ErScripts::InitBinds() {
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
 
@@ -414,7 +414,7 @@ void CS2Functions::InitBinds() {
     }
 }
 
-void CS2Functions::CommandsSender(const int num, const std::string& command) {
+void ErScripts::CommandsSender(const int num, const std::string& command) {
     if (GetWindowState() && GetCursorState()) {
         if (!bindsInit) {
             Logger::logWarning(std::format("CommandsSender {}: Binds not initialized!!!", num));
@@ -439,7 +439,7 @@ void CS2Functions::CommandsSender(const int num, const std::string& command) {
     }
 }
 
-const void CS2Functions::Keyboard(int key, bool isPressed, bool useScanCode) {
+const void ErScripts::Keyboard(int key, bool isPressed, bool useScanCode) {
     INPUT input{};
     input.type = INPUT_KEYBOARD;
 
@@ -459,18 +459,18 @@ const void CS2Functions::Keyboard(int key, bool isPressed, bool useScanCode) {
     }
 }
 
-const bool CS2Functions::GetCursorState() {
+const bool ErScripts::GetCursorState() {
     CURSORINFO cinfo = { sizeof(CURSORINFO) };
     GetCursorInfo(&cinfo);
     if (cinfo.hCursor)
         return ((WORD)(cinfo.hCursor) > 100);
 }
 
-const bool CS2Functions::GetWindowState() {
+const bool ErScripts::GetWindowState() {
     return GetForegroundWindow() == hwnd;
 }
 
-const void CS2Functions::GetWindowInfo(int& width, int& height, int& posX, int& posY) {
+const void ErScripts::GetWindowInfo(int& width, int& height, int& posX, int& posY) {
     RECT rect;
     if (GetClientRect(hwnd, &rect)) {
         width = rect.right - rect.left;
@@ -490,7 +490,7 @@ const void CS2Functions::GetWindowInfo(int& width, int& height, int& posX, int& 
     }
 }
 
-const std::vector<int> CS2Functions::GetPixelColor(int x, int y) {
+const std::vector<int> ErScripts::GetPixelColor(int x, int y) {
     std::vector<int> color(3, -1); // Vector RGB, default value -1
 
     //Logger::logInfo(std::format("x = {}; y = {}", x, y));
@@ -512,7 +512,7 @@ const std::vector<int> CS2Functions::GetPixelColor(int x, int y) {
     return color;
 }
 
-const bool CS2Functions::isColorSimilar(const std::vector<int>& color, const std::vector<int>& targetColor, int range) {
+const bool ErScripts::isColorSimilar(const std::vector<int>& color, const std::vector<int>& targetColor, int range) {
     if (color.size() != 3 || targetColor.size() != 3) {
         Logger::logWarning("isColorSimilar: Invalid color vector size!");
         return false;

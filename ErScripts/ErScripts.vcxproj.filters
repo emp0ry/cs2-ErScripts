@@ -21,9 +21,6 @@
     <Filter Include="Functions">
       <UniqueIdentifier>{5d0ea2df-c957-4162-afbb-cf7fce4016e1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Functions\Main">
-      <UniqueIdentifier>{241ff238-ae5d-4fff-aabf-574da5f5e6ce}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Functions\GSI Server">
       <UniqueIdentifier>{0084733d-ae86-42fd-b0e3-395ccdb38569}</UniqueIdentifier>
     </Filter>
@@ -51,6 +48,12 @@
     <Filter Include="Functions\Simple Sound">
       <UniqueIdentifier>{7aeba3ba-c87b-467e-9c41-14592fe7a0bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Functions\ErScripts">
+      <UniqueIdentifier>{241ff238-ae5d-4fff-aabf-574da5f5e6ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Functions\Updater">
+      <UniqueIdentifier>{1ff65aba-bfb7-4875-8138-ecfe24c3d9d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -65,8 +68,8 @@
     <ClCompile Include="Overlay.cpp">
       <Filter>Render</Filter>
     </ClCompile>
-    <ClCompile Include="CS2Functions.cpp">
-      <Filter>Functions\Main</Filter>
+    <ClCompile Include="ErScripts.cpp">
+      <Filter>Functions\ErScripts</Filter>
     </ClCompile>
     <ClCompile Include="GSIServer.cpp">
       <Filter>Functions\GSI Server</Filter>
@@ -158,6 +161,9 @@
     <ClCompile Include="SoundsShellcodes.h">
       <Filter>Functions\Simple Sound</Filter>
     </ClCompile>
+    <ClCompile Include="Updater.cpp">
+      <Filter>Functions\Updater</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -169,8 +175,8 @@
     <ClInclude Include="Overlay.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="CS2Functions.h">
-      <Filter>Functions\Main</Filter>
+    <ClInclude Include="ErScripts.h">
+      <Filter>Functions\ErScripts</Filter>
     </ClInclude>
     <ClInclude Include="GSIServer.h">
       <Filter>Functions\GSI Server</Filter>
@@ -220,6 +226,9 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SimpleSound.h">
       <Filter>Functions\Simple Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Updater.h">
+      <Filter>Functions\Updater</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

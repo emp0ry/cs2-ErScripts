@@ -135,7 +135,7 @@ void Overlay::OverlayLoop() noexcept {
 	ImGui_ImplWin32_Init(window_handle);
 	ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
-	CS2Functions::GetWindowInfo(globals::width, globals::height, globals::posX, globals::posY);
+	ErScripts::GetWindowInfo(globals::width, globals::height, globals::posX, globals::posY);
 
 	CleanupRenderTarget();
 	SetWindowPos(window_handle, (HWND)-1, globals::posX, globals::posY, globals::width, globals::height, 0);
@@ -194,7 +194,7 @@ void Overlay::OverlayLoop() noexcept {
 		// Access the draw list
 		draw_list = ImGui::GetBackgroundDrawList();
 
-		if (CS2Functions::GetWindowState()) {
+		if (ErScripts::GetWindowState()) {
 			Overlay::Render();
 
 			/*static bool prevMenuState = false;
@@ -332,7 +332,7 @@ void Overlay::Handler() noexcept {
 	bool inCaptureBypass = !cfg->captureBypassState;
 	int width_old, height_old, posX_old, posY_old;
 
-	CS2Functions::GetWindowInfo(width_old, height_old, posX_old, posY_old);
+	ErScripts::GetWindowInfo(width_old, height_old, posX_old, posY_old);
 
 	CleanupRenderTarget();
 	SetWindowPos(window_handle, (HWND)-1, posX_old, posY_old, globals::width, globals::height, 0);
@@ -349,17 +349,17 @@ void Overlay::Handler() noexcept {
 		if (curMenuState && !prevMenuState) {
 			globals::menuState = !globals::menuState;
 
-			if (globals::menuState && CS2Functions::GetWindowState() && CS2Functions::GetCursorState()) {
+			if (globals::menuState && ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
 				showChat = true;
-				CS2Functions::Keyboard(0x55, true, false); // U
+				ErScripts::Keyboard(0x55, true, false); // U
 				std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 100 + 16)));
-				CS2Functions::Keyboard(0x55, false, false);
+				ErScripts::Keyboard(0x55, false, false);
 			}
 			else if (showChat) {
 				showChat = false;
-				CS2Functions::Keyboard(VK_ESCAPE, true, false); // ESCAPE
+				ErScripts::Keyboard(VK_ESCAPE, true, false); // ESCAPE
 				std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 100 + 16)));
-				CS2Functions::Keyboard(VK_ESCAPE, false, false);
+				ErScripts::Keyboard(VK_ESCAPE, false, false);
 			}
 		}
 
@@ -372,7 +372,7 @@ void Overlay::Handler() noexcept {
 		}
 
 		// Resolution and position changer
-		CS2Functions::GetWindowInfo(globals::width, globals::height, globals::posX, globals::posY);
+		ErScripts::GetWindowInfo(globals::width, globals::height, globals::posX, globals::posY);
 		
 		if ((width_old != globals::width || height_old != globals::height) || (posX_old != globals::posX || posY_old != globals::posY)) {
 			width_old = globals::width;

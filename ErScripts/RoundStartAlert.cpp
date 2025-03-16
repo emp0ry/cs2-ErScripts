@@ -1,8 +1,8 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 #include "SimpleSound.h"
 #include "SoundsShellcodes.h"
 
-void CS2Functions::RoundStartAlert() {
+void ErScripts::RoundStartAlert() {
     std::thread([this]() {
         SimpleSound sound(alertSound, alertSoundLen);
         sound.secondBuffer(cfg->roundStartAlertFileName);
@@ -23,7 +23,7 @@ void CS2Functions::RoundStartAlert() {
                     oldRoundStartState = globals::roundStartState;
 
                     if (globals::roundStartState) {
-                        if (!CS2Functions::GetWindowState()) {
+                        if (!ErScripts::GetWindowState()) {
                             sound.setVolume(cfg->roundStartAlertVolume);
                             sound.play();
                         }
@@ -33,7 +33,5 @@ void CS2Functions::RoundStartAlert() {
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-
-        sound.~SimpleSound();
     }).detach();
 }

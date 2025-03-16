@@ -1,11 +1,17 @@
 #include "GSIServer.h"
+#include "Updater.h"
 #include "UIAccess.h"
-#include "CS2Functions.h"
+#include "ErScripts.h"
 #include "Overlay.h"
 
 int main() {
-    /* Ui Access */
     if (!IsDebuggerPresent()) {
+        /* Auto updater */
+        Updater updater("1.0.0", "emp0ry", "ErScripts", "ErScripts");
+        if (updater.checkAndUpdate())
+            return 0;
+
+        /* Ui Access */
         DWORD dwErr = PrepareForUIAccess();
         if (dwErr != ERROR_SUCCESS) {
             Logger::logWarning(std::format("Failed to prepare for UI Access: {}", dwErr));
@@ -15,14 +21,14 @@ int main() {
         }
     }
 
+    Logger::EnableANSIColors();
+
     /* Check if program already running */
     CreateMutexA(0, FALSE, "Local\\erscripts");   // Try to create a named mutex
     if (GetLastError() == ERROR_ALREADY_EXISTS) { // Did the mutex already exist?
         MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
         return -1;
     }
-
-    Logger::EnableANSIColors();
 
     std::cout << "[-] *---------------------------------------*" << std::endl;
     std::cout << "[>] |  ErScripts by emp0ry                  |" << std::endl;
@@ -32,8 +38,8 @@ int main() {
     cfg->load("default");
     gradient.setConfig(cfg->gradient);
 
-    CS2Functions cs2;
-    cs2.Initalization();
+    ErScripts es;
+    es.Initalization();
 
     Overlay overlay;
     overlay.run();
@@ -41,35 +47,35 @@ int main() {
     GSIServer gsi;
     gsi.run();
 
-    cs2.ConsoleLogStream();
-    cs2.InitBinds();
+    es.ConsoleLogStream();
+    es.InitBinds();
 
-    cs2.AutoAccept();
-    cs2.PixelTrigger();
-    cs2.Crosshair();
-    cs2.BombTimer();
-    cs2.RGBCrosshair();
-    cs2.KnifeSwitch();
-    cs2.AutoPistol();
-    cs2.AntiAfk();
-    cs2.CS2Binds();
-    cs2.KillSay();
-    cs2.KillSound();
-    cs2.RoundStartAlert();
+    es.AutoAccept();
+    es.PixelTrigger();
+    es.Crosshair();
+    es.BombTimer();
+    es.RGBCrosshair();
+    es.KnifeSwitch();
+    es.AutoPistol();
+    es.AntiAfk();
+    es.CS2Binds();
+    es.KillSay();
+    es.KillSound();
+    es.RoundStartAlert();
 
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
         
         /* Update Ping */
         if (cfg->watermarkState) {
-            if (CS2Functions::GetWindowState && CS2Functions::GetCursorState()) {
+            if (ErScripts::GetWindowState && ErScripts::GetCursorState()) {
                 static auto lastUpdate = std::chrono::steady_clock::now();
 
                 auto now = std::chrono::steady_clock::now();
                 std::chrono::duration<float> elapsed = now - lastUpdate;
 
                 if (elapsed.count() >= cfg->watermarkPingUpdateRate) {
-                    CS2Functions::CommandsSender(5, "sys_info");
+                    ErScripts::CommandsSender(5, "sys_info");
                     lastUpdate = now; // Reset the timer
                 }
             }

@@ -1,11 +1,11 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::KnifeSwitch() {
+void ErScripts::KnifeSwitch() {
     std::thread([this]() {
         bool oldKnifeState = false;
         while (!globals::finish) {
             if (cfg->knifeSwitchState) {
-                if (CS2Functions::GetWindowState() && CS2Functions::GetCursorState()) {
+                if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
                     if (globals::knifeState != oldKnifeState) {
                         CommandsSender(4, "switchhands");
                         oldKnifeState = globals::knifeState;

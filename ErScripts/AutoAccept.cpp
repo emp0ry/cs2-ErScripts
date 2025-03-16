@@ -1,6 +1,6 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::AutoAccept() {
+void ErScripts::AutoAccept() {
 	std::thread([this]() {
 		const std::vector<int> targetColor = { 54, 183, 82 };
 

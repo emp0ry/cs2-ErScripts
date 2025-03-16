@@ -1,11 +1,11 @@
-#include "CS2Functions.h"
+#include "ErScripts.h"
 
-void CS2Functions::AntiAfk() {
+void ErScripts::AntiAfk() {
     std::thread([]() {
         bool oldRoundStartState = false;
         while (!globals::finish) {
             if (cfg->antiAfkState) {
-                if (CS2Functions::GetWindowState() && CS2Functions::GetCursorState()) {
+                if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
                     if (globals::roundStartState != oldRoundStartState) {
                         oldRoundStartState = globals::roundStartState;
 

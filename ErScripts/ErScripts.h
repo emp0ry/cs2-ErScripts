@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <string>
 
-class CS2Functions {
+class ErScripts {
 public:
 	void Initalization();
 	void ConsoleLogStream();
