@@ -5,16 +5,25 @@
 void CS2Functions::RoundStartAlert() {
     std::thread([this]() {
         SimpleSound sound(alertSound, alertSoundLen);
+        sound.secondBuffer(cfg->roundStartAlertFileName);
+
+        std::string lastCustomFile = cfg->roundStartAlertFileName;
 
         bool oldRoundStartState = globals::roundStartState;
 
         while (!globals::finish) {
             if (cfg->roundStartAlertState) {
-                if (!CS2Functions::GetWindowState()) {
-                    if (globals::roundStartState != oldRoundStartState) {
-                        oldRoundStartState = globals::roundStartState;
+                if (cfg->roundStartAlertFileName != lastCustomFile) {
+                    sound.secondBuffer(cfg->roundStartAlertFileName);
 
-                        if (globals::roundStartState) {
+                    lastCustomFile = cfg->roundStartAlertFileName;
+                }
+
+                if (globals::roundStartState != oldRoundStartState) {
+                    oldRoundStartState = globals::roundStartState;
+
+                    if (globals::roundStartState) {
+                        if (!CS2Functions::GetWindowState()) {
                             sound.setVolume(cfg->roundStartAlertVolume);
                             sound.play();
                         }

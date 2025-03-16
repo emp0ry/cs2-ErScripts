@@ -79,6 +79,7 @@ public:
     /* Round Start Alert */
     bool roundStartAlertState{ false };
     int roundStartAlertVolume{ 100 };
+    std::string roundStartAlertFileName{ "" };
 
     /* Watermark */
 	bool watermarkState{ true };

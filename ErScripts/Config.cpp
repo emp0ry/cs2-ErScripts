@@ -76,6 +76,7 @@ void Config::load(const std::string& filename) {
     /* Round Start Alert */
     read(json["round-start-alert"]["state"], roundStartAlertState);
     read(json["round-start-alert"]["volume"], roundStartAlertVolume);
+    read(json["round-start-alert"]["file-name"], roundStartAlertFileName);
 
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
@@ -171,6 +172,7 @@ void Config::save(const std::string& filename) const {
     /* Round Start Alert */
     json["round-start-alert"]["state"] = roundStartAlertState;
     json["round-start-alert"]["volume"] = roundStartAlertVolume;
+    json["round-start-alert"]["file-name"] = roundStartAlertFileName;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;

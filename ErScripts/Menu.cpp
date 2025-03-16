@@ -68,6 +68,7 @@ inline const char* selfKickKeyName = GetKeyName(cfg->selfKickBind);
 inline bool selfKickButtonState = false;
 inline char killSayText[256]{};
 inline char killSoundFileName[256]{};
+inline char roundStartAlertFileName[256]{};
 
 void Overlay::Menu() noexcept {
     // Custom style
@@ -171,6 +172,8 @@ void Overlay::Menu() noexcept {
         ImGui::SetWindowPos(" Keystrokes", { cfg->keystrokesPos[0], cfg->keystrokesPos[1] });
 
         strncpy_s(killSayText, cfg->killSayText.c_str(), sizeof(killSayText) - 1);
+        strncpy_s(killSoundFileName, cfg->killSoundFileName.c_str(), sizeof(killSoundFileName) - 1);
+        strncpy_s(roundStartAlertFileName, cfg->roundStartAlertFileName.c_str(), sizeof(roundStartAlertFileName) - 1);
     }
 
 	ImGui::End();
@@ -578,6 +581,12 @@ void Overlay::KillSoundMenu() noexcept {
 }
 
 void Overlay::RoundStartAlertMenu() noexcept {
+    static bool firstRun = true;
+    if (firstRun) {
+        strncpy_s(roundStartAlertFileName, cfg->roundStartAlertFileName.c_str(), sizeof(roundStartAlertFileName) - 1);
+        firstRun = false;
+    }
+
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
     ImGui::Checkbox("Round Start Alert", &cfg->roundStartAlertState);
@@ -597,6 +606,18 @@ void Overlay::RoundStartAlertMenu() noexcept {
             ImGui::PushItemWidth(100);
 
             ImGui::SliderInt("##RoundStartAlertVolume", &cfg->roundStartAlertVolume, 1, 100, "%d %");
+
+            ImGui::PopItemWidth();
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("File Name ");
+            ImGui::TableSetColumnIndex(1);
+
+            ImGui::PushItemWidth(150);
+
+            ImGui::InputText("##RoundStartAlertFileName", roundStartAlertFileName, sizeof(roundStartAlertFileName), ImGuiInputTextFlags_EnterReturnsTrue);
+            cfg->roundStartAlertFileName = roundStartAlertFileName;
 
             ImGui::PopItemWidth();
             ImGui::EndTable();

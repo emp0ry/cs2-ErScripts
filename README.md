@@ -22,24 +22,26 @@ No hacks, no bans—just pure, clean enhancement.
 
 Here’s what ErScripts brings to your arsenal:
 
-| Feature              | Description                                                                 |
-|----------------------|-----------------------------------------------------------------------------|
-| **Auto Accept**      | Automatically clicks "Accept" when a match is found.                        |
-| **Pixel Trigger**    | Fires when the center-screen color changes (e.g., spotting enemies).        |
-| **Sniper Crosshair** | Custom crosshair overlay for snipers, synced with your crosshair settings.  |
-| **Bomb Timer**       | Real-time bomb countdown with defuse kit alerts.                            |
-| **RGB Crosshair**    | Adds a smooth gradient effect to your crosshair.                            |
-| **Knife Switch**     | Switches knife hand based on your weapon.                                   |
-| **Auto Pistol**      | Transforms pistols into rapid-fire beasts.                                  |
-| **Anti AFK**         | Keeps you in-game by preventing AFK kicks.                                  |
-| **Keystrokes**       | Displays WASD and mouse inputs on-screen.                                   |
-| **Long Jump**        | Combines duck + jump for longer leaps.                                      |
-| **Jump Throw**       | Combines jumps and throws for convenience.                                  |
-| **Drop Bomb**        | Drops the bomb instantly and switches back.                                 |
-| **Kill Say**         | Sends a message after each kill.                                            |
-| **Watermark**        | Shows ping, time, and game info.                                            |
-| **Capture Bypass**   | Keeps the overlay hidden from recordings/streams.                           |
-| **FPS Limiter**      | Limits overlay FPS for smoother performance.                                |
+| Feature               | Description                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| **Auto Accept**       | Automatically clicks "Accept" when a match is found.                        |
+| **Pixel Trigger**     | Fires when the center-screen color changes (e.g., spotting enemies).        |
+| **Sniper Crosshair**  | Custom crosshair overlay for snipers, synced with your crosshair settings.  |
+| **Bomb Timer**        | Real-time bomb countdown with defuse kit alerts.                            |
+| **RGB Crosshair**     | Adds a smooth gradient effect to your crosshair.                            |
+| **Knife Switch**      | Switches knife hand based on your weapon.                                   |
+| **Auto Pistol**       | Transforms pistols into rapid-fire beasts.                                  |
+| **Anti AFK**          | Keeps you in-game by preventing AFK kicks.                                  |
+| **Keystrokes**        | Displays WASD and mouse inputs on-screen.                                   |
+| **Long Jump**         | Combines duck + jump for longer leaps.                                      |
+| **Jump Throw**        | Combines jumps and throws for convenience.                                  |
+| **Drop Bomb**         | Drops the bomb instantly and switches back.                                 |
+| **Kill Say**          | Sends a message after each kill.                                            |
+| **Kill Sound**        | Plays a sound after each kill.                                              |
+| **Round Start Alert** | When you're not in the game and a new round starts, a sound plays.          |
+| **Watermark**         | Shows ping, time, and game info.                                            |
+| **Capture Bypass**    | Keeps the overlay hidden from recordings/streams.                           |
+| **FPS Limiter**       | Limits overlay FPS for smoother performance.                                |
 
 ---
 
@@ -82,6 +84,15 @@ Customize ErScripts to fit your playstyle:
 - **Animation Speed**: Keypress animation speed.
 - **Colors**: Set pressed/released colors.
 - **Transparency**: Opacity after released.
+
+### Kill Sound, Round Start Alert
+- **Volume**: Сhange sound volume.
+- **File Name**: Specify the WAV file for the custom sound.
+  - Leave empty to use the default sound.
+  - Enter a custom WAV file (e.g., `sound.wav`) located in the executable’s folder.
+  - You can write without specifying `.wav` (e.g., if it’s `sound.wav`, just write `sound`).
+  - You can use a subfolder like `sounds` (e.g., `sounds/audio.wav` or `sounds/audio`).
+  - If the file is missing or invalid, it defaults to the built-in sound.
 
 ### Watermark
 - **Gradient**: Toggle gradient text.
