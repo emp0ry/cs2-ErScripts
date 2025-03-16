@@ -1,5 +1,4 @@
 #include "overlay.h"
-//#include "weapon_font.h"
 #include <thread>
 
 void Overlay::run() {
@@ -9,12 +8,48 @@ void Overlay::run() {
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	//if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-	//	return true;
+inline float g_ScrollDelta = 0.0f;
 
+// Register Raw Input to capture mouse scroll events globally
+void RegisterRawInput(HWND hwnd) {
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01;			// Generic Desktop Controls
+	rid.usUsage = 0x02;				// Mouse
+	rid.dwFlags = RIDEV_INPUTSINK;	// Capture input even if the window is unfocused
+	rid.hwndTarget = hwnd;
+
+	if (!RegisterRawInputDevices(&rid, 1, sizeof(rid))) {
+		Logger::logWarning("Failed to register raw input!");
+	}
+}
+
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg)
 	{
+	case WM_INPUT: {
+		UINT dwSize = 0;
+
+		if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
+			Logger::logWarning("GetRawInputData failed to get buffer size!");
+			break;
+		}
+
+		std::vector<BYTE> inputData(dwSize);
+
+		if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, inputData.data(), &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
+			Logger::logWarning("GetRawInputData failed to get input data!");
+			break;
+		}
+
+		RAWINPUT* rawInput = reinterpret_cast<RAWINPUT*>(inputData.data());
+
+		if (rawInput->header.dwType == RIM_TYPEMOUSE) {
+			if (rawInput->data.mouse.usButtonFlags & RI_MOUSE_WHEEL) {
+				g_ScrollDelta = (static_cast<short>(rawInput->data.mouse.usButtonData) > 0) ? 1.0f : -1.0f;
+			}
+		}
+		break;
+	}
 	case WM_SYSCOMMAND:
 		if ((wParam & 0xfff0) == SC_KEYMENU)
 			return 0;
@@ -291,30 +326,6 @@ void toggleKey(int vkKey, bool& toggleState, ImGuiKey imguiKey, ImGuiKey imguiMo
 	}
 }
 
-// toggleScroll not working yet
-static float g_ScrollDelta = 0.0f;
-
-void toggleScroll(bool& toggleState, ImGuiIO& io) {
-	const float SCROLL_SENSITIVITY = 0.25f;
-	float adjustedDelta = g_ScrollDelta * SCROLL_SENSITIVITY;
-
-	if (toggleState && adjustedDelta != 0.0f) {
-		io.AddMouseWheelEvent(0.0f, adjustedDelta);
-		ImGuiKeyData* keyData = ImGui::GetKeyData(ImGuiKey_MouseWheelY);
-		keyData->Down = true;
-		keyData->AnalogValue = adjustedDelta;
-		std::cout << "Scroll applied: delta=" << adjustedDelta << std::endl;
-		toggleState = false;
-	}
-	else if (!toggleState && adjustedDelta == 0.0f) {
-		ImGuiKeyData* keyData = ImGui::GetKeyData(ImGuiKey_MouseWheelY);
-		keyData->Down = false;
-		keyData->AnalogValue = 0.0f;
-		toggleState = true;
-	}
-	g_ScrollDelta = 0.0f;
-}
-
 void Overlay::Handler() noexcept {
 	bool showChat = false;
 	bool prevMenuState = false;
@@ -327,6 +338,8 @@ void Overlay::Handler() noexcept {
 	SetWindowPos(window_handle, (HWND)-1, posX_old, posY_old, globals::width, globals::height, 0);
 	g_pSwapChain->ResizeBuffers(0, globals::width, globals::height, DXGI_FORMAT_UNKNOWN, 0);
 	CreateRenderTarget();
+
+	RegisterRawInput(window_handle);
 
 	while (!globals::finish) {
 		// Toggle menu
@@ -372,19 +385,25 @@ void Overlay::Handler() noexcept {
 			CreateRenderTarget();
 		}
 
-		// input handler
+		// Input handler
 		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename = NULL;
 		io.LogFilename = NULL;
 
-		// Update Mouse Position
+		// Update mouse position
 		POINT cursorPos;
 		if (GetCursorPos(&cursorPos)) {
 			ScreenToClient(window_handle, &cursorPos);
 			io.AddMousePosEvent((float)cursorPos.x, (float)cursorPos.y);
 		}
 
-		// Alphanumeric Characters
+		// Update mouse scroll
+		if (g_ScrollDelta) {
+			io.AddMouseWheelEvent(0.0f, g_ScrollDelta);
+			g_ScrollDelta = 0.0f;
+		}
+
+		// Alphanumeric characters
 		static bool keyState[256] = { true }; // Track each key's state
 
 		// Handle letters A-Z
@@ -398,7 +417,7 @@ void Overlay::Handler() noexcept {
 		}
 
 		// Special Keys
-		static bool LMouseState = true, RMouseState = true, MMouseState = true, SMouseState = true;
+		static bool LMouseState = true, RMouseState = true, MMouseState = true;
 		static bool LeftCtrl = true, LeftShift = true, Backspace = true, Enter = true, Tab = true, Delete = true, ArrowUp = true, ArrowDown = true, ArrowLeft = true, ArrowRight = true;
 
 		toggleKey(VK_LBUTTON, LMouseState, ImGuiMouseButton_Left, io);
@@ -427,8 +446,6 @@ void Overlay::Handler() noexcept {
 		toggleKey(VK_OEM_5, keyState[VK_OEM_5], io);			// |
 		toggleKey(VK_OEM_6, keyState[VK_OEM_6], io);			// ]
 		toggleKey(VK_OEM_7, keyState[VK_OEM_7], io);			// /
-
-		//toggleScroll(SMouseState, io); // Not working yet
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}

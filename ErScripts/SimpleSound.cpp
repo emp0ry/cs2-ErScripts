@@ -42,7 +42,7 @@ void SimpleSound::play() {
         }
 
         if (mciSendStringW((L"play " + alias + L" wait").c_str(), NULL, 0, NULL) != 0) {
-            Logger::logWarning("Failed to play WAV with alias");
+            Logger::logWarning("Failed to play WAV");
             mciSendStringW((L"close " + alias).c_str(), NULL, 0, NULL);
             return;
         }
