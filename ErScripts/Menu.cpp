@@ -64,7 +64,10 @@ inline const char* jumpThrowKeyName = GetKeyName(cfg->jumpThrowBind);
 inline bool jumpThrowButtonState = false;
 inline const char* dropBombKeyName = GetKeyName(cfg->dropBombBind);
 inline bool dropBombButtonState = false;
+inline const char* selfKickKeyName = GetKeyName(cfg->selfKickBind);
+inline bool selfKickButtonState = false;
 inline char killSayText[256]{};
+inline char killSoundFileName[256]{};
 
 void Overlay::Menu() noexcept {
     // Custom style
@@ -88,21 +91,21 @@ void Overlay::Menu() noexcept {
     ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.0f, 0.6f, 1.2f, 1.0f));   // Brighter blue when active
 
     ImGui::PushFont(menu_font);
-    ImGui::Begin("  ErScripts", &isFinish, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::Begin("  ErScripts", &isFinish, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
 
-    static ImVec2 menu_size = ImGui::GetWindowSize();
+    static ImVec2 menu_size = { 213.f, 272.f };
 
     static bool one_time = true;
     if (one_time) {
-        menu_size = ImGui::GetWindowSize();
+        ImGui::SetWindowSize(menu_size);
+        //menu_size = ImGui::GetWindowSize();
         //Logger::logInfo(std::format("Menu Size: {} x {}", menu_size.x, menu_size.y));
 
-        if (menu_size.x > 150 && menu_size.y > 150) {
-            ImGui::SetWindowPos("  ErScripts", { globals::width / 2 - menu_size.x / 2, globals::height / 2 - menu_size.y / 2 });
-            one_time = false;
-        }
+        //if (menu_size.x > 150 && menu_size.y > 150) {
+        ImGui::SetWindowPos("  ErScripts", { globals::width / 2 - menu_size.x / 2, globals::height / 2 - menu_size.y / 2 });
+        one_time = false;
+        //}
     }
-
 
     // Clamp the window position to stay within screen boundaries
     ImVec2 menu_pos = ImGui::GetWindowPos();
@@ -136,6 +139,8 @@ void Overlay::Menu() noexcept {
         AntiAfkMenu();
         CustomBindsMenu();
         KillSayMenu();
+        KillSoundMenu();
+        RoundStartAlertMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -146,10 +151,10 @@ void Overlay::Menu() noexcept {
     // Config
     ImGui::Separator();
     ImGui::Spacing();
-	if (ImGui::Button("Save Config", { 86.f, 28.f }))
+	if (ImGui::Button("Save Config", { 83.5f, 28.f }))
 		cfg->save("default");
 	ImGui::SameLine();
-    if (ImGui::Button("Load Config", { 86.f, 28.f })) {
+    if (ImGui::Button("Load Config", { 83.5f, 28.f })) {
         cfg->load("default");
         gradient.setConfig(cfg->gradient);
 
@@ -157,6 +162,7 @@ void Overlay::Menu() noexcept {
         longJumpKeyName = GetKeyName(cfg->longJumpBind);
         jumpThrowKeyName = GetKeyName(cfg->jumpThrowBind);
         dropBombKeyName = GetKeyName(cfg->dropBombBind);
+        selfKickKeyName = GetKeyName(cfg->selfKickBind);
 
         if (ImGui::FindWindowByName(" Bomb Timer"))
         ImGui::SetWindowPos(" Bomb Timer", { cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
@@ -180,7 +186,7 @@ void Overlay::AutoAcceptMenu() noexcept {
     ImGui::Checkbox("Auto Accept             ", &cfg->autoAcceptState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##AutoAccept", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##AutoAccept", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("Auto Accept Settings");
     }
 
@@ -208,7 +214,7 @@ void Overlay::TriggerMenu() noexcept {
     ImGui::Checkbox("Pixel Trigger", &cfg->triggerState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##PixelTrigger", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##PixelTrigger", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("Pixel Trigger Settings");
     }
 
@@ -267,7 +273,7 @@ void Overlay::BombTimerMenu() noexcept {
     ImGui::Checkbox("Bomb Timer", &cfg->bombTimerState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##BombTimer", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##BombTimer", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("Bomb Time Settings");
     }
 
@@ -307,7 +313,7 @@ void Overlay::SniperCrosshairMenu() noexcept {
     ImGui::TableSetColumnIndex(0);
     ImGui::Checkbox("Sniper Crosshair", &cfg->sniperCrosshairState);
     ImGui::TableSetColumnIndex(1);
-    if (ImageButton("##SniperCrosshairReloader", (ImTextureID)reloadTexture, { 24, 24 })) {
+    if (ImageButton("##SniperCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
         globals::crosshairUpdaterState = true;
     }
 }
@@ -324,7 +330,7 @@ void Overlay::KeystrokesMenu() noexcept {
     ImGui::Checkbox("Keystrokes", &cfg->keystrokesState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##Keystrokes", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##Keystrokes", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("Keystrokes Settings");
     }
 
@@ -431,7 +437,7 @@ void Overlay::CustomBindsMenu() noexcept {
     ImGui::Text("Custom Binds");
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##CustomBinds", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##CustomBinds", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("CustomBinds Settings");
     }
 
@@ -443,7 +449,6 @@ void Overlay::CustomBindsMenu() noexcept {
             ImGui::Text("Long Jump Bind ");
             ImGui::TableSetColumnIndex(1);
             longJumpKeyName = GetKeyName(cfg->longJumpBind);
-            // Add unique ID using "##" syntax to prevent ID collision
             if (ImGui::Button(std::format("{}##LongJump", longJumpKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
                 longJumpButtonState = !longJumpButtonState;
             }
@@ -463,13 +468,24 @@ void Overlay::CustomBindsMenu() noexcept {
             /* Drop Bomb */
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Drop Bomb Bind ");  // Fixed label text (was incorrectly "Long Jump Bind")
+            ImGui::Text("Drop Bomb Bind ");
             ImGui::TableSetColumnIndex(1);
             dropBombKeyName = GetKeyName(cfg->dropBombBind);
             if (ImGui::Button(std::format("{}##DropBomb", dropBombKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
                 dropBombButtonState = !dropBombButtonState;
             }
             Hotkey(&dropBombButtonState, &dropBombKeyName, &cfg->dropBombBind);
+
+            /* Self Kick */
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Self Kick Bind ");
+            ImGui::TableSetColumnIndex(1);
+            selfKickKeyName = GetKeyName(cfg->selfKickBind);
+            if (ImGui::Button(std::format("{}##SelfKick", selfKickKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
+                selfKickButtonState = !selfKickButtonState;
+            }
+            Hotkey(&selfKickButtonState, &selfKickKeyName, &cfg->selfKickBind);
 
             ImGui::EndTable();
         }
@@ -490,7 +506,7 @@ void Overlay::KillSayMenu() noexcept {
     ImGui::Checkbox("Kill Say", &cfg->killSayState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##KillSay", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##KillSay", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("Kill Say Settings");
     }
 
@@ -514,13 +530,89 @@ void Overlay::KillSayMenu() noexcept {
     }
 }
 
+void Overlay::KillSoundMenu() noexcept {
+    static bool firstRun = true;
+    if (firstRun) {
+        strncpy_s(killSoundFileName, cfg->killSoundFileName.c_str(), sizeof(killSoundFileName) - 1);
+        firstRun = false;
+    }
+
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Checkbox("Kill Sound", &cfg->killSoundState);
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImageButton("##KillSound", (ImTextureID)settingsTexture, { 22, 22 })) {
+        ImGui::OpenPopup("Kill Sound Settings");
+    }
+
+    if (ImGui::BeginPopup("Kill Sound Settings")) {
+        if (ImGui::BeginTable("Kill Sound Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Volume ");
+            ImGui::TableSetColumnIndex(1);
+
+            ImGui::PushItemWidth(100);
+
+            ImGui::SliderInt("##KillSoundVolume", &cfg->killSoundVolume, 1, 100, "%d %");
+
+            ImGui::PopItemWidth();
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("File Name ");
+            ImGui::TableSetColumnIndex(1);
+
+            ImGui::PushItemWidth(150);
+
+            ImGui::InputText("##KillSoundFileName", killSoundFileName, sizeof(killSoundFileName), ImGuiInputTextFlags_EnterReturnsTrue);
+            cfg->killSoundFileName = killSoundFileName;
+            
+            ImGui::PopItemWidth();
+            ImGui::EndTable();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void Overlay::RoundStartAlertMenu() noexcept {
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Checkbox("Round Start Alert", &cfg->roundStartAlertState);
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImageButton("##RoundStartAlert", (ImTextureID)settingsTexture, { 22, 22 })) {
+        ImGui::OpenPopup("Round Start Alert Settings");
+    }
+
+    if (ImGui::BeginPopup("Round Start Alert Settings")) {
+        if (ImGui::BeginTable("Round Start Alert Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Volume ");
+            ImGui::TableSetColumnIndex(1);
+
+            ImGui::PushItemWidth(100);
+
+            ImGui::SliderInt("##RoundStartAlertVolume", &cfg->roundStartAlertVolume, 1, 100, "%d %");
+
+            ImGui::PopItemWidth();
+            ImGui::EndTable();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
 void Overlay::FPSLimitMenu() noexcept {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
     ImGui::Checkbox("FPS Limiter", &cfg->fpsLimiterState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##FPSLimiter", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##FPSLimiter", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("FPS Limiter Settings");
     }
 
@@ -547,7 +639,7 @@ void Overlay::WatermarkMenu() noexcept {
     ImGui::Checkbox("Watermark", &cfg->watermarkState);
     ImGui::TableSetColumnIndex(1);
 
-    if (ImageButton("##Watermark", (ImTextureID)settingsTexture, { 24, 24 })) {
+    if (ImageButton("##Watermark", (ImTextureID)settingsTexture, { 22, 22 })) {
         ImGui::OpenPopup("Watermark Settings");
     }
 

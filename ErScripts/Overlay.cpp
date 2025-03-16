@@ -10,8 +10,8 @@ void Overlay::run() {
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-		return true;
+	//if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+	//	return true;
 
 	switch (msg)
 	{
@@ -291,6 +291,30 @@ void toggleKey(int vkKey, bool& toggleState, ImGuiKey imguiKey, ImGuiKey imguiMo
 	}
 }
 
+// toggleScroll not working yet
+static float g_ScrollDelta = 0.0f;
+
+void toggleScroll(bool& toggleState, ImGuiIO& io) {
+	const float SCROLL_SENSITIVITY = 0.25f;
+	float adjustedDelta = g_ScrollDelta * SCROLL_SENSITIVITY;
+
+	if (toggleState && adjustedDelta != 0.0f) {
+		io.AddMouseWheelEvent(0.0f, adjustedDelta);
+		ImGuiKeyData* keyData = ImGui::GetKeyData(ImGuiKey_MouseWheelY);
+		keyData->Down = true;
+		keyData->AnalogValue = adjustedDelta;
+		std::cout << "Scroll applied: delta=" << adjustedDelta << std::endl;
+		toggleState = false;
+	}
+	else if (!toggleState && adjustedDelta == 0.0f) {
+		ImGuiKeyData* keyData = ImGui::GetKeyData(ImGuiKey_MouseWheelY);
+		keyData->Down = false;
+		keyData->AnalogValue = 0.0f;
+		toggleState = true;
+	}
+	g_ScrollDelta = 0.0f;
+}
+
 void Overlay::Handler() noexcept {
 	bool showChat = false;
 	bool prevMenuState = false;
@@ -338,27 +362,15 @@ void Overlay::Handler() noexcept {
 		CS2Functions::GetWindowInfo(globals::width, globals::height, globals::posX, globals::posY);
 		
 		if ((width_old != globals::width || height_old != globals::height) || (posX_old != globals::posX || posY_old != globals::posY)) {
-			//Logger::logInfo(std::format("width = {}; height = {}; x = {}; y = {}", globals::width, globals::height, posX_new, posY_new));
 			width_old = globals::width;
 			height_old = globals::height;
 			posX_old = globals::posX;
 			posY_old = globals::posY;
-			//CleanupRenderTarget();
-			//SetWindowPos(window_handle, (HWND)-1, posX_new, posY_new, globals::width, globals::height, 0/*SWP_NOMOVE | SWP_NOSIZE*/ /*SWP_NOOWNERZORDER*/);
 			CleanupRenderTarget();
 			SetWindowPos(window_handle, (HWND)-1, globals::posX, globals::posY, globals::width, globals::height, 0);
 			g_pSwapChain->ResizeBuffers(0, globals::width, globals::height, DXGI_FORMAT_UNKNOWN, 0);
 			CreateRenderTarget();
-			//MoveWindow(window_handle, posX_new, posY_new, globals::width, globals::height, TRUE);
-			//g_pSwapChain->ResizeBuffers(0, globals::width, globals::height, DXGI_FORMAT_UNKNOWN, 0);
-			//CreateRenderTarget();
 		}
-
-		//if (posX_old != posX_new || posY_old != posY_new) {
-		//	posX_old, posY_old = posX_new, posY_new;
-		//	//SetWindowPos(window_handle, HWND_TOPMOST, posX_new, posY_new, 0, 0, SWP_NOSIZE);
-		//	MoveWindow(window_handle, posX_new, posY_new, globals::width, globals::height, TRUE);
-		//}
 
 		// input handler
 		ImGuiIO& io = ImGui::GetIO();
@@ -386,7 +398,7 @@ void Overlay::Handler() noexcept {
 		}
 
 		// Special Keys
-		static bool LMouseState = true, RMouseState = true, MMouseState = true;
+		static bool LMouseState = true, RMouseState = true, MMouseState = true, SMouseState = true;
 		static bool LeftCtrl = true, LeftShift = true, Backspace = true, Enter = true, Tab = true, Delete = true, ArrowUp = true, ArrowDown = true, ArrowLeft = true, ArrowRight = true;
 
 		toggleKey(VK_LBUTTON, LMouseState, ImGuiMouseButton_Left, io);
@@ -415,6 +427,8 @@ void Overlay::Handler() noexcept {
 		toggleKey(VK_OEM_5, keyState[VK_OEM_5], io);			// |
 		toggleKey(VK_OEM_6, keyState[VK_OEM_6], io);			// ]
 		toggleKey(VK_OEM_7, keyState[VK_OEM_7], io);			// /
+
+		//toggleScroll(SMouseState, io); // Not working yet
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}

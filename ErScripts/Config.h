@@ -64,9 +64,21 @@ public:
     /* Drop Bomb */
     int dropBombBind{ 0 };
 
+    /* Self Kick */
+    int selfKickBind{ 0 };
+
     /* Kill Say */
     bool killSayState{ false };
     std::string killSayText{ "1" };
+
+    /* Kill Sound */
+    bool killSoundState{ false };
+    int killSoundVolume{ 100 };
+    std::string killSoundFileName{ "" };
+
+    /* Round Start Alert */
+    bool roundStartAlertState{ false };
+    int roundStartAlertVolume{ 100 };
 
     /* Watermark */
 	bool watermarkState{ true };

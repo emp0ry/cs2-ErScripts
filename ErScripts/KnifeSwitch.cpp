@@ -15,5 +15,5 @@ void CS2Functions::KnifeSwitch() {
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        }).detach();
+    }).detach();
 }

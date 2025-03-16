@@ -3,16 +3,6 @@
 #include "Globals.h"
 #include <thread>
 
-void GSIServer::run() {
-    std::thread serverThread(&GSIServer::gsiServer, this);
-    serverThread.detach();
-}
-
-void GSIServer::stop() {
-    Logger::logInfo("Stopping GSI server");
-    server.stop();
-}
-
 void GSIServer::gsiServer() {
     server.Post("/", [this](const httplib::Request& req, httplib::Response& res) {
         try {
@@ -32,6 +22,16 @@ void GSIServer::gsiServer() {
     if (!server.listen("127.0.0.1", port)) {
         Logger::logWarning(std::format("Failed to start GSI server on 127.0.0.1:{}", port));
     }
+}
+
+void GSIServer::run() {
+    std::thread serverThread(&GSIServer::gsiServer, this);
+    serverThread.detach();
+}
+
+void GSIServer::stop() {
+    Logger::logInfo("Stopping GSI server");
+    server.stop();
 }
 
 void GSIServer::handleJsonPayload(const nlohmann::json& data) {
@@ -157,7 +157,6 @@ bool GSIServer::handlePistolState(const nlohmann::json& data) {
 
     return false;
 }
-
 
 bool GSIServer::handleRoundStartState(const nlohmann::json& data) {
     if (data.contains("round")) {

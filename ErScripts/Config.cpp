@@ -61,9 +61,21 @@ void Config::load(const std::string& filename) {
     /* Drop Bomb */
     read(json["drop-bomb"]["bind"], dropBombBind);
 
+    /* Self Kick */
+    read(json["self-kick"]["bind"], selfKickBind);
+
     /* Kill Say */
     read(json["kill-say"]["state"], killSayState);
     read(json["kill-say"]["text"], killSayText);
+
+    /* Kill Sound */
+    read(json["kill-sound"]["state"], killSoundState);
+    read(json["kill-sound"]["volume"], killSoundVolume);
+    read(json["kill-sound"]["file-name"], killSoundFileName);
+
+    /* Round Start Alert */
+    read(json["round-start-alert"]["state"], roundStartAlertState);
+    read(json["round-start-alert"]["volume"], roundStartAlertVolume);
 
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
@@ -144,9 +156,21 @@ void Config::save(const std::string& filename) const {
     /* Drop Bomb */
     json["drop-bomb"]["bind"] = dropBombBind;
 
+    /* Self Kick */
+    json["self-kick"]["bind"] = selfKickBind;
+
     /* Kill Say */
     json["kill-say"]["state"] = killSayState;
     json["kill-say"]["text"] = killSayText;
+
+    /* Kill Sound */
+    json["kill-sound"]["state"] = killSoundState;
+    json["kill-sound"]["volume"] = killSoundVolume;
+    json["kill-sound"]["file-name"] = killSoundFileName;
+
+    /* Round Start Alert */
+    json["round-start-alert"]["state"] = roundStartAlertState;
+    json["round-start-alert"]["volume"] = roundStartAlertVolume;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;

@@ -10,9 +10,11 @@ void CS2Functions::AntiAfk() {
                         oldRoundStartState = globals::roundStartState;
 
                         if (globals::roundStartState) {
-                            Keyboard(0x57, true, false);
-                            std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                            Keyboard(0x57, false, false);
+                            if (!(GetAsyncKeyState('W') & 0x8000)) {
+                                Keyboard('W', true, false);
+                                std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 3) + 16));
+                                Keyboard('W', false, false);
+                            }
                         }
                     }
                 }
@@ -20,5 +22,5 @@ void CS2Functions::AntiAfk() {
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        }).detach();
+    }).detach();
 }

@@ -32,5 +32,5 @@ void CS2Functions::Crosshair() {
 			}
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
-		}).detach();
+	}).detach();
 }

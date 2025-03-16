@@ -48,6 +48,9 @@
     <Filter Include="Functions\GradientManager">
       <UniqueIdentifier>{efe16123-d2de-41b9-9192-11a75d28ae09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Functions\Simple Sound">
+      <UniqueIdentifier>{7aeba3ba-c87b-467e-9c41-14592fe7a0bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -143,6 +146,18 @@
     <ClCompile Include="KillSay.cpp">
       <Filter>Functions\Functions</Filter>
     </ClCompile>
+    <ClCompile Include="RoundStartAlert.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleSound.cpp">
+      <Filter>Functions\Simple Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="KillSound.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundsShellcodes.h">
+      <Filter>Functions\Simple Sound</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -203,6 +218,9 @@
       <Filter>Functions\GradientManager</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SimpleSound.h">
+      <Filter>Functions\Simple Sound</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ErScripts.rc">

@@ -5,12 +5,14 @@
 
 int main() {
     /* Ui Access */
-    DWORD dwErr = PrepareForUIAccess();
-    if (dwErr != ERROR_SUCCESS) {
-        Logger::logWarning(std::format("Failed to prepare for UI Access: {}", dwErr));
-        std::cout << "[*] Press Enter to exit...";
-        std::cin.get();
-        return -1;
+    if (!IsDebuggerPresent()) {
+        DWORD dwErr = PrepareForUIAccess();
+        if (dwErr != ERROR_SUCCESS) {
+            Logger::logWarning(std::format("Failed to prepare for UI Access: {}", dwErr));
+            std::cout << "[*] Press Enter to exit...";
+            std::cin.get();
+            return -1;
+        }
     }
 
     /* Check if program already running */
@@ -52,6 +54,8 @@ int main() {
     cs2.AntiAfk();
     cs2.CS2Binds();
     cs2.KillSay();
+    cs2.KillSound();
+    cs2.RoundStartAlert();
 
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;

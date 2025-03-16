@@ -64,6 +64,8 @@ private:
 	void AntiAfkMenu() noexcept;
 	void CustomBindsMenu() noexcept;
 	void KillSayMenu() noexcept;
+	void KillSoundMenu() noexcept;
+	void RoundStartAlertMenu() noexcept;
 	void GradientManagerMenu() noexcept;
 	void WatermarkMenu() noexcept;
 	void FPSLimitMenu() noexcept;

@@ -167,14 +167,18 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="KillSay.cpp" />
+    <ClCompile Include="KillSound.cpp" />
     <ClCompile Include="KnifeSwitch.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="RoundStartAlert.cpp" />
     <ClCompile Include="Overlay.cpp" />
     <ClCompile Include="OverlayHelper.cpp" />
     <ClCompile Include="PixelTrigger.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="RGBCrosshair.cpp" />
+    <ClCompile Include="SimpleSound.cpp" />
+    <ClCompile Include="SoundsShellcodes.h" />
     <ClCompile Include="SteamTools.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIAccess.c" />
@@ -198,6 +202,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SimpleSound.h" />
     <ClInclude Include="SteamTools.h" />
     <ClInclude Include="UIAccess.h" />
   </ItemGroup>

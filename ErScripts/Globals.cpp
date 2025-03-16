@@ -13,7 +13,7 @@ namespace globals {
 	bool pistolState = false;
 	bool roundStartState = false;
 	bool isBombInWeapons = false;
-	int localPlayerKills = 0;
+	int localPlayerKills = 0, localPlayerSlotNumber = 0;
 	std::string steamid = "", nickname = "";
 
 	bool crosshairUpdaterState = true;

@@ -17,6 +17,7 @@ public:
 	static const void GetWindowInfo(int& width, int& height, int& posX, int& posY);
 	static void CommandsSender(const int num, const std::string& command);
 	static const void Keyboard(int wScan, bool isPressed, bool useScanCode = true);
+
 	void InitBinds();
 	void AutoAccept();
 	void PixelTrigger();
@@ -28,6 +29,8 @@ public:
 	void AntiAfk();
 	void CS2Binds();
 	void KillSay();
+	void KillSound();
+	void RoundStartAlert();
 private:
 	static HWND hwnd;
 

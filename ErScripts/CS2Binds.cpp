@@ -39,9 +39,17 @@ void CS2Functions::CS2Binds() {
                         }
                     }
                 }
+
+                if (cfg->selfKickBind) {
+                    if (GetAsyncKeyState(cfg->selfKickBind) & 0x8000) {
+                        CS2Functions::CommandsSender(7, "status");
+                        std::this_thread::sleep_for(std::chrono::milliseconds(256));
+                        CS2Functions::CommandsSender(7, std::format("callvote kick {}", globals::localPlayerSlotNumber));
+                    }
+                }
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        }).detach();
+    }).detach();
 }

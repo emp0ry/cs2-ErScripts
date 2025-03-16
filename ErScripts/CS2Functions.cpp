@@ -201,6 +201,9 @@ void CS2Functions::ConsoleLogStream() {
                     else if (line.find(L"[*] ErScripts Bind Initalization") != std::wstring::npos) { // If ErScripts configs binds set
                         bindsInit = true;
                     }
+                    else if (line.find(L"[Client] source   : slot ") != std::wstring::npos) {
+                        globals::localPlayerSlotNumber = std::stoi(line.substr(line.find(L"slot ") + wcslen(L"slot ")));
+                    }
                 }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -385,11 +388,9 @@ void CS2Functions::InitBinds() {
     auto startTime = std::chrono::steady_clock::now();
     const auto timeoutDuration = std::chrono::seconds(5);
 
-    while (!globals::finish || !bindsInit) {
+    while (!bindsInit) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
-
-        if (bindsInit)
-            break;
+        if (bindsInit || globals::finish) break;
 
         auto currentTime = std::chrono::steady_clock::now();
         auto elapsedTime = currentTime - startTime;
@@ -402,14 +403,15 @@ void CS2Functions::InitBinds() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    if (!bindsInit) {
+    if (globals::finish || !bindsInit) {
         Logger::logWarning("Initialization failed: Could not initialize erscripts binds");
         std::cout << "[*] Press Enter to exit...";
         std::cin.get();
         std::exit(1);
     }
-
-    Logger::logSuccess("ErScripts binds initialized");
+    else {
+        Logger::logSuccess("ErScripts binds initialized");
+    }
 }
 
 void CS2Functions::CommandsSender(const int num, const std::string& command) {

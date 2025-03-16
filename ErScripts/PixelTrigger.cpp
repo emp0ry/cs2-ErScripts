@@ -77,5 +77,5 @@ void CS2Functions::PixelTrigger() {
         }
 
         ReleaseDC(nullptr, hScreenDC);
-        }).detach();
+    }).detach();
 }
