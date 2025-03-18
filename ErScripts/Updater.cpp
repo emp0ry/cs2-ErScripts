@@ -187,7 +187,7 @@ bool Updater::checkAndUpdate() {
     }
 
     try {
-        nlohmann::json json = nlohmann::json::parse(jsonData);
+        auto json = nlohmann::json::parse(jsonData);
         std::string latestVersion = json["tag_name"].get<std::string>().substr(1);
 
         if (latestVersion > currentVersion) {
