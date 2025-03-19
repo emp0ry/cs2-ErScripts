@@ -39,6 +39,7 @@ bool GSIServer::hasActiveWeaponType(const nlohmann::json& playerData, const std:
 void GSIServer::gsiServer() {
     server.Post("/", [this](const httplib::Request& req, httplib::Response& res) {
         try {
+            //system("cls"); std::cout << req.body << std::endl;
             nlohmann::json jsonData = nlohmann::json::parse(req.body);
             handleJsonPayload(jsonData);
             res.set_content("OK", "text/plain");
@@ -77,6 +78,7 @@ void GSIServer::handleJsonPayload(const nlohmann::json& data) {
     globals::pistolState = handlePistolState(playerData);
     globals::isBombInWeapons = handleIsBombInWeapons(playerData);
     globals::localPlayerKills = handleLocalPlayerKills(playerData);
+    globals::localPlayerIsActivityPlaying = handleIsLocalPlayerActivityPlaying(playerData);
 }
 
 bool GSIServer::handleSniperCrosshairState(const nlohmann::json& data) {
@@ -128,4 +130,8 @@ bool GSIServer::handlePistolState(const std::optional<nlohmann::json>& playerDat
 
 bool GSIServer::handleIsBombInWeapons(const std::optional<nlohmann::json>& playerData) {
     return playerData && hasActiveWeaponType(*playerData, "C4");
+}
+
+bool GSIServer::handleIsLocalPlayerActivityPlaying(const std::optional<nlohmann::json>& playerData) {
+    return playerData && playerData->contains("activity") && (*playerData)["activity"].get<std::string>() == "playing";
 }

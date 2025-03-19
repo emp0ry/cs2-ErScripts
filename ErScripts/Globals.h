@@ -17,6 +17,7 @@ namespace globals {
 	extern bool roundStartState;
 	extern bool isBombInWeapons;
 	extern int localPlayerKills, localPlayerSlotNumber;
+	extern bool localPlayerIsActivityPlaying;
 	extern std::string steamid, nickname;
 
 	extern bool crosshairUpdaterState;

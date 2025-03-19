@@ -345,10 +345,14 @@ R"("GSI Config for ErScripts"
 }
 
 void ErScripts::InitBinds() {
+    auto startTime = std::chrono::steady_clock::now();
+    const auto timeoutDuration = std::chrono::seconds(10);
+    bool timerStart = false;
+
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
 
-        if (GetWindowState() && GetCursorState()) {
+        if (GetWindowState() && GetCursorState() && globals::localPlayerIsActivityPlaying) {
             std::wstring cfg = config + +L"1.cfg";
 
             std::fstream configFile(cfg, std::ios::out | std::ios::trunc);
@@ -378,26 +382,22 @@ void ErScripts::InitBinds() {
                 Keyboard(VK_F13, true, false);
                 std::this_thread::sleep_for(std::chrono::milliseconds((rand() % 5) + 1));
                 Keyboard(VK_F13, false, false);
-                break;
+                startTime = std::chrono::steady_clock::now();
+                timerStart = true;
+                //break;
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-
-    auto startTime = std::chrono::steady_clock::now();
-    const auto timeoutDuration = std::chrono::seconds(5);
-
-    while (!bindsInit) {
-        if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
         if (bindsInit || globals::finish) break;
 
-        auto currentTime = std::chrono::steady_clock::now();
-        auto elapsedTime = currentTime - startTime;
+        if (timerStart) {
+            auto currentTime = std::chrono::steady_clock::now();
+            auto elapsedTime = currentTime - startTime;
 
-        if (elapsedTime >= timeoutDuration) {
-            Logger::logWarning("Timeout: Waited 5 seconds for binds initialization or finish signal.");
-            break;
+            if (elapsedTime >= timeoutDuration) {
+                Logger::logWarning("Timeout: Waited 10 seconds for binds initialization or finish signal.");
+                break;
+            }
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

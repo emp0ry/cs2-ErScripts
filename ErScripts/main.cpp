@@ -7,7 +7,7 @@
 int main() {
     if (!IsDebuggerPresent()) {
         /* Auto updater */
-        Updater updater("1.0.1", "emp0ry", "ErScripts", "ErScripts");
+        Updater updater("1.0.2", "emp0ry", "ErScripts", "ErScripts");
         if (updater.checkAndUpdate())
             return 0;
 
