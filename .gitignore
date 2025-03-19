@@ -31,9 +31,6 @@
 *.out
 *.app
 /ErScripts/configs
-/ErScripts/x64/Release
-/x64/Release
-/.vs/ErScripts/v17
-/.vs/ErScripts/CopilotIndices
-/.vs/ErScripts/FileContentIndex
-/.vs/ErScripts/copilot-chat/5b76ca29/sessions/5e8bad49-ba75-41d8-a174-0f7c47c9cd43
+/ErScripts/x64
+/x64
+/.vs

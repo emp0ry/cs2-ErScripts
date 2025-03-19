@@ -384,7 +384,6 @@ void ErScripts::InitBinds() {
                 Keyboard(VK_F13, false, false);
                 startTime = std::chrono::steady_clock::now();
                 timerStart = true;
-                //break;
             }
         }
 
