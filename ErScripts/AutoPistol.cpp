@@ -3,7 +3,7 @@
 void ErScripts::AutoPistol() {
     std::thread([]() {
         while (!globals::finish) {
-            if (cfg->autoPistolState && globals::pistolState) {
+            if (cfg->autoPistolState && globals::pistolState && !globals::revolverState) {
                 if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
                     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
                         ErScripts::CommandsSender(6, "attack 1 1 0");

@@ -11,6 +11,7 @@ namespace globals {
 	double bombTime = 0.0l;
 	bool knifeState = false;
 	bool pistolState = false;
+	bool revolverState = false;
 	bool roundStartState = false;
 	bool isBombInWeapons = false;
 	int localPlayerKills = 0, localPlayerSlotNumber = 0;

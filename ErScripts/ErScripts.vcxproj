@@ -178,6 +178,7 @@
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="RGBCrosshair.cpp" />
     <ClCompile Include="SimpleSound.cpp" />
+    <ClCompile Include="SnapTap.cpp" />
     <ClCompile Include="SoundsShellcodes.h" />
     <ClCompile Include="SteamTools.cpp" />
     <ClCompile Include="main.cpp" />

@@ -79,6 +79,7 @@ void GSIServer::handleJsonPayload(const nlohmann::json& data) {
     globals::isBombInWeapons = handleIsBombInWeapons(playerData);
     globals::localPlayerKills = handleLocalPlayerKills(playerData);
     globals::localPlayerIsActivityPlaying = handleIsLocalPlayerActivityPlaying(playerData);
+    globals::revolverState = handlIsActiveWeaponRevolver(playerData);
 }
 
 bool GSIServer::handleSniperCrosshairState(const nlohmann::json& data) {
@@ -134,4 +135,22 @@ bool GSIServer::handleIsBombInWeapons(const std::optional<nlohmann::json>& playe
 
 bool GSIServer::handleIsLocalPlayerActivityPlaying(const std::optional<nlohmann::json>& playerData) {
     return playerData && playerData->contains("activity") && (*playerData)["activity"].get<std::string>() == "playing";
+}
+
+bool GSIServer::handlIsActiveWeaponRevolver(const std::optional<nlohmann::json>& playerData) {
+    if (!playerData && !playerData->contains("weapons") || !(*playerData)["weapons"].is_object()) {
+        return false;
+    }
+
+    for (const auto& [_, weapon] : (*playerData)["weapons"].items()) {
+        if (weapon.contains("name") && weapon.contains("state")) {
+            std::string name = weapon["name"].get<std::string>();
+            std::string state = weapon["state"].get<std::string>();
+            if (name == "weapon_revolver" && (state == "active")) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

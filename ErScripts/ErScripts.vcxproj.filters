@@ -164,6 +164,9 @@
     <ClCompile Include="Updater.cpp">
       <Filter>Functions\Updater</Filter>
     </ClCompile>
+    <ClCompile Include="SnapTap.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">

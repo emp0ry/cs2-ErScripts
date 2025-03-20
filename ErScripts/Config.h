@@ -81,6 +81,9 @@ public:
     int roundStartAlertVolume{ 100 };
     std::string roundStartAlertFileName{ "" };
 
+    /* Snap Tap */
+    bool snapTapState{ false };
+
     /* Watermark */
 	bool watermarkState{ true };
 	bool watermarkGradientState{ true };

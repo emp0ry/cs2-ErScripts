@@ -29,6 +29,7 @@ private:
     bool handleIsBombInWeapons(const std::optional<nlohmann::json>& playerData);                // Checks for bomb in inventory
     int handleLocalPlayerKills(const std::optional<nlohmann::json>& playerData);                // Gets local player kills
     bool handleIsLocalPlayerActivityPlaying(const std::optional<nlohmann::json>& playerData);    // Checks if player activity is "playing"
+    bool handlIsActiveWeaponRevolver(const std::optional<nlohmann::json>& playerData);    // Checks if player activity is "playing"
 
 public:
     void run();     // Starts server in a thread

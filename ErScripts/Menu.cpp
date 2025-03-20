@@ -142,6 +142,7 @@ void Overlay::Menu() noexcept {
         KillSayMenu();
         KillSoundMenu();
         RoundStartAlertMenu();
+        //SnapTapMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -625,6 +626,13 @@ void Overlay::RoundStartAlertMenu() noexcept {
 
         ImGui::EndPopup();
     }
+}
+
+void Overlay::SnapTapMenu() noexcept {
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Checkbox("Snap Tap", &cfg->snapTapState);
+    ImGui::TableSetColumnIndex(1);
 }
 
 void Overlay::FPSLimitMenu() noexcept {
