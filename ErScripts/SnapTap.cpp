@@ -10,7 +10,7 @@ inline int GenerateUniqueRandomDelay(std::vector<int>& recentDelays, int minDela
         delay = dist(rng);
     } while (std::find(recentDelays.begin(), recentDelays.end(), delay) != recentDelays.end());
 
-    if (recentDelays.size() >= 5) {
+    if (recentDelays.size() >= 10) {
         recentDelays.erase(recentDelays.begin());
     }
     recentDelays.push_back(delay);
@@ -18,44 +18,49 @@ inline int GenerateUniqueRandomDelay(std::vector<int>& recentDelays, int minDela
     return delay;
 }
 
-// Not working yet
+inline void PressAndRelease(char key, std::vector<int>& recentDelays) {
+    int minDelay = 0;       // Min delay in ms
+    int maxDelay = 50;      // Max delay in ms
+    int baseTimeout = 115;  // Base timeout (115)
+
+    int delay = GenerateUniqueRandomDelay(recentDelays, minDelay, maxDelay);
+
+    int totalTimeout = baseTimeout - delay;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+    ErScripts::Keyboard(key, true, false);
+    std::this_thread::sleep_for(std::chrono::milliseconds(totalTimeout));
+    ErScripts::Keyboard(key, false, false);
+}
+
 void ErScripts::SnapTap() {
     std::thread([this]() {
         std::vector<int> recentDelays;
-        const int minDelay = 1;
-        const int maxDelay = 50;
-
         bool aWasPressed = false;
         bool dWasPressed = false;
 
         while (!globals::finish) {
             if (cfg->snapTapState) {
                 if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
-                    bool aPressed = GetAsyncKeyState('A') & 0x8000;
-                    bool dPressed = GetAsyncKeyState('D') & 0x8000;
+                    if (GetAsyncKeyState(cfg->snapTapBind) & 0x8000) {
+                        bool aPressed = GetAsyncKeyState('A') & 0x8000;
+                        bool dPressed = GetAsyncKeyState('D') & 0x8000;
 
-                    // Detect release of 'A' while not pressing 'D'
-                    if (aWasPressed && !aPressed && !dPressed) {
-                        int delay = GenerateUniqueRandomDelay(recentDelays, minDelay, maxDelay);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-                        Keyboard('D', true, false);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(delay * 2));
-                        Keyboard('D', false, false);
-                    }
-                    // Detect release of 'D' while not pressing 'A'
-                    else if (dWasPressed && !dPressed && !aPressed) {
-                        int delay = GenerateUniqueRandomDelay(recentDelays, minDelay, maxDelay);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-                        Keyboard('A', true, false);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(delay * 2));
-                        Keyboard('A', false, false);
-                    }
+                        // Detect release of A while not pressing D
+                        if (aWasPressed && !aPressed && !dPressed) {
+                            PressAndRelease('D', recentDelays);
+                        }
+                        // Detect release of D while not pressing A
+                        else if (dWasPressed && !dPressed && !aPressed) {
+                            PressAndRelease('A', recentDelays);
+                        }
 
-                    aWasPressed = aPressed;
-                    dWasPressed = dPressed;
+                        aWasPressed = aPressed;
+                        dWasPressed = dPressed;
+                    }
                 }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
-        }).detach();
+    }).detach();
 }

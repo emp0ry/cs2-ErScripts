@@ -66,6 +66,8 @@ inline const char* dropBombKeyName = GetKeyName(cfg->dropBombBind);
 inline bool dropBombButtonState = false;
 inline const char* selfKickKeyName = GetKeyName(cfg->selfKickBind);
 inline bool selfKickButtonState = false;
+inline const char* snapTapKeyName = GetKeyName(cfg->snapTapBind);
+inline bool snapTapButtonState = false;
 inline char killSayText[256]{};
 inline char killSoundFileName[256]{};
 inline char roundStartAlertFileName[256]{};
@@ -142,7 +144,7 @@ void Overlay::Menu() noexcept {
         KillSayMenu();
         KillSoundMenu();
         RoundStartAlertMenu();
-        //SnapTapMenu();
+        SnapTapMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -165,6 +167,7 @@ void Overlay::Menu() noexcept {
         jumpThrowKeyName = GetKeyName(cfg->jumpThrowBind);
         dropBombKeyName = GetKeyName(cfg->dropBombBind);
         selfKickKeyName = GetKeyName(cfg->selfKickBind);
+        snapTapKeyName = GetKeyName(cfg->snapTapBind);
 
         if (ImGui::FindWindowByName(" Bomb Timer"))
         ImGui::SetWindowPos(" Bomb Timer", { cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
@@ -633,6 +636,28 @@ void Overlay::SnapTapMenu() noexcept {
     ImGui::TableSetColumnIndex(0);
     ImGui::Checkbox("Snap Tap", &cfg->snapTapState);
     ImGui::TableSetColumnIndex(1);
+
+    if (ImageButton("##SnapTap", (ImTextureID)settingsTexture, { 22, 22 })) {
+        ImGui::OpenPopup("SnapTap Settings");
+    }
+
+    if (ImGui::BeginPopup("SnapTap Settings")) {
+        if (ImGui::BeginTable("SnapTap Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Hotkey ");
+            ImGui::TableSetColumnIndex(1);
+            snapTapKeyName = GetKeyName(cfg->snapTapBind);
+            if (ImGui::Button(std::format("{}##PixelTrigger", snapTapKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
+                snapTapButtonState = !snapTapButtonState;
+            }
+            Hotkey(&snapTapButtonState, &snapTapKeyName, &cfg->snapTapBind);
+
+            ImGui::EndTable();
+        }
+
+        ImGui::EndPopup();
+    }
 }
 
 void Overlay::FPSLimitMenu() noexcept {

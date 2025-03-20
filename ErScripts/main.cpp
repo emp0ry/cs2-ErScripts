@@ -7,7 +7,7 @@
 int main() {
     if (!IsDebuggerPresent()) {
         /* Auto updater */
-        Updater updater("1.0.3", "emp0ry", "ErScripts", "ErScripts");
+        Updater updater("1.0.4", "emp0ry", "ErScripts", "ErScripts");
         if (updater.checkAndUpdate())
             return 0;
 
@@ -62,7 +62,7 @@ int main() {
     es.KillSay();
     es.KillSound();
     es.RoundStartAlert();
-    //es.SnapTap();
+    es.SnapTap();
 
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;

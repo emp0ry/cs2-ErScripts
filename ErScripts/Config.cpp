@@ -80,6 +80,7 @@ void Config::load(const std::string& filename) {
 
     /* Snap Tap */
     read(json["snap-tap"]["state"], snapTapState);
+    read(json["snap-tap"]["bind"], snapTapBind);
 
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
@@ -179,6 +180,7 @@ void Config::save(const std::string& filename) const {
 
     /* Snap Tap */
     json["snap-tap"]["state"] = snapTapState;
+    json["snap-tap"]["bind"] = snapTapBind;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;

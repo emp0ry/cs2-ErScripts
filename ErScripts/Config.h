@@ -83,6 +83,7 @@ public:
 
     /* Snap Tap */
     bool snapTapState{ false };
+    int snapTapBind{ 0 };
 
     /* Watermark */
 	bool watermarkState{ true };
