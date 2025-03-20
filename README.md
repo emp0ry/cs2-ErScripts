@@ -39,6 +39,7 @@ Here’s what ErScripts brings to your arsenal:
 | **Kill Say**          | Sends a message after each kill.                                            |
 | **Kill Sound**        | Plays a sound after each kill.                                              |
 | **Round Start Alert** | When you're not in the game and a new round starts, a sound plays.          |
+| **Snap Tap**          | Instantly press the opposite key for a faster stop.                         |
 | **Watermark**         | Shows ping, time, and game info.                                            |
 | **Capture Bypass**    | Keeps the overlay hidden from recordings/streams.                           |
 | **FPS Limiter**       | Limits overlay FPS for smoother performance.                                |
