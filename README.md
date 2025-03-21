@@ -134,7 +134,7 @@ Everything runs externally—no game memory touched, no risks taken.
 |-----------------------------|-----------------------------|
 
 ### Keystrokes, Crosshair, Bomb Timer
-| ![Keystrokes](./Image/keystrokes.gif) | ![Crosshair](./Image/crosshair.gif) <br> ![Bomb Timer](./Image/bombtimer.gif) | 
+| ![Keystrokes](./Image/keystrokes.gif) | ![Crosshair](./Image/crosshair.gif) <br> ![Bomb Timer](./Image/bombtimer.gif) |
 |---------------------------------------|-------------------------------------------------------------------------------|
 
 ---
