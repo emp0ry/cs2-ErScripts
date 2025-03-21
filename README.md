@@ -129,20 +129,13 @@ Everything runs externally—no game memory touched, no risks taken.
 
 ## 🖼️ Images
 
-### ErScripts Menu
-<div style="padding-left: 25px; display: flex; flex-wrap: wrap; gap: 10px;">
-   <img src="./Image/menu1.png" alt="Menu1" style="flex-shrink: 0;"/>
-   <img src="./Image/menu2.png" alt="Menu2" style="flex-shrink: 0;"/>
-</div>
+### Menu
+| ![Menu1](./Image/menu1.png) | ![Menu2](./Image/menu2.png) |
+|-----------------------------|-----------------------------|
 
 ### Keystrokes, Crosshair, Bomb Timer
-<div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; padding-left: 25px;">
-   <img src="./Image/keystrokes.gif" alt="Keystrokes" style="flex-shrink: 0;"/>
-   <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
-      <img src="./Image/crosshair.gif" alt="Crosshair" style="flex-shrink: 0;"/>
-      <img src="./Image/bombtimer.gif" alt="Bomb Timer" style="flex-shrink: 0;"/>
-   </div>
-</div>
+| ![Keystrokes](./Image/keystrokes.gif) | ![Crosshair](./Image/crosshair.gif) <br> ![Bomb Timer](./Image/bombtimer.gif) | 
+|---------------------------------------|-------------------------------------------------------------------------------|
 
 ---
 
