@@ -127,11 +127,22 @@ Everything runs externally—no game memory touched, no risks taken.
 
 ---
 
-## 💖 Support the Project
+## 🖼️ Images
 
-Love ErScripts? Fuel its development with a coffee!  
+### ErScripts Menu
+<div style="padding-left: 25px; display: flex; flex-wrap: wrap; gap: 10px;">
+   <img src="./Image/menu1.png" alt="Menu1" style="flex-shrink: 0;"/>
+   <img src="./Image/menu2.png" alt="Menu2" style="flex-shrink: 0;"/>
+</div>
 
-[![Buy Me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/emp0ry)
+### Keystrokes, Crosshair, Bomb Timer
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; padding-left: 25px;">
+   <img src="./Image/keystrokes.gif" alt="Keystrokes" style="flex-shrink: 0;"/>
+   <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+      <img src="./Image/crosshair.gif" alt="Crosshair" style="flex-shrink: 0;"/>
+      <img src="./Image/bombtimer.gif" alt="Bomb Timer" style="flex-shrink: 0;"/>
+   </div>
+</div>
 
 ---
 
@@ -143,6 +154,14 @@ ErScripts relies on these awesome libraries:
 - **[cpp-httplib](https://github.com/yhirose/cpp-httplib)**: GSI data handling.
 - **Windows API**: Registry access, window tracking, and inputs.
 - **Standard C++**: Core logic and file management.
+
+---
+
+## 💖 Support the Project
+
+Love ErScripts? Fuel its development with a coffee!
+
+[![Buy Me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/emp0ry)
 
 ---
 
