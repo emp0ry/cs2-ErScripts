@@ -77,27 +77,8 @@ p {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.about-buttons {
-    position: relative;
-    margin-top: 20px; /* Space between paragraph and buttons */
-}
-
-.about-buttons .btn {
-    margin: 0; /* Remove default margins for precise positioning */
-}
-
-.about-buttons .btn:first-child {
-    float: left;
-}
-
-.about-buttons .btn.back-to-hub {
+.about .btn.back-to-hub {
     float: right;
-}
-
-.about-buttons::after {
-    content: "";
-    display: table;
-    clear: both;
 }
 
 .features {
