@@ -1,19 +1,11 @@
-* {
-    all: unset !important;
-    box-sizing: border-box !important;
-}
-
 html, body {
     height: 100%;
-    margin: 0;
-    padding: 0;
 }
 
 body {
-    margin: 0;
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #2f0057 0%, #4b0082 50%, #8a2be2 100%);
-    background: #4b0082; /* Fallback for older browsers */
+    background: #4b0082; /* Fallback */
     color: #ffffff;
     min-height: 100vh;
     overflow-x: hidden;
@@ -25,7 +17,7 @@ body {
     max-width: 900px;
     width: 90%;
     margin: 0 auto;
-    padding: 40px 20px;
+    /* padding: 40px 20px; */
     flex: 1;
 }
 
@@ -60,7 +52,7 @@ p {
     border-radius: 50px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* iPhone touch fix */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 .btn:hover {
@@ -69,7 +61,7 @@ p {
 }
 
 .btn:active {
-    transform: scale(0.95); /* Better touch feedback */
+    transform: scale(0.95);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -78,6 +70,7 @@ p {
     padding: 20px;
     border-radius: 15px;
     margin-bottom: 40px;
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -99,6 +92,7 @@ p {
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease;
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
     backdrop-filter: blur(12px);
 }
 
@@ -120,7 +114,6 @@ footer {
     box-sizing: border-box;
     color: #fff;
     margin-top: auto;
-    position: relative;
 }
 
 footer a {
@@ -132,10 +125,10 @@ footer a:hover {
     text-decoration: underline;
 }
 
-/* Fallback for browsers that don’t support backdrop-filter (e.g., some Safari versions) */
+/* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(12px)) {
     .about, .feature-card {
-        background: rgba(25, 0, 46, 0.8); /* Solid fallback */
+        background: rgba(25, 0, 46, 0.8);
     }
 }
 
@@ -158,11 +151,11 @@ footer a:hover {
         padding: 20px 10px;
     }
     .features {
-        grid-template-columns: 1fr; /* Single column */
+        grid-template-columns: 1fr;
     }
 }
 
-/* Extra tweak for narrow iPhone screens (e.g., 375px or less) */
+/* Narrow screens (e.g., iPhone SE) */
 @media (max-width: 400px) {
     h1 {
         font-size: 2.2em;

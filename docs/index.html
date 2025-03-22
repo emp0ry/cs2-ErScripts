@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QY5L70VTTG"></script>
     <script>
@@ -10,7 +11,6 @@
     gtag('config', 'G-QY5L70VTTG');
     </script>
 
-    <meta charset="UTF-8">
     <meta name="language" content="en">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ErScripts - Safe, powerful scripts for Counter-Strike 2. Enhance your gameplay without memory interaction or injections. Valve-server friendly.">
@@ -20,13 +20,21 @@
 
     <!-- Security -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' https://fonts.googleapis.com;">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://www.googletagmanager.com;
+        style-src 'self' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self';
+        connect-src 'self' https://www.google-analytics.com;
+        frame-ancestors 'self';
+    ">
 
     <!-- Performance -->
     <meta name="theme-color" content="#4b0082">
 
     <!-- Apple -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Open Graph / Facebook -->
@@ -34,7 +42,6 @@
     <meta property="og:url" content="https://emp0ry.github.io/ErScripts/">
     <meta property="og:title" content="ErScripts - Safe and Powerful Scripts for Counter-Strike 2">
     <meta property="og:description" content="Safe, powerful scripts for Counter-Strike 2. Enhance your gameplay without memory interaction or injections.">
-    <!-- <meta property="og:image" content="https://raw.githubusercontent.com/emp0ry/ErScripts/refs/heads/master/ErScripts/erscripts.ico"> -->
     <meta property="og:site_name" content="ErScripts">
 
     <!-- Twitter -->
@@ -42,13 +49,12 @@
     <meta name="twitter:url" content="https://emp0ry.github.io/ErScripts/">
     <meta name="twitter:title" content="ErScripts - Safe and Powerful Scripts for Counter-Strike 2">
     <meta name="twitter:description" content="Safe, powerful scripts for Counter-Strike 2. Enhance your gameplay without memory interaction or injections.">
-    <!-- <meta name="twitter:image" content="https://raw.githubusercontent.com/emp0ry/ErScripts/refs/heads/master/ErScripts/erscripts.ico"> -->
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://emp0ry.github.io/ErScripts/">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/emp0ry/ErScripts/refs/heads/master/ErScripts/erscripts.ico">
+    <!-- Favicon (assumes erscripts.ico is in repo root) -->
+    <link rel="icon" type="image/x-icon" href="/erscripts.ico">
 
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -74,30 +80,38 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <h1>ErScripts</h1>
-        <div class="about">
+    <header>
+        <div class="container">
+            <h1>ErScripts</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="about">
             <p><strong>ErScripts</strong> is a collection of scripts for <strong>Counter-Strike 2</strong>. No memory interaction or injections—fully safe for Valve servers.</p>
             <a href="https://github.com/emp0ry/ErScripts" class="btn" aria-label="Visit the ErScripts repository on GitHub">Visit the Repository</a>
-            <a href="/" class="btn back-to-hub" aria-label="Back to emp0ry's Hub">Back to Hub</a>
-        </div>
+            <a href="https://emp0ry.github.io/" class="btn back-to-hub" aria-label="Back to emp0ry's Hub">Back to Hub</a>
+        </section>
 
-        <h2>Featured Scripts</h2>
-        <div class="features">
-            <div class="feature-card">
-                <h3>Automation Tools</h3>
-                <p>Streamline repetitive tasks to save time and effort.</p>
+        <section>
+            <h2>Featured Scripts</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Automation Tools</h3>
+                    <p>Streamline repetitive tasks to save time and effort.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Utility Helpers</h3>
+                    <p>Small, powerful tools to boost your gaming experience.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Custom Solutions</h3>
+                    <p>Tailored scripts for unique CS2 challenges.</p>
+                </div>
             </div>
-            <div class="feature-card">
-                <h3>Utility Helpers</h3>
-                <p>Small, powerful tools to boost your gaming experience.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Custom Solutions</h3>
-                <p>Tailored scripts for unique CS2 challenges.</p>
-            </div>
-        </div>
-    </div>
+        </section>
+    </main>
+
     <footer>
         <p>© 2025 <a href="https://github.com/emp0ry/" aria-label="Visit emp0ry's GitHub profile">emp0ry</a></p>
     </footer>
