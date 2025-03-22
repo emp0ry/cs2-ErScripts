@@ -98,14 +98,19 @@ p {
 
 footer {
     text-align: center;
-    padding: 20px;
+    padding: 15px;
     font-size: 0.9em;
     background: rgba(47, 0, 87, 0.5);
     width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+    color: #fff;
 }
 
 footer a {
-    color: #9b30ff; /* Matching old Github color */
+    color: #9b30ff;
     text-decoration: none;
 }
 
