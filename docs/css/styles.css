@@ -53,6 +53,8 @@ p {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    white-space: nowrap;
+    text-align: center;
 }
 
 .btn:hover {
@@ -70,13 +72,18 @@ p {
     padding: 20px;
     border-radius: 15px;
     margin-bottom: 40px;
-    -webkit-backdrop-filter: blur(12px); /* Safari support */
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
 }
 
 .about .btn.back-to-hub {
-    float: right;
+    float: none;
 }
 
 .features {
@@ -92,7 +99,7 @@ p {
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease;
-    -webkit-backdrop-filter: blur(12px); /* Safari support */
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
 }
 
@@ -110,7 +117,9 @@ footer {
     padding: 15px;
     font-size: 0.9em;
     background: rgba(47, 0, 87, 0.5);
-    width: 100%;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
     box-sizing: border-box;
     color: #fff;
     margin-top: auto;
@@ -143,9 +152,15 @@ footer a:hover {
     p {
         font-size: 1em;
     }
+    .about {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
     .btn {
-        padding: 12px 25px;
-        font-size: 1em;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
     }
     .container {
         padding: 20px 10px;
@@ -166,8 +181,12 @@ footer a:hover {
     p {
         font-size: 0.9em;
     }
+    .about {
+        padding: 15px;
+    }
     .btn {
-        padding: 10px 20px;
+        width: 100%;
+        text-align: center;
     }
     .container {
         padding: 15px 5px;
