@@ -24,11 +24,13 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com;
+        script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' https://github.githubassets.com;
         connect-src 'self' https://www.google-analytics.com;
+        frame-ancestors 'self';
+        upgrade-insecure-requests;
     ">
 
     <!-- Performance -->
@@ -45,7 +47,6 @@
     <meta property="og:description" content="Safe, powerful scripts for Counter-Strike 2. Enhance your gameplay without memory interaction or injections.">
     <meta property="og:site_name" content="ErScripts">
     <meta property="og:locale" content="en_US">
-    <meta property="og:type" content="website">
     <!-- <meta property="og:image" content="assets/preview.png"> -->
 
     <!-- Twitter -->
