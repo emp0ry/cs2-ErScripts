@@ -132,7 +132,7 @@ void Overlay::Menu() noexcept {
 
     if (ImGui::BeginTable("Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
         AutoAcceptMenu();
-        TriggerMenu();
+        //TriggerMenu();
         BombTimerMenu();
         SniperCrosshairMenu();
         RGBCrosshairMenu();

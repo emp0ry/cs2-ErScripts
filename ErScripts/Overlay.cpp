@@ -125,7 +125,7 @@ void Overlay::OverlayLoop() noexcept {
 
 	menu_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 16.f, nullptr, small_range);
 	arial_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 32.f, nullptr, full_range);
-	bold_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/unispace bd.ttf", 32.f, nullptr, small_range);
+	bold_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/ariblk.ttf", 32.f, nullptr, small_range);
 	//weapon_font = io.Fonts->AddFontFromMemoryTTF(&shell_weapon_font, sizeof(shell_weapon_font), 32.f);
 
 	// Setup Dear ImGui style
