@@ -25,7 +25,7 @@ Here’s what ErScripts brings to your arsenal:
 | Feature               | Description                                                                 |
 |-----------------------|-----------------------------------------------------------------------------|
 | **Auto Accept**       | Automatically clicks "Accept" when a match is found.                        |
-| **Pixel Trigger**     | Fires when the center-screen color changes (e.g., spotting enemies).        |
+| ~~**Pixel Trigger**~~ | ~~Fires when the center-screen color changes (e.g., spotting enemies).~~    |
 | **Sniper Crosshair**  | Custom crosshair overlay for snipers, synced with your crosshair settings.  |
 | **Bomb Timer**        | Real-time bomb countdown with defuse kit alerts.                            |
 | **RGB Crosshair**     | Adds a smooth gradient effect to your crosshair.                            |
