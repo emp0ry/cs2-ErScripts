@@ -269,16 +269,19 @@ std::wstring SteamTools::parseLaunchOptions(const std::wstring& filePath, std::s
                 }
             }
 
-            std::wsmatch match;
-            if (std::regex_search(line, match, launchOptionsRegex)) {
-                file.close();
-                return match[1].str();
+            // Only match LaunchOptions when at depth 1 (main app section)
+            if (braceDepth == 1) {
+                std::wsmatch match;
+                if (std::regex_search(line, match, launchOptionsRegex)) {
+                    file.close();
+                    return match[1].str();
+                }
             }
         }
     }
 
     file.close();
-        return L"";
+    return L"";
 }
 
 std::optional<SteamTools::Crosshair> SteamTools::getCrosshairSettings(std::string_view appId) {
