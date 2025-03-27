@@ -49,7 +49,7 @@ Here’s what *ErScripts* offers:
 | **Kill Say**          | Sends a custom chat message after kills.                                    |
 | **Kill Sound**        | Plays a sound on kills for extra flair.                                     |
 | **Round Start Alert** | Sounds an alert if a round begins while you’re tabbed out.                  |
-| **Auto Stop**         | Press the opposite key for a auto stop.                                     |
+| **Auto Stop**         | Press the opposite key for an auto stop.                                    |
 | **Watermark**         | Shows ping, time, and game info as an overlay.                              |
 | **Capture Bypass**    | Hides the overlay from recordings/streams.                                  |
 | **FPS Limiter**       | Caps overlay FPS for smoother performance.                                  |
