@@ -33,16 +33,53 @@ inline void PressAndRelease(char key, std::vector<int>& recentDelays) {
     ErScripts::Keyboard(key, false, false);
 }
 
-void ErScripts::SnapTap() {
+//bool curMenuState = (GetAsyncKeyState(VK_INSERT) & 0x8000) != 0;
+//
+//// Check if key state changed from not pressed to pressed
+//if (curMenuState && !prevMenuState) {
+//    globals::menuState = !globals::menuState;
+//
+//    if (globals::menuState && ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
+//        showChat = true;
+//        ErScripts::Keyboard(0x55, true, false); // U
+//        std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 100 + 16)));
+//        ErScripts::Keyboard(0x55, false, false);
+//    }
+//    else if (showChat) {
+//        showChat = false;
+//        ErScripts::Keyboard(VK_ESCAPE, true, false); // ESCAPE
+//        std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 100 + 16)));
+//        ErScripts::Keyboard(VK_ESCAPE, false, false);
+//    }
+//}
+//
+//prevMenuState = curMenuState;
+
+void ErScripts::AutoStop() {
     std::thread([this]() {
         std::vector<int> recentDelays;
         bool aWasPressed = false;
         bool dWasPressed = false;
 
+        bool state = false;
+        bool statePrev = false;
+
         while (!globals::finish) {
-            if (cfg->snapTapState) {
+            if (cfg->autoStopState) {
                 if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
-                    if (GetAsyncKeyState(cfg->snapTapBind) & 0x8000) {
+                    bool bindState = GetAsyncKeyState(cfg->autoStopBind) & 0x8000;
+
+                    if (cfg->autoStopToggleState) {
+                        if (bindState && !statePrev) {
+                            state = !state;
+                        }
+                    }
+                    else {
+                        state = bindState;
+                    }
+                    statePrev = bindState;
+
+                    if (state) {
                         bool aPressed = GetAsyncKeyState('A') & 0x8000;
                         bool dPressed = GetAsyncKeyState('D') & 0x8000;
 

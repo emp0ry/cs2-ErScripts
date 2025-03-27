@@ -66,7 +66,7 @@ private:
 	void KillSayMenu() noexcept;
 	void KillSoundMenu() noexcept;
 	void RoundStartAlertMenu() noexcept;
-	void SnapTapMenu() noexcept;
+	void AutoStopMenu() noexcept;
 	void GradientManagerMenu() noexcept;
 	void WatermarkMenu() noexcept;
 	void FPSLimitMenu() noexcept;

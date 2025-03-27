@@ -56,7 +56,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
@@ -164,7 +164,7 @@
     <ClCompile Include="Updater.cpp">
       <Filter>Functions\Updater</Filter>
     </ClCompile>
-    <ClCompile Include="SnapTap.cpp">
+    <ClCompile Include="AutoStop.cpp">
       <Filter>Functions\Functions</Filter>
     </ClCompile>
   </ItemGroup>

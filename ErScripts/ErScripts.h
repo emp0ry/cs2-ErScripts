@@ -31,7 +31,7 @@ public:
 	void KillSay();
 	void KillSound();
 	void RoundStartAlert();
-	void SnapTap();
+	void AutoStop();
 private:
 	static HWND hwnd;
 

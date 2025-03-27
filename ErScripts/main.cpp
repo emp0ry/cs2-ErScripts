@@ -7,7 +7,7 @@
 int main() {
     if (!IsDebuggerPresent()) {
         /* Auto updater */
-        Updater updater("1.1.0", "emp0ry", "cs2-ErScripts", "ErScripts");
+        Updater updater("1.1.1", "emp0ry", "cs2-ErScripts", "ErScripts");
         if (updater.checkAndUpdate())
             return 0;
 
@@ -62,7 +62,7 @@ int main() {
     es.KillSay();
     es.KillSound();
     es.RoundStartAlert();
-    es.SnapTap();
+    es.AutoStop();
 
     while (!globals::finish) {
         if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;

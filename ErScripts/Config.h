@@ -81,9 +81,10 @@ public:
     int roundStartAlertVolume{ 100 };
     std::string roundStartAlertFileName{ "" };
 
-    /* Snap Tap */
-    bool snapTapState{ false };
-    int snapTapBind{ 0 };
+    /* Auto Stop */
+    bool autoStopState{ false };
+    int autoStopBind{ 0 };
+    bool autoStopToggleState{ false };
 
     /* Watermark */
 	bool watermarkState{ true };
