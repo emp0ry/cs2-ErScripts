@@ -33,28 +33,6 @@ inline void PressAndRelease(char key, std::vector<int>& recentDelays) {
     ErScripts::Keyboard(key, false, false);
 }
 
-//bool curMenuState = (GetAsyncKeyState(VK_INSERT) & 0x8000) != 0;
-//
-//// Check if key state changed from not pressed to pressed
-//if (curMenuState && !prevMenuState) {
-//    globals::menuState = !globals::menuState;
-//
-//    if (globals::menuState && ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
-//        showChat = true;
-//        ErScripts::Keyboard(0x55, true, false); // U
-//        std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 100 + 16)));
-//        ErScripts::Keyboard(0x55, false, false);
-//    }
-//    else if (showChat) {
-//        showChat = false;
-//        ErScripts::Keyboard(VK_ESCAPE, true, false); // ESCAPE
-//        std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 100 + 16)));
-//        ErScripts::Keyboard(VK_ESCAPE, false, false);
-//    }
-//}
-//
-//prevMenuState = curMenuState;
-
 void ErScripts::AutoStop() {
     std::thread([this]() {
         std::vector<int> recentDelays;
