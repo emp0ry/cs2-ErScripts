@@ -19,8 +19,8 @@ inline int GenerateUniqueRandomDelay(std::vector<int>& recentDelays, int minDela
 }
 
 inline void PressAndRelease(char key, std::vector<int>& recentDelays) {
-    int minDelay = 0;       // Min delay in ms
-    int maxDelay = 50;      // Max delay in ms
+    int minDelay = 5;       // Min delay in ms
+    int maxDelay = 30;      // Max delay in ms
     int baseTimeout = 115;  // Base timeout (115)
 
     int delay = GenerateUniqueRandomDelay(recentDelays, minDelay, maxDelay);

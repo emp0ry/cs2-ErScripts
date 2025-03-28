@@ -60,7 +60,7 @@ Here’s what *ErScripts* offers:
 
 Get started easily:  
 
-1. **Download**: Grab the latest release from [GitHub Releases](https://github.com/emp0ry/ErScripts/releases).  
+1. **Download**: Grab the latest release from [GitHub Releases](https://github.com/emp0ry/cs2-ErScripts/releases).  
 2. **Set Launch Options**: In Steam, add `-conclearlog -condebug +bind scancode104 exec erscripts1` to CS2’s launch options.  
 3. **First Run**: Launch `ErScripts.exe` *before* CS2 (afterward, it’s fine to start with CS2 running).  
 4. **Play**: Open CS2, config settings in the ErScripts menu, and enjoy!  
@@ -173,7 +173,7 @@ Released under the [MIT License](LICENSE.txt). Feel free to use, modify, and sha
 ## 🌟 Get Involved  
 
 Spotted a bug? Have a feature idea?  
-- File an [Issue](https://github.com/emp0ry/ErScripts/issues) or submit a [Pull Request](https://github.com/emp0ry/ErScripts/pulls).  
+- File an [Issue](https://github.com/emp0ry/cs2-ErScripts/issues) or submit a [Pull Request](https://github.com/emp0ry/cs2-ErScripts/pulls).  
 - Join the community and let’s elevate CS2 together!  
 
 ---
