@@ -1,4 +1,7 @@
 # ErScripts 🎮  
+![GitHub release](https://img.shields.io/github/v/release/emp0ry/cs2-ErScripts?label=Latest%20Version)
+![License](https://img.shields.io/github/license/emp0ry/cs2-ErScripts)
+
 ### Enhance Your *Counter-Strike 2* Experience  
 
 **ErScripts** is a lightweight, open-source tool crafted for *Counter-Strike 2 (CS2)* fans to personalize and streamline their gameplay. It operates externally—never modifying game memory or files—using only what CS2 provides through console commands, Game State Integration (GSI), and log files.
