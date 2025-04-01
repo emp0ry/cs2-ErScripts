@@ -105,6 +105,10 @@ public:
     /* Vsync */
     bool vsyncState{ false };
 
+    /* ErScripts Binds */
+	int erScriptsMenuBind{ VK_INSERT };
+	int erScriptsExitBind{ VK_END };
+
 private:
     template <typename T>
     void read(const nlohmann::json& src, T& dest) {

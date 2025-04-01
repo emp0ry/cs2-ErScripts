@@ -83,7 +83,7 @@ private:
     static std::wstring getSteamConfigPath();
 
     // Parse VDF content into a map of app IDs to their base paths
-    static std::map<std::string, std::wstring> parseVdfContent(std::wstring_view content);
+    static std::map<std::string, std::vector<std::wstring>> parseVdfContent(std::wstring_view content);
 
     // Parse launch options from a VDF file for a specific AppID
     static std::wstring parseLaunchOptions(const std::wstring& filePath, std::string_view appId);

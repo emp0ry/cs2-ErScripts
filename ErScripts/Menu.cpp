@@ -5,15 +5,17 @@ const char* GetKeyName(int virtualKeyCode) {
     static char keyName[128] = { 0 };
 
     switch (virtualKeyCode) {
-        case VK_LBUTTON:  return "LMOUSE";
-        case VK_RBUTTON:  return "RMOUSE";
-        case VK_MBUTTON:  return "MOUSE3";
-        case VK_XBUTTON1: return "MOUSE4";
-        case VK_XBUTTON2: return "MOUSE5";
-        case VK_PRIOR:
-        case VK_NEXT:
-        case VK_END:
-        case VK_HOME:
+        case VK_LBUTTON:    return "LMOUSE";
+        case VK_RBUTTON:    return "RMOUSE";
+        case VK_MBUTTON:    return "MOUSE3";
+        case VK_XBUTTON1:   return "MOUSE4";
+        case VK_XBUTTON2:   return "MOUSE5";
+		case VK_END:        return "END";
+		case VK_HOME:       return "HOME";
+		case VK_INSERT:     return "INSERT";
+		case VK_DELETE:     return "DELETE";
+		case VK_PRIOR:      return "PAGE UP";
+		case VK_NEXT:       return "PAGE DOWN";
         case VK_LEFT:
         case VK_UP:
         case VK_RIGHT:
@@ -22,8 +24,6 @@ const char* GetKeyName(int virtualKeyCode) {
         case VK_PRINT:
         case VK_EXECUTE:
         case VK_SNAPSHOT:
-        case VK_INSERT:
-        case VK_DELETE:
         case VK_HELP:
         case VK_LWIN:
         case VK_RWIN:
@@ -68,6 +68,10 @@ inline const char* selfKickKeyName = GetKeyName(cfg->selfKickBind);
 inline bool selfKickButtonState = false;
 inline const char* autoStopKeyName = GetKeyName(cfg->autoStopBind);
 inline bool autoStopButtonState = false;
+inline const char* erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
+inline bool erScriptsMenuButtonState = false;
+inline const char* erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
+inline bool erScriptsExitButtonState = false;
 inline char killSayText[256]{};
 inline char killSoundFileName[256]{};
 inline char roundStartAlertFileName[256]{};
@@ -168,6 +172,8 @@ void Overlay::Menu() noexcept {
         dropBombKeyName = GetKeyName(cfg->dropBombBind);
         selfKickKeyName = GetKeyName(cfg->selfKickBind);
         autoStopKeyName = GetKeyName(cfg->autoStopBind);
+        erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
+        erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
 
         if (ImGui::FindWindowByName(" Bomb Timer"))
         ImGui::SetWindowPos(" Bomb Timer", { cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
@@ -493,6 +499,39 @@ void Overlay::CustomBindsMenu() noexcept {
                 selfKickButtonState = !selfKickButtonState;
             }
             Hotkey(&selfKickButtonState, &selfKickKeyName, &cfg->selfKickBind);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            /* ErScripts Binds */
+			/* Menu */
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Menu Bind ");
+            ImGui::TableSetColumnIndex(1);
+            erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
+            if (ImGui::Button(std::format("{}##MenuBind", erScriptsMenuKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
+                erScriptsMenuButtonState = !erScriptsMenuButtonState;
+            }
+            Hotkey(&erScriptsMenuButtonState, &erScriptsMenuKeyName, &cfg->erScriptsMenuBind);
+
+            /* Exit */
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Exit Bind ");
+            ImGui::TableSetColumnIndex(1);
+            erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
+            if (ImGui::Button(std::format("{}##ExitBind", erScriptsExitKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
+                erScriptsExitButtonState = !erScriptsExitButtonState;
+            }
+            Hotkey(&erScriptsExitButtonState, &erScriptsExitKeyName, &cfg->erScriptsExitBind);
 
             ImGui::EndTable();
         }

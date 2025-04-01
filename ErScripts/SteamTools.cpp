@@ -124,36 +124,45 @@ std::wstring SteamTools::trim(std::wstring_view str) {
     return std::wstring(str.substr(first, last - first + 1));
 }
 
-std::map<std::string, std::wstring> SteamTools::parseVdfContent(std::wstring_view content) {
-    std::map<std::string, std::wstring> appPaths;
+std::map<std::string, std::vector<std::wstring>> SteamTools::parseVdfContent(std::wstring_view content) {
+    std::map<std::string, std::vector<std::wstring>> appPaths;
     std::wistringstream iss(content.data());
     std::wstring line, currentPath;
-    bool inAppsSection = false;
     bool inLibraryFolder = false;
+    bool inAppsSection = false;
 
     while (std::getline(iss, line)) {
-        line = trim(line);
+        line.erase(0, line.find_first_not_of(L" \t")); // Trim left
+        line.erase(line.find_last_not_of(L" \t") + 1); // Trim right
         if (line.empty()) continue;
 
-        if (line.starts_with(L"\"") && line[1] >= L'0' && line[1] <= L'9' && line[2] == L'"') {
+        if (line.size() >= 3 && line[0] == L'"' && iswdigit(line[1]) && line[2] == L'"') {
             inLibraryFolder = true;
+            currentPath.clear();
             continue;
         }
 
         if (inLibraryFolder && line == L"{") continue;
 
-        if (line.starts_with(L"\"path\"")) {
-            std::wistringstream lineStream(line);
-            std::wstring key, value;
-            if (!(lineStream >> std::quoted(key) >> std::quoted(value)) || key != L"path") {
-                throw VdfParseError("Invalid path line format");
+        if (inLibraryFolder && line.starts_with(L"\"path\"")) {
+            size_t start = line.find(L'"', 7);
+            size_t end = line.find(L'"', start + 1);
+            if (start == std::wstring::npos || end == std::wstring::npos) {
+                throw VdfParseError("Malformed path line: " + std::string(line.begin(), line.end()));
             }
-            currentPath = value;
-            std::replace(currentPath.begin(), currentPath.end(), L'\\', L'/');
+            currentPath = line.substr(start + 1, end - start - 1);
+            std::replace(currentPath.begin(), currentPath.end(), L'/', L'\\');
+            std::wstring normalizedPath;
+            for (size_t i = 0; i < currentPath.length(); ++i) {
+                if (i > 0 && currentPath[i] == L'\\' && currentPath[i - 1] == L'\\') continue;
+                normalizedPath += currentPath[i];
+            }
+            currentPath = normalizedPath;
             Logger::logSuccess(std::format(L"Found library path: {}", currentPath));
+            continue;
         }
 
-        if (line == L"\"apps\"") {
+        if (inLibraryFolder && line == L"\"apps\"") {
             inAppsSection = true;
             continue;
         }
@@ -165,62 +174,98 @@ std::map<std::string, std::wstring> SteamTools::parseVdfContent(std::wstring_vie
 
         if (inLibraryFolder && !inAppsSection && line == L"}") {
             inLibraryFolder = false;
-            currentPath.clear();
             continue;
         }
 
         if (inAppsSection && line.starts_with(L"\"")) {
-            std::wistringstream lineStream(line);
-            std::wstring wAppId, size;
-            if (!(lineStream >> std::quoted(wAppId) >> std::quoted(size))) {
-                throw VdfParseError("Invalid app entry format");
+            size_t appIdStart = line.find(L'"');
+            size_t appIdEnd = line.find(L'"', appIdStart + 1);
+            size_t sizeStart = line.find(L'"', appIdEnd + 1);
+            size_t sizeEnd = line.find(L'"', sizeStart + 1);
+            if (appIdEnd == std::wstring::npos || sizeEnd == std::wstring::npos) {
+                throw VdfParseError("Malformed app entry: " + std::string(line.begin(), line.end()));
             }
-            std::string appId(wAppId.begin(), wAppId.end()); // AppID remains ASCII
+
+            std::wstring wAppId = line.substr(appIdStart + 1, appIdEnd - appIdStart - 1);
+            std::string appId(wAppId.begin(), wAppId.end());
             if (!appId.empty() && !currentPath.empty()) {
-                appPaths[appId] = currentPath + L"/steamapps/common/";
-                //Logger::logSuccess(std::format(L"Found app {} at {}", wAppId, appPaths[appId]));
+                fs::path basePath = fs::path(currentPath) / L"steamapps" / L"common";
+                std::wstring normalizedPath = basePath.wstring();
+                std::replace(normalizedPath.begin(), normalizedPath.end(), L'/', L'\\');
+                std::wstring singleSlashPath;
+                for (size_t i = 0; i < normalizedPath.length(); ++i) {
+                    if (i > 0 && normalizedPath[i] == L'\\' && normalizedPath[i - 1] == L'\\') continue;
+                    singleSlashPath += normalizedPath[i];
+                }
+                appPaths[appId].push_back(singleSlashPath);
+                // Logger::logInfo(std::format(L"App {} potentially at: {}", wAppId, singleSlashPath));
             }
         }
     }
+
     return appPaths;
 }
 
 std::optional<std::wstring> SteamTools::getAppInstallPath(std::string_view appId, const GameConfig& config) {
     try {
-        auto steamPath = getSteamInstallPath();
-        auto vdfPath = fs::path(steamPath) / L"steamapps" / L"libraryfolders.vdf";
-        Logger::logInfo(std::format(L"Looking for VDF at: {}", vdfPath.wstring()));
+        std::wstring steamPath = getSteamInstallPath();
+        if (steamPath.empty()) {
+            Logger::logWarning(L"Could not determine Steam installation path");
+            return std::nullopt;
+        }
+        Logger::logSuccess(std::format(L"Steam install path from registry: {}", steamPath));
+
+        fs::path vdfPath = fs::path(steamPath) / L"steamapps" / L"libraryfolders.vdf";
+        std::wstring vdfPathStr = vdfPath.wstring();
+        std::replace(vdfPathStr.begin(), vdfPathStr.end(), L'/', L'\\');
+        Logger::logInfo(std::format(L"Looking for VDF at: {}", vdfPathStr));
 
         std::wifstream file(vdfPath);
         if (!file.is_open()) {
-            throw std::runtime_error("Failed to open VDF file: " + std::string(vdfPath.string().begin(), vdfPath.string().end()));
+            Logger::logWarning(L"Failed to open VDF file: " + vdfPathStr);
+            return std::nullopt;
         }
 
         std::wstringstream wss;
         wss << file.rdbuf();
         std::wstring content = wss.str();
-        Logger::logSuccess("Successfully read VDF file");
+        file.close();
+        Logger::logSuccess(L"Successfully read VDF file");
 
         auto appPaths = parseVdfContent(content);
-        auto it = appPaths.find(appId.data());
+        auto it = appPaths.find(std::string(appId));
         if (it == appPaths.end()) {
-            Logger::logWarning(std::format(L"AppID {} not found in libraryfolders.vdf", std::wstring(appId.begin(), appId.end())));
+			Logger::logWarning(std::format(L"AppID {} not found in VDF", std::wstring(appId.begin(), appId.end())));
             return std::nullopt;
         }
 
-        for (const auto& folder : config.possibleFolders) {
-            std::wstring fullPath = it->second + folder;
-            if (fs::exists(fullPath) && fs::is_directory(fullPath)) {
-                Logger::logSuccess(std::format(L"Found {} at: {}", std::wstring(appId.begin(), appId.end()), fullPath));
-                return fullPath;
+        const auto& potentialPaths = it->second;
+        for (const auto& basePath : potentialPaths) {
+            Logger::logInfo(std::format(L"Exploring library path: {}", basePath));
+            for (const auto& folder : config.possibleFolders) {
+                fs::path fullPath = fs::path(basePath) / folder;
+                std::wstring fullPathStr = fullPath.wstring();
+                std::replace(fullPathStr.begin(), fullPathStr.end(), L'/', L'\\');
+                Logger::logInfo(std::format(L"Checking: {}", fullPathStr));
+                if (fs::exists(fullPath)) {
+                    if (fs::is_directory(fullPath)) {
+                        Logger::logSuccess(std::format(L"Found {} at: {}",
+                            std::wstring(appId.begin(), appId.end()), fullPathStr));
+                        return fullPathStr;
+                    }
+                    else {
+                        Logger::logInfo(std::format(L"Path {} exists but is not a directory", fullPathStr));
+                    }
+                }
             }
         }
 
-        Logger::logWarning(std::format(L" Found AppID {} but couldn't verify any known folder", std::wstring(appId.begin(), appId.end())));
+        Logger::logWarning(std::format(L"AppID {} found in VDF but no valid installation folder located",
+            std::wstring(appId.begin(), appId.end())));
         return std::nullopt;
     }
     catch (const std::exception& e) {
-        Logger::logWarning(std::format(" Error: {}", e.what()));
+		Logger::logWarning(std::format("Error getting app install path: {}", e.what()));
         return std::nullopt;
     }
 }

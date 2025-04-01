@@ -66,9 +66,11 @@ Get started easily:
 1. **Download**: Grab the latest release from [GitHub Releases](https://github.com/emp0ry/cs2-ErScripts/releases).  
 2. **Set Launch Options**: In Steam, add `-conclearlog -condebug +bind scancode104 exec erscripts1` to CS2’s launch options.  
 3. **First Run**: Launch `ErScripts.exe` *before* CS2 (afterward, it’s fine to start with CS2 running).  
-4. **Play**: Open CS2, config settings in the ErScripts menu (*press Insert to open or hide the menu*), and enjoy!  
+4. **Play**: Open CS2, config settings in the ErScripts menu (*press Insert to show/hide the menu*), and enjoy!  
 5. **Exit**: Close via the "X" button in the menu or press the "End" key.  
-6. **Fullscreen Mode**: To play in fullscreen mode, right-click `cs2.exe`, go to **Properties → Compatibility**, and **uncheck** the *Disable fullscreen optimizations* box.  
+6. **Fullscreen Mode**: To play in fullscreen mode, right-click `cs2.exe`, go to **Properties → Compatibility**, and **uncheck** the *Disable fullscreen optimizations*.  
+
+You can change the key bindings for opening the menu and exiting the program in **Menu → Custom Binds**.  
 
 ---
 

@@ -7,7 +7,7 @@
 int main() {
     if (!IsDebuggerPresent()) {
         /* Auto updater */
-        Updater updater("1.1.1", "emp0ry", "cs2-ErScripts", "ErScripts");
+        Updater updater("1.1.2", "emp0ry", "cs2-ErScripts", "ErScripts");
         if (updater.checkAndUpdate())
             return 0;
 
@@ -65,8 +65,26 @@ int main() {
     es.AutoStop();
 
     while (!globals::finish) {
-        if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
-        
+        static int prevExitBind = cfg->erScriptsExitBind;
+        static std::chrono::steady_clock::time_point changeTime;
+        static bool isDelayActive = false;
+
+        if (prevExitBind != cfg->erScriptsExitBind) {
+            prevExitBind = cfg->erScriptsExitBind;
+            changeTime = std::chrono::steady_clock::now();
+            isDelayActive = true;
+        }
+        else if (isDelayActive) {
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - changeTime).count();
+            if (elapsed >= 2000) {
+                isDelayActive = false;
+            }
+        }
+        else {
+            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000) globals::finish = true;
+        }
+
         /* Update Ping */
         if (cfg->watermarkState) {
             if (ErScripts::GetWindowState && ErScripts::GetCursorState()) {
@@ -77,7 +95,7 @@ int main() {
 
                 if (elapsed.count() >= cfg->watermarkPingUpdateRate) {
                     ErScripts::CommandsSender(5, "sys_info");
-                    lastUpdate = now; // Reset the timer
+                    lastUpdate = now;
                 }
             }
         }

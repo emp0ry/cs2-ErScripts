@@ -104,6 +104,10 @@ void Config::load(const std::string& filename) {
     read(json["gradient-manager"]["saturation"], gradient.saturation);
     read(json["gradient-manager"]["value"], gradient.value);
 
+	/* ErScripts Binds */
+	read(json["er-scripts"]["menu"]["bind"], erScriptsMenuBind);
+	read(json["er-scripts"]["exit"]["bind"], erScriptsExitBind);
+
     /* Vsync */
     read(json["vsync"]["state"], vsyncState);
 }
@@ -207,6 +211,10 @@ void Config::save(const std::string& filename) const {
 
     /* Vsync */
     json["vsync"]["state"] = vsyncState;
+
+    /* ErScripts Binds */
+	json["er-scripts"]["menu"]["bind"] = erScriptsMenuBind;
+	json["er-scripts"]["exit"]["bind"] = erScriptsExitBind;
 
     if (!std::filesystem::exists("configs"))
         std::filesystem::create_directory("configs");

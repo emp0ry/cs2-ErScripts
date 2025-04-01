@@ -349,8 +349,26 @@ void ErScripts::InitBinds() {
     const auto timeoutDuration = std::chrono::seconds(10);
     bool timerStart = false;
 
+    int prevExitBind = cfg->erScriptsExitBind;
+    std::chrono::steady_clock::time_point changeTime;
+    bool isDelayActive = false;
+
     while (!globals::finish) {
-        if (GetAsyncKeyState(VK_END) & 0x8000) globals::finish = true;
+        if (prevExitBind != cfg->erScriptsExitBind) {
+            prevExitBind = cfg->erScriptsExitBind;
+            changeTime = std::chrono::steady_clock::now();
+            isDelayActive = true;
+        }
+        else if (isDelayActive) {
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - changeTime).count();
+            if (elapsed >= 2000) {
+                isDelayActive = false;
+            }
+        }
+        else {
+            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000) globals::finish = true;
+        }
 
         if (GetWindowState() && GetCursorState() && globals::localPlayerIsActivityPlaying) {
             std::wstring cfg = config + +L"1.cfg";

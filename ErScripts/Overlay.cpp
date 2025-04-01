@@ -332,6 +332,11 @@ void Overlay::Handler() noexcept {
 	bool inCaptureBypass = !cfg->captureBypassState;
 	int width_old, height_old, posX_old, posY_old;
 
+	bool curMenuState = (GetAsyncKeyState(cfg->erScriptsMenuBind) & 0x8000) != 0;
+	int prevMenuBind = cfg->erScriptsMenuBind;
+	std::chrono::steady_clock::time_point changeTime;
+	bool isDelayActive = false;
+
 	ErScripts::GetWindowInfo(width_old, height_old, posX_old, posY_old);
 
 	CleanupRenderTarget();
@@ -342,8 +347,21 @@ void Overlay::Handler() noexcept {
 	RegisterRawInput(window_handle);
 
 	while (!globals::finish) {
-		// Toggle menu
-		bool curMenuState = (GetAsyncKeyState(VK_INSERT) & 0x8000) != 0;
+		if (prevMenuBind != cfg->erScriptsMenuBind) {
+			prevMenuBind = cfg->erScriptsMenuBind;
+			changeTime = std::chrono::steady_clock::now();
+			isDelayActive = true;
+		}
+		else if (isDelayActive) {
+			auto now = std::chrono::steady_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - changeTime).count();
+			if (elapsed >= 1000) {
+				isDelayActive = false;
+			}
+		}
+		else {
+			curMenuState = (GetAsyncKeyState(cfg->erScriptsMenuBind) & 0x8000) != 0;
+		}
 
 		// Check if key state changed from not pressed to pressed
 		if (curMenuState && !prevMenuState) {
