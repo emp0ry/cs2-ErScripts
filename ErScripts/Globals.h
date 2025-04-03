@@ -14,7 +14,7 @@ namespace globals {
 	extern double bombTime;
 	extern bool knifeState;
 	extern bool pistolState;
-	extern bool revolverState;
+	extern bool revolverState, cz75aState;
 	extern bool roundStartState;
 	extern bool isBombInWeapons;
 	extern int localPlayerKills, localPlayerSlotNumber;

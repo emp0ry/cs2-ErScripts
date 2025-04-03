@@ -70,27 +70,26 @@ void LimitFPS(int fpsLimit) {
 
 void Overlay::OverlayLoop() noexcept {
 	// Create application window
-	WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandleW(nullptr), nullptr, nullptr, nullptr, nullptr, L"GDI+ Hook Window Class", nullptr };
-	::RegisterClassExW(&wc);
-	window_handle = ::CreateWindowW(wc.lpszClassName, L"GDI+ Window (Lightshot.exe)", WS_POPUP, 0, 0, globals::width, globals::height, nullptr, nullptr, wc.hInstance, nullptr);
+	WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"GDI+ Hook Window Class", nullptr };
+	::RegisterClassEx(&wc);
+	window_handle = ::CreateWindow(wc.lpszClassName, L"GDI+ Window (Lightshot.exe)", WS_POPUP, 0, 0, globals::width, globals::height, nullptr, nullptr, wc.hInstance, nullptr);
+
+	SetWindowLongPtr(window_handle, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW);
+	SetLayeredWindowAttributes(window_handle, 0, 255, LWA_ALPHA);
+	MARGINS margins = { -1, -1, -1, -1 };
+	DwmExtendFrameIntoClientArea(window_handle, &margins);
 
 	// Initialize Direct3D
 	if (!CreateDeviceD3D()) {
 		CleanupDeviceD3D();
-		::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+		::UnregisterClass(wc.lpszClassName, wc.hInstance);
 		globals::finish = true;
 		return;
 	}
 
-	// Show the window
-	::ShowWindow(window_handle, SW_SHOW);
+	//::ShowWindow(window_handle, SW_SHOW);
+	SetWindowPos(window_handle, HWND_TOPMOST, globals::posX, globals::posY, globals::width, globals::height, SWP_SHOWWINDOW | SWP_NOACTIVATE);
 	::UpdateWindow(window_handle);
-
-	MARGINS margins = { -1, -1, -1, -1 };
-	DwmExtendFrameIntoClientArea(window_handle, &margins);
-	SetWindowLongPtrW(window_handle, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW);
-	SetLayeredWindowAttributes(window_handle, 0, 255, LWA_ALPHA);
-	//SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -124,9 +123,22 @@ void Overlay::OverlayLoop() noexcept {
 	};
 
 	menu_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 16.f, nullptr, small_range);
+	if (menu_font == nullptr) {
+		Logger::logWarning("Failed to load font arial.ttf, falling back to default font");
+		menu_font = io.Fonts->AddFontDefault();
+	}
+
 	arial_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 32.f, nullptr, full_range);
+	if (arial_font == nullptr) {
+		Logger::logWarning("Failed to load font arial.ttf, falling back to default font");
+		arial_font = io.Fonts->AddFontDefault();
+	}
+
 	bold_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/ariblk.ttf", 32.f, nullptr, small_range);
-	//weapon_font = io.Fonts->AddFontFromMemoryTTF(&shell_weapon_font, sizeof(shell_weapon_font), 32.f);
+	if (bold_font == nullptr) {
+		Logger::logWarning("Failed to load font ariblk.ttf, falling back to default font");
+		bold_font = io.Fonts->AddFontDefault();
+	}
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -138,14 +150,17 @@ void Overlay::OverlayLoop() noexcept {
 	ErScripts::GetWindowInfo(globals::width, globals::height, globals::posX, globals::posY);
 
 	CleanupRenderTarget();
-	SetWindowPos(window_handle, (HWND)-1, globals::posX, globals::posY, globals::width, globals::height, 0);
 	g_pSwapChain->ResizeBuffers(0, globals::width, globals::height, DXGI_FORMAT_UNKNOWN, 0);
 	CreateRenderTarget();
 
 	std::thread(&Overlay::Handler, this).detach();
 
 	const float clear_color[4]{ 0 };
-	//UINT prevWidth = globals::width, prevHeight = globals::height;
+
+	// Disable navigation keys (Ctrtl + Tab)
+	ImGuiContext& g = *GImGui;
+	g.ConfigNavWindowingKeyNext = 0;
+	g.ConfigNavWindowingKeyPrev = 0;
 
 	// Main loop
 	while (!globals::finish) {
@@ -172,17 +187,6 @@ void Overlay::OverlayLoop() noexcept {
 		}
 		g_SwapChainOccluded = false;
 
-		/*if (prevWidth != globals::width || prevHeight != globals::height) {
-			CleanupRenderTarget();
-			SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, globals::width, globals::height, SWP_NOMOVE | SWP_NOSIZE);
-			g_pSwapChain->ResizeBuffers(0, globals::width, globals::height, DXGI_FORMAT_UNKNOWN, 0);
-
-			prevWidth = globals::width;
-			prevHeight = globals::height;
-
-			CreateRenderTarget();
-		}*/
-
 		// Start the Dear ImGui frame
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -196,18 +200,6 @@ void Overlay::OverlayLoop() noexcept {
 
 		if (ErScripts::GetWindowState()) {
 			Overlay::Render();
-
-			/*static bool prevMenuState = false;
-			if (globals::menuState != prevMenuState) {
-				prevMenuState = globals::menuState;
-
-				if (globals::menuState) {
-					SetWindowLongPtrW(window_handle, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
-				}
-				else {
-					SetWindowLongPtrW(window_handle, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
-				}
-			}*/
 
 			if (globals::menuState) Overlay::Menu();
 		}
@@ -224,7 +216,7 @@ void Overlay::OverlayLoop() noexcept {
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		// Present
-		HRESULT hr = g_pSwapChain->Present(/*cfg->vsyncState*/ 0, 0);
+		HRESULT hr = g_pSwapChain->Present(cfg->vsyncState, 0);
 		g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
 	}
 

@@ -77,6 +77,11 @@ inline char killSoundFileName[256]{};
 inline char roundStartAlertFileName[256]{};
 
 void Overlay::Menu() noexcept {
+	// Get the current window title
+    char window_title[32];
+    if (!GetConsoleTitleA(window_title, sizeof(window_title)))
+        window_title[0] = '\0';
+
     // Custom style
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);                           // Rounded window corners
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);                             // Rounded frames (slider background)
@@ -98,20 +103,16 @@ void Overlay::Menu() noexcept {
     ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.0f, 0.6f, 1.2f, 1.0f));   // Brighter blue when active
 
     ImGui::PushFont(menu_font);
-    ImGui::Begin("  ErScripts", &isFinish, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin(std::format("  {}", window_title).c_str(), &isFinish, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
 
     static ImVec2 menu_size = { 213.f, 272.f };
 
     static bool one_time = true;
     if (one_time) {
         ImGui::SetWindowSize(menu_size);
-        //menu_size = ImGui::GetWindowSize();
-        //Logger::logInfo(std::format("Menu Size: {} x {}", menu_size.x, menu_size.y));
 
-        //if (menu_size.x > 150 && menu_size.y > 150) {
-        ImGui::SetWindowPos("  ErScripts", { globals::width / 2 - menu_size.x / 2, globals::height / 2 - menu_size.y / 2 });
+        ImGui::SetWindowPos(std::format("  {}", window_title).c_str(), {globals::width / 2 - menu_size.x / 2, globals::height / 2 - menu_size.y / 2});
         one_time = false;
-        //}
     }
 
     // Clamp the window position to stay within screen boundaries
@@ -131,7 +132,7 @@ void Overlay::Menu() noexcept {
     }
 
     if ((menu_pos.x != ImGui::GetWindowPos().x || menu_pos.y != ImGui::GetWindowPos().y) && (GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
-        ImGui::SetWindowPos("  ErScripts", menu_pos);
+        ImGui::SetWindowPos(std::format("  {}", window_title).c_str(), menu_pos);
     }
 
     if (ImGui::BeginTable("Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
@@ -719,10 +720,18 @@ void Overlay::FPSLimitMenu() noexcept {
         if (ImGui::BeginTable("FPS Limiter Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+            ImGui::Text("VSync ");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Checkbox("##VSync", &cfg->vsyncState);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
             ImGui::Text("FPS Limit ");
             ImGui::TableSetColumnIndex(1);
             ImGui::PushItemWidth(100);
+            if (cfg->vsyncState) ImGui::BeginDisabled();
             ImGui::SliderInt("##FpsLimiterSlide", &cfg->fpsLimiter, 60, 500, "%d fps");
+            if (cfg->vsyncState) ImGui::EndDisabled();
             ImGui::PopItemWidth();
 
             ImGui::EndTable();

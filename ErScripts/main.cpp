@@ -4,10 +4,12 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
+#define APP_VERSION "1.1.3"
+
 int main() {
     if (!IsDebuggerPresent()) {
         /* Auto updater */
-        Updater updater("1.1.2", "emp0ry", "cs2-ErScripts", "ErScripts");
+        Updater updater(APP_VERSION, "emp0ry", "cs2-ErScripts", "ErScripts");
         if (updater.checkAndUpdate())
             return 0;
 
@@ -29,6 +31,8 @@ int main() {
         MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
         return -1;
     }
+
+    SetConsoleTitleA(std::format("ErScripts {}", APP_VERSION).c_str());
 
     std::cout << "[-] *---------------------------------------*" << std::endl;
     std::cout << "[>] |  ErScripts by emp0ry                  |" << std::endl;

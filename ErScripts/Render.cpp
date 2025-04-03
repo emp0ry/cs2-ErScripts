@@ -16,6 +16,16 @@ void Overlay::Render() noexcept {
     RGBColor gradient_color;
 
     if (cfg->watermarkState) {
+		bool initilizeWatermark = false;
+        char window_title[32];
+
+        if (!initilizeWatermark) {
+            // Get the current window title
+            if (!GetConsoleTitleA(window_title, sizeof(window_title)))
+                window_title[0] = '\0';
+			initilizeWatermark = true;
+        }
+
         // Get FPS directly from ImGui
         //float fps = ImGui::GetIO().Framerate;
 
@@ -52,7 +62,7 @@ void Overlay::Render() noexcept {
         timeStr += gmtOffset;
 
         // Format watermark text
-        std::string watermarkText = std::format(" ErScripts | {} | Ping {}ms | {}", globals::nickname, globals::cs2_ping, timeStr);
+        std::string watermarkText = std::format(" {} | {} | Ping {}ms | {}", window_title, globals::nickname, globals::cs2_ping, timeStr);
 
         ImGui::SetNextWindowBgAlpha(cfg->watermarkTransparency);
 
@@ -176,6 +186,7 @@ void Overlay::Render() noexcept {
 
     if (cfg->keystrokesState) {
         static bool isKeystrokesWindowInitilized = false;
+
         ImGui::SetNextWindowBgAlpha(0.5f);
 
         if (!isKeystrokesWindowInitilized) {
