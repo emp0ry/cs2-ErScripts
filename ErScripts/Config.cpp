@@ -31,6 +31,9 @@ void Config::load(const std::string& filename) {
     /* Sniper Crosshair */
     read(json["sniper-crosshair"]["state"], sniperCrosshairState);
 
+	/* Recoil Crosshair */
+	read(json["recoil-crosshair"]["state"], recoilCrosshairState);
+
     /* RGB Crosshair */
     read(json["rgb-crosshair"]["state"], rgbCrosshairState);
 
@@ -82,6 +85,11 @@ void Config::load(const std::string& filename) {
     read(json["auto-stop"]["state"], autoStopState);
     read(json["auto-stop"]["bind"], autoStopBind);
     read(json["auto-stop"]["toggle"]["state"], autoStopToggleState);
+
+    /* Chat Spammer */
+	read(json["chat-spammer"]["state"], chatSpammerState);
+	read(json["chat-spammer"]["bind"], chatSpammerBind);
+	read(json["chat-spammer"]["text"], chatSpammerText);
 
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
@@ -139,6 +147,9 @@ void Config::save(const std::string& filename) const {
     /* RGB Crosshair */
     json["rgb-crosshair"]["state"] = rgbCrosshairState;
 
+	/* Recoil Crosshair */
+	json["recoil-crosshair"]["state"] = recoilCrosshairState;
+
     /* Keystrokes */
     json["keystrokes"]["state"] = keystrokesState;
     json["keystrokes"]["scale"] = keystrokesScale;
@@ -187,6 +198,11 @@ void Config::save(const std::string& filename) const {
     json["auto-stop"]["state"] = autoStopState;
     json["auto-stop"]["bind"] = autoStopBind;
     json["auto-stop"]["toggle"]["state"] = autoStopToggleState;
+
+	/* Chat Spammer */
+	json["chat-spammer"]["state"] = chatSpammerState;
+	json["chat-spammer"]["bind"] = chatSpammerBind;
+	json["chat-spammer"]["text"] = chatSpammerText;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;

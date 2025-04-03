@@ -4,7 +4,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.1.3"
+#define APP_VERSION "1.1.4"
 
 int main() {
     if (!IsDebuggerPresent()) {
@@ -67,6 +67,7 @@ int main() {
     es.KillSound();
     es.RoundStartAlert();
     es.AutoStop();
+	es.ChatSpammer();
 
     while (!globals::finish) {
         static int prevExitBind = cfg->erScriptsExitBind;

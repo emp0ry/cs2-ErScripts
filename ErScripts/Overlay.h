@@ -57,6 +57,7 @@ private:
 	void TriggerMenu() noexcept;
 	void BombTimerMenu() noexcept;
 	void SniperCrosshairMenu() noexcept;
+	void RecoilCrosshairMenu() noexcept;
 	void RGBCrosshairMenu() noexcept;
 	void KeystrokesMenu() noexcept;
 	void KnifeSwitchMenu() noexcept;
@@ -67,6 +68,7 @@ private:
 	void KillSoundMenu() noexcept;
 	void RoundStartAlertMenu() noexcept;
 	void AutoStopMenu() noexcept;
+	void ChatSpammerMenu() noexcept;
 	void GradientManagerMenu() noexcept;
 	void WatermarkMenu() noexcept;
 	void FPSLimitMenu() noexcept;

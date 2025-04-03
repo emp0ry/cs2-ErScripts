@@ -32,6 +32,7 @@ public:
 	void KillSound();
 	void RoundStartAlert();
 	void AutoStop();
+	void ChatSpammer();
 private:
 	static HWND hwnd;
 

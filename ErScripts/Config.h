@@ -36,6 +36,9 @@ public:
     /* RGB Crosshair */
     bool rgbCrosshairState{ false };
 
+    /* Recoil Crosshair */
+	bool recoilCrosshairState{ false };
+
     /* Keystrokes */
     bool keystrokesState{ false };
     float keystrokesScale{ 1.5f };
@@ -85,6 +88,11 @@ public:
     bool autoStopState{ false };
     int autoStopBind{ 0 };
     bool autoStopToggleState{ false };
+
+    /* Chat Spammer */
+	bool chatSpammerState{ false };
+	int chatSpammerBind{ 0 };
+	std::string chatSpammerText{ "Enhance Your Skills with emp0ry.github.io/cs2-ErScripts/" };
 
     /* Watermark */
 	bool watermarkState{ true };

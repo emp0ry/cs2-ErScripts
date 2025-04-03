@@ -167,6 +167,9 @@
     <ClCompile Include="AutoStop.cpp">
       <Filter>Functions\Functions</Filter>
     </ClCompile>
+    <ClCompile Include="ChatSpammer.cpp">
+      <Filter>Functions\Functions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">

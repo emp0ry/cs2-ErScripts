@@ -3,6 +3,8 @@
 void ErScripts::Crosshair() {
 	std::thread([this]() {
 		std::vector<int> blackColor = { 0, 0, 0 };
+		bool oldRecoilCrosshairState = false;
+
 		while (!globals::finish) {
 			if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
 
@@ -22,8 +24,18 @@ void ErScripts::Crosshair() {
 
 					//Logger::logInfo(std::format("Color1: RGB({} {} {}) POS({} {}), Color2: RGB({} {} {}) POS({} {})", pixelColor1[0], pixelColor1[1], pixelColor1[2], globals::posX + globals::width / 2, globals::posY, pixelColor2[0], pixelColor2[1], pixelColor2[2], globals::posX + globals::width / 2, globals::posY + globals::height - 1));
 
-					globals::isScope = (isColorSimilar(pixelColor1, blackColor, 20) && isColorSimilar(pixelColor2, blackColor, 20)) || (GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
+					globals::isScope = (isColorSimilar(pixelColor1, blackColor, 20) && isColorSimilar(pixelColor2, blackColor, 20));
+				}
 
+				if (cfg->recoilCrosshairState != oldRecoilCrosshairState) {
+					if (cfg->recoilCrosshairState) {
+						CommandsSender(3, "cl_crosshair_recoil true");
+					}
+					else {
+						CommandsSender(3, "cl_crosshair_recoil false");
+					}
+
+					oldRecoilCrosshairState = cfg->recoilCrosshairState;
 				}
 
 				if (globals::crosshairUpdaterState) {

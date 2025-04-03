@@ -152,6 +152,7 @@
     <ClCompile Include="AutoAccept.cpp" />
     <ClCompile Include="AutoPistol.cpp" />
     <ClCompile Include="BombTime.cpp" />
+    <ClCompile Include="ChatSpammer.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Crosshair.cpp" />
     <ClCompile Include="CS2Binds.cpp" />

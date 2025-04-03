@@ -72,7 +72,10 @@ inline const char* erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
 inline bool erScriptsMenuButtonState = false;
 inline const char* erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
 inline bool erScriptsExitButtonState = false;
+inline const char* chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
+inline bool chatSpammerButtonState = false;
 inline char killSayText[256]{};
+inline char chatSpammerText[256]{};
 inline char killSoundFileName[256]{};
 inline char roundStartAlertFileName[256]{};
 
@@ -140,6 +143,7 @@ void Overlay::Menu() noexcept {
         //TriggerMenu();
         BombTimerMenu();
         SniperCrosshairMenu();
+        RecoilCrosshairMenu();
         RGBCrosshairMenu();
         KeystrokesMenu();
         KnifeSwitchMenu();
@@ -150,6 +154,7 @@ void Overlay::Menu() noexcept {
         KillSoundMenu();
         RoundStartAlertMenu();
         AutoStopMenu();
+		ChatSpammerMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -175,6 +180,7 @@ void Overlay::Menu() noexcept {
         autoStopKeyName = GetKeyName(cfg->autoStopBind);
         erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
         erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
+		chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
 
         if (ImGui::FindWindowByName(" Bomb Timer"))
         ImGui::SetWindowPos(" Bomb Timer", { cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
@@ -183,6 +189,7 @@ void Overlay::Menu() noexcept {
         ImGui::SetWindowPos(" Keystrokes", { cfg->keystrokesPos[0], cfg->keystrokesPos[1] });
 
         strncpy_s(killSayText, cfg->killSayText.c_str(), sizeof(killSayText) - 1);
+		strncpy_s(chatSpammerText, cfg->chatSpammerText.c_str(), sizeof(chatSpammerText) - 1);
         strncpy_s(killSoundFileName, cfg->killSoundFileName.c_str(), sizeof(killSoundFileName) - 1);
         strncpy_s(roundStartAlertFileName, cfg->roundStartAlertFileName.c_str(), sizeof(roundStartAlertFileName) - 1);
     }
@@ -328,6 +335,16 @@ void Overlay::SniperCrosshairMenu() noexcept {
     ImGui::Checkbox("Sniper Crosshair", &cfg->sniperCrosshairState);
     ImGui::TableSetColumnIndex(1);
     if (ImageButton("##SniperCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
+        globals::crosshairUpdaterState = true;
+    }
+}
+
+void Overlay::RecoilCrosshairMenu() noexcept {
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Checkbox("Recoil Crosshair", &cfg->recoilCrosshairState);
+    ImGui::TableSetColumnIndex(1);
+    if (ImageButton("##RecoilCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
         globals::crosshairUpdaterState = true;
     }
 }
@@ -698,6 +715,53 @@ void Overlay::AutoStopMenu() noexcept {
             ImGui::Text("Toggle ");
             ImGui::TableSetColumnIndex(1);
             ImGui::Checkbox("##AutoStopToggle", &cfg->autoStopToggleState);
+
+            ImGui::EndTable();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void Overlay::ChatSpammerMenu() noexcept {
+    static bool firstRun = true;
+    if (firstRun) {
+        strncpy_s(chatSpammerText, cfg->chatSpammerText.c_str(), sizeof(chatSpammerText) - 1);
+        firstRun = false;
+    }
+
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Checkbox("Chat Spammer", &cfg->chatSpammerState);
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImageButton("##ChatSpammer", (ImTextureID)settingsTexture, { 22, 22 })) {
+        ImGui::OpenPopup("Chat Spammer Settings");
+    }
+
+    if (ImGui::BeginPopup("Chat Spammer Settings")) {
+        if (ImGui::BeginTable("Chat Spammer Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Chat Message ");
+            ImGui::TableSetColumnIndex(1);
+
+            ImGui::PushItemWidth(150);
+
+            ImGui::InputText("##ChatSpammerText", chatSpammerText, sizeof(chatSpammerText), ImGuiInputTextFlags_EnterReturnsTrue);
+            cfg->chatSpammerText = chatSpammerText;
+
+            ImGui::PopItemWidth();
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Hotkey ");
+            ImGui::TableSetColumnIndex(1);
+            chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
+            if (ImGui::Button(std::format("{}##ChatSpammerBind", chatSpammerKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
+                chatSpammerButtonState = !chatSpammerButtonState;
+            }
+            Hotkey(&chatSpammerButtonState, &chatSpammerKeyName, &cfg->chatSpammerBind);
 
             ImGui::EndTable();
         }

@@ -39,13 +39,14 @@ Here’s what *ErScripts* offers:
 |-----------------------|-----------------------------------------------------------------------------|
 | **Auto Accept**       | Clicks "Accept" when a match is found via `console.log` monitoring.         |
 | ~~**Pixel Trigger**~~ | ~~Disabled feature (previously fired on color changes).~~                   |
-| **Sniper Crosshair**  | Overlays a custom crosshair for snipers, synced with in-game settings.      |
 | **Bomb Timer**        | Shows a real-time bomb countdown with defuse kit alerts via GSI.            |
+| **Sniper Crosshair**  | Overlays a custom crosshair for snipers, synced with in-game settings.      |
+| **Recoil Crosshair**  | Enable recoil crosshair with a static center crosshair.                     |
 | **RGB Crosshair**     | Adds a gradient effect to your crosshair using console commands.            |
+| **Keystrokes**        | Displays WASD and mouse inputs on-screen for streams or fun.                |
 | **Knife Switch**      | Switches knife hand based on your weapon via `switchhands`.                 |
 | **Auto Pistol**       | Rapid-fires pistols by repeating `attack` commands.                         |
 | **Anti AFK**          | Prevents AFK kicks with subtle inputs.                                      |
-| **Keystrokes**        | Displays WASD and mouse inputs on-screen for streams or fun.                |
 | **Long Jump**         | Combines duck + jump for longer leaps with one keypress.                    |
 | **Jump Throw**        | Simplifies jump-throw combos for consistent utility tosses.                 |
 | **Drop Bomb**         | Drops the bomb and switches back instantly.                                 |
@@ -53,9 +54,10 @@ Here’s what *ErScripts* offers:
 | **Kill Sound**        | Plays a sound on kills for extra flair.                                     |
 | **Round Start Alert** | Sounds an alert if a round begins while you’re tabbed out.                  |
 | **Auto Stop**         | Press the opposite key for an auto stop.                                    |
+| **Chat Spammer**      | Automatically send repeated messages in chat.                               |
 | **Watermark**         | Shows ping, time, and game info as an overlay.                              |
-| **Capture Bypass**    | Hides the overlay from recordings/streams.                                  |
 | **FPS Limiter**       | Caps overlay FPS for smoother performance.                                  |
+| **Capture Bypass**    | Hides the overlay from recordings/streams.                                  |
 
 ---
 
@@ -107,6 +109,10 @@ Tailor *ErScripts* to your liking:
 
 ### Auto Stop  
 - **Toggle**: Enables hotkey to toggle auto-stop on/off (true) or activates it only while held (false).  
+
+### Chat Spammer  
+= **Chat Message**: Message to be repeatedly sent in chat.
+- **Hotkey**: Bind to toggle chat spammer on/off. If set to `None`, the chat spammer will run without a hotkey.
 
 ### Watermark  
 - **Gradient**: Toggle gradient text.  
