@@ -1,6 +1,6 @@
 # ErScripts 🎮  
-![GitHub release](https://img.shields.io/github/v/release/emp0ry/cs2-ErScripts?label=Latest%20Version)
-![License](https://img.shields.io/github/license/emp0ry/cs2-ErScripts)
+[![GitHub release](https://img.shields.io/github/v/release/emp0ry/cs2-ErScripts?label=Latest%20Version)](https://github.com/emp0ry/cs2-ErScripts/releases/latest)
+[![License](https://img.shields.io/github/license/emp0ry/cs2-ErScripts)](LICENSE.txt)
 
 ### Enhance Your *Counter-Strike 2* Experience  
 
