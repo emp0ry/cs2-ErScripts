@@ -4,7 +4,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.1.4"
+#define APP_VERSION "1.1.5"
 
 int main() {
     if (!IsDebuggerPresent()) {
