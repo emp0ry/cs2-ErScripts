@@ -220,7 +220,7 @@ bool ErScripts::setPaths() {
     SteamTools::GameConfig cs2Config{
         .possibleFolders = {
             L"Counter-Strike Global Offensive",
-            L"Counter-Strike 2",
+            //L"Counter-Strike 2",
         }
     };
 

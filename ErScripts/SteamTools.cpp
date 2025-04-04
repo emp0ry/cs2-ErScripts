@@ -28,7 +28,6 @@ std::wstring SteamTools::getSteamInstallPath() {
         throw std::runtime_error("Failed to read Steam InstallPath from registry");
     }
 
-    Logger::logSuccess(std::format(L"Steam install path from registry: {}", steamPath));
     return std::wstring(steamPath);
 }
 
