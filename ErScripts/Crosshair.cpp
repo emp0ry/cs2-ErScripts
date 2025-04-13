@@ -9,16 +9,16 @@ void ErScripts::Crosshair() {
 			if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
 
 				// No longer needed because the print_changed_convars command is used for it
-				/*if (globals::crosshairUpdaterState) {
+				/*if (globals::configUpdaterState) {
 					ErScripts::CommandsSender("host_writeconfig");
 					std::this_thread::sleep_for(std::chrono::milliseconds(200));
 					Logger::logInfo("Crosshair Updater");
 					globals::crosshair = SteamTools::getCrosshairSettings("730");
 					SteamTools::printCrosshairSettings(*globals::crosshair);
-					globals::crosshairUpdaterState = false;
+					globals::configUpdaterState = false;
 				}*/
 
-				if (cfg->sniperCrosshairState && globals::sniperCrosshairState) {
+				if (globals::sniperCrosshairState) {
 					std::vector<int> pixelColor1 = GetPixelColor(globals::posX + 1, globals::posY + 1);
 					std::vector<int> pixelColor2 = GetPixelColor(globals::posX + 1, globals::posY + globals::height - 6);
 
@@ -36,10 +36,6 @@ void ErScripts::Crosshair() {
 					}
 
 					oldRecoilCrosshairState = cfg->recoilCrosshairState;
-				}
-
-				if (globals::crosshairUpdaterState) {
-					ErScripts::CommandsSender(3, "print_changed_convars");
 				}
 			}
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));

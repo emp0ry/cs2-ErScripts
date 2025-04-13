@@ -47,6 +47,25 @@ void ErScripts::CS2Binds() {
                         ErScripts::CommandsSender(7, std::format("callvote kick {}", globals::localPlayerSlotNumber));
                     }
                 }
+
+                static bool isBindPressed = false;
+                if (cfg->angleBindState) {
+                    bool isPressed = GetAsyncKeyState(cfg->angleBindBind) & 0x8000;
+                    if (isPressed && !isBindPressed) {
+						float yaw = 0.0f;
+                        if (globals::isScope) {
+							yaw = roundf((cfg->angleBindDegree / (globals::config->sensitivity * globals::config->zoomSensitivity * 0.4444444444f) / globals::config->yaw) * 10000.0f) / 10000.0f;
+                        }
+                        else {
+                            yaw = roundf((cfg->angleBindDegree / globals::config->sensitivity / globals::config->yaw) * 10000.0f) / 10000.0f;
+                        }
+                        ErScripts::CommandsSender(7, std::format("yaw {} 1 0", yaw));
+                        isBindPressed = true;
+                    }
+                    else if (!isPressed && isBindPressed) {
+                        isBindPressed = false;
+                    }
+                }
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

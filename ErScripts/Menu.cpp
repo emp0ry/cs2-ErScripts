@@ -74,6 +74,8 @@ inline const char* erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
 inline bool erScriptsExitButtonState = false;
 inline const char* chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
 inline bool chatSpammerButtonState = false;
+inline const char* angleBindKeyName = GetKeyName(cfg->angleBindBind);
+inline bool angleBindButtonState = false;
 inline char killSayText[256]{};
 inline char chatSpammerText[256]{};
 inline char killSoundFileName[256]{};
@@ -155,6 +157,7 @@ void Overlay::Menu() noexcept {
         RoundStartAlertMenu();
         AutoStopMenu();
 		ChatSpammerMenu();
+		AngleBindMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -181,6 +184,7 @@ void Overlay::Menu() noexcept {
         erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
         erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
 		chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
+		angleBindKeyName = GetKeyName(cfg->angleBindBind);
 
         if (ImGui::FindWindowByName(" Bomb Timer"))
         ImGui::SetWindowPos(" Bomb Timer", { cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
@@ -334,9 +338,9 @@ void Overlay::SniperCrosshairMenu() noexcept {
     ImGui::TableSetColumnIndex(0);
     ImGui::Checkbox("Sniper Crosshair", &cfg->sniperCrosshairState);
     ImGui::TableSetColumnIndex(1);
-    if (ImageButton("##SniperCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
-        globals::crosshairUpdaterState = true;
-    }
+    //if (ImageButton("##SniperCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
+    //    globals::configUpdaterState = true;
+    //}
 }
 
 void Overlay::RecoilCrosshairMenu() noexcept {
@@ -344,9 +348,9 @@ void Overlay::RecoilCrosshairMenu() noexcept {
     ImGui::TableSetColumnIndex(0);
     ImGui::Checkbox("Recoil Crosshair", &cfg->recoilCrosshairState);
     ImGui::TableSetColumnIndex(1);
-    if (ImageButton("##RecoilCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
-        globals::crosshairUpdaterState = true;
-    }
+    //if (ImageButton("##RecoilCrosshairReloader", (ImTextureID)reloadTexture, { 22, 22 })) {
+    //    globals::configUpdaterState = true;
+    //}
 }
 
 void Overlay::RGBCrosshairMenu() noexcept {
@@ -762,6 +766,46 @@ void Overlay::ChatSpammerMenu() noexcept {
                 chatSpammerButtonState = !chatSpammerButtonState;
             }
             Hotkey(&chatSpammerButtonState, &chatSpammerKeyName, &cfg->chatSpammerBind);
+
+            ImGui::EndTable();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void Overlay::AngleBindMenu() noexcept {
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+
+    ImGui::Checkbox("Angle Bind", &cfg->angleBindState);
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImageButton("##AngleBind", (ImTextureID)settingsTexture, { 22, 22 })) {
+        ImGui::OpenPopup("Angle Bind Settings");
+    }
+
+    if (ImGui::BeginPopup("Angle Bind Settings", ImGuiWindowFlags_NoResize)) {
+        if (ImGui::BeginTable("Angle Bind Settings Table", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadInnerX)) {
+            // Hotkey
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Hotkey ");
+            ImGui::TableSetColumnIndex(1);
+            angleBindKeyName = GetKeyName(cfg->angleBindBind);
+            if (ImGui::Button(std::format("{}##PixelTrigger", angleBindKeyName).c_str(), ImVec2(80.0f, 22.0f))) {
+                angleBindButtonState = !angleBindButtonState;
+            }
+            Hotkey(&angleBindButtonState, &angleBindKeyName, &cfg->angleBindBind);
+
+            // Degree
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Degree ");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::PushItemWidth(100.0f);
+            ImGui::SliderFloat("##AngleBindDegree", &cfg->angleBindDegree, -180.f, 180.f, "%.2f");
+            ImGui::PopItemWidth();
 
             ImGui::EndTable();
         }

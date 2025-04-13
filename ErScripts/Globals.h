@@ -21,8 +21,7 @@ namespace globals {
 	extern bool localPlayerIsActivityPlaying;
 	extern std::string steamid, nickname;
 
-	extern bool crosshairUpdaterState;
-	extern std::optional<SteamTools::Crosshair> crosshair;
+	extern std::optional<SteamTools::Config> config;
 
 	extern int cs2_ping;
 }

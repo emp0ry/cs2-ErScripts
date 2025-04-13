@@ -45,7 +45,7 @@ FLOAT Overlay::RenderText(ImFont* font, const std::string& text, const ImVec2& p
 #define XScale(x) (x * ((float)globals::width / 640.f))
 #define YScale(y) (y * ((float)globals::height / 480.f))
 
-void Overlay::RenderCrosshair(const std::optional<SteamTools::Crosshair>& ch) {
+void Overlay::RenderCrosshair(const std::optional<SteamTools::Config>& ch) {
     if (!ch.has_value() || ch->isEmpty()) {
         return;
     }

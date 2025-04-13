@@ -55,6 +55,7 @@ Here’s what *ErScripts* offers:
 | **Round Start Alert** | Sounds an alert if a round begins while you’re tabbed out.                  |
 | **Auto Stop**         | Press the opposite key for an auto stop.                                    |
 | **Chat Spammer**      | Automatically send repeated messages in chat.                               |
+| **Angle Bind**        | Bind to offset yaw (horizontal view) angle.                                 |
 | **Watermark**         | Shows ping, time, and game info as an overlay.                              |
 | **FPS Limiter**       | Caps overlay FPS for smoother performance.                                  |
 | **Capture Bypass**    | Hides the overlay from recordings/streams.                                  |
@@ -111,8 +112,12 @@ Tailor *ErScripts* to your liking:
 - **Toggle**: Enables hotkey to toggle auto-stop on/off (true) or activates it only while held (false).  
 
 ### Chat Spammer  
-= **Chat Message**: Message to be repeatedly sent in chat.
+- **Chat Message**: Message to be repeatedly sent in chat.
 - **Hotkey**: Bind to toggle chat spammer on/off. If set to `None`, the chat spammer will run without a hotkey.
+
+### Angle Bind
+- **Hotkey** Bind to offset the player yaw (horizontal view) angle.
+- **Degree** The amount of yaw offset, from -180° to 180°.
 
 ### Watermark  
 - **Gradient**: Toggle gradient text.  

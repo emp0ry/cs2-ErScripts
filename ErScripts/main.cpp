@@ -4,7 +4,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.1.6"
+#define APP_VERSION "1.1.7"
 
 int main() {
     if (!IsDebuggerPresent()) {
@@ -38,7 +38,7 @@ int main() {
 
     std::cout << "[-] *---------------------------------------*" << std::endl;
     std::cout << "[>] |  ErScripts by emp0ry                  |" << std::endl;
-    std::cout << "[>] |  Github - https://github.com/emp0ry/  |" << std::endl;
+    std::cout << "[>] |  GitHub - https://github.com/emp0ry/  |" << std::endl;
     std::cout << "[-] *---------------------------------------*" << std::endl;
 
     cfg->load("default");
@@ -93,16 +93,22 @@ int main() {
         }
 
         /* Update Ping */
-        if (cfg->watermarkState) {
-            if (ErScripts::GetWindowState && ErScripts::GetCursorState()) {
-                static auto lastUpdate = std::chrono::steady_clock::now();
+        if (ErScripts::GetWindowState && ErScripts::GetCursorState()) {
+            static auto lastUpdate = std::chrono::steady_clock::now();
 
-                auto now = std::chrono::steady_clock::now();
-                std::chrono::duration<float> elapsed = now - lastUpdate;
+            auto now = std::chrono::steady_clock::now();
+            std::chrono::duration<float> elapsed = now - lastUpdate;
 
+            if (cfg->watermarkState) {
                 if (elapsed.count() >= cfg->watermarkPingUpdateRate) {
-                    ErScripts::CommandsSender(5, "sys_info");
+                    ErScripts::CommandsSender(5, "sys_info;clear");
                     lastUpdate = now;
+                }
+            }
+
+            if (cfg->sniperCrosshairState || cfg->recoilCrosshairState || cfg->angleBindState) {
+                if (elapsed.count() >= 1.5f) {
+                    ErScripts::CommandsSender(5, "print_changed_convars; clear; echo *---------------------------------------*; echo |  ErScripts by emp0ry                  |; echo |  GitHub - github.com/emp0ry/          |; echo *---------------------------------------*");
                 }
             }
         }

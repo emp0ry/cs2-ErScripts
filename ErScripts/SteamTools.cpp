@@ -328,7 +328,7 @@ std::wstring SteamTools::parseLaunchOptions(const std::wstring& filePath, std::s
     return L"";
 }
 
-std::optional<SteamTools::Crosshair> SteamTools::getCrosshairSettings(std::string_view appId) {
+std::optional<SteamTools::Config> SteamTools::getCrosshairSettings(std::string_view appId) {
     try {
         std::wstring steamConfigPath = getSteamConfigPath();
         if (steamConfigPath.empty()) {
@@ -348,7 +348,7 @@ std::optional<SteamTools::Crosshair> SteamTools::getCrosshairSettings(std::strin
             return std::nullopt;
         }
 
-        Crosshair crosshair = parseCrosshairSettings(configPath);
+        Config crosshair = parseCrosshairSettings(configPath);
         if (crosshair.isEmpty()) {
             Logger::logWarning(L"No crosshair settings found in config file");
             return std::nullopt;
@@ -363,8 +363,8 @@ std::optional<SteamTools::Crosshair> SteamTools::getCrosshairSettings(std::strin
     }
 }
 
-SteamTools::Crosshair SteamTools::parseCrosshairSettings(const std::wstring& filePath) {
-    Crosshair crosshair;
+SteamTools::Config SteamTools::parseCrosshairSettings(const std::wstring& filePath) {
+    Config crosshair;
     
     std::wifstream file(filePath);
     if (!file.is_open()) {
@@ -376,27 +376,27 @@ SteamTools::Crosshair SteamTools::parseCrosshairSettings(const std::wstring& fil
     wss << file.rdbuf();
     std::wstring content = wss.str();
     
-    std::map<std::wstring, std::function<void(Crosshair&, const std::wstring&)>> convarMap {
-        {L"cl_crosshairgap", [&](Crosshair& ch, const std::wstring& val) { ch.gap = std::stof(val); }},
-        {L"cl_crosshair_outlinethickness", [&](Crosshair& ch, const std::wstring& val) { ch.outlineThickness = std::stof(val); }},
-        {L"cl_crosshaircolor_r", [&](Crosshair& ch, const std::wstring& val) { ch.red = static_cast<uint8_t>(std::stoi(val)); }},
-        {L"cl_crosshaircolor_g", [&](Crosshair& ch, const std::wstring& val) { ch.green = static_cast<uint8_t>(std::stoi(val)); }},
-        {L"cl_crosshaircolor_b", [&](Crosshair& ch, const std::wstring& val) { ch.blue = static_cast<uint8_t>(std::stoi(val)); }},
-        {L"cl_crosshairalpha", [&](Crosshair& ch, const std::wstring& val) { ch.alpha = static_cast<uint8_t>(std::stoi(val)); }},
-        //{L"cl_crosshair_dynamic_splitdist", [&](Crosshair& ch, const std::wstring& val) { ch.dynamicSplitDist = static_cast<uint8_t>(std::stoi(val)); }},
-        //{L"cl_fixedcrosshairgap", [&](Crosshair& ch, const std::wstring& val) { ch.fixedCrosshairGap = std::stof(val); }},
-        {L"cl_crosshaircolor", [&](Crosshair& ch, const std::wstring& val) { ch.color = static_cast<uint8_t>(std::stoi(val)); }},
-        {L"cl_crosshair_drawoutline", [&](Crosshair& ch, const std::wstring& val) { ch.drawOutline = val == L"true" || val == L"1"; }},
-        //{L"cl_crosshair_dynamic_splitalpha_innermod", [&](Crosshair& ch, const std::wstring& val) { ch.dynamicSplitAlphaInnerMod = std::stof(val); }},
-        //{L"cl_crosshair_dynamic_splitalpha_outermod", [&](Crosshair& ch, const std::wstring& val) { ch.dynamicSplitAlphaOuterMod = std::stof(val); }},
-        //{L"cl_crosshair_dynamic_maxdist_splitratio", [&](Crosshair& ch, const std::wstring& val) { ch.dynamicMaxDistSplitRatio = std::stof(val); }},
-        {L"cl_crosshairthickness", [&](Crosshair& ch, const std::wstring& val) { ch.thickness = std::stof(val); }},
-        {L"cl_crosshairdot", [&](Crosshair& ch, const std::wstring& val) { ch.dot = val == L"true" || val == L"1"; }},
-        //{L"cl_crosshairgap_useweaponvalue", [&](Crosshair& ch, const std::wstring& val) { ch.gapUseWeaponValue = val == L"true" || val == L"1"; }},
-        //{L"cl_crosshairusealpha", [&](Crosshair& ch, const std::wstring& val) { ch.useAlpha = val == L"true" || val == L"1"; }},
-        {L"cl_crosshair_t", [&](Crosshair& ch, const std::wstring& val) { ch.tStyle = val == L"true" || val == L"1"; }},
-        {L"cl_crosshairstyle", [&](Crosshair& ch, const std::wstring& val) { ch.style = static_cast<uint8_t>(std::stoi(val)); }},
-        {L"cl_crosshairsize", [&](Crosshair& ch, const std::wstring& val) { ch.size = std::stof(val); }}
+    std::map<std::wstring, std::function<void(Config&, const std::wstring&)>> convarMap {
+        {L"cl_crosshairgap", [&](Config& ch, const std::wstring& val) { ch.gap = std::stof(val); }},
+        {L"cl_crosshair_outlinethickness", [&](Config& ch, const std::wstring& val) { ch.outlineThickness = std::stof(val); }},
+        {L"cl_crosshaircolor_r", [&](Config& ch, const std::wstring& val) { ch.red = static_cast<uint8_t>(std::stoi(val)); }},
+        {L"cl_crosshaircolor_g", [&](Config& ch, const std::wstring& val) { ch.green = static_cast<uint8_t>(std::stoi(val)); }},
+        {L"cl_crosshaircolor_b", [&](Config& ch, const std::wstring& val) { ch.blue = static_cast<uint8_t>(std::stoi(val)); }},
+        {L"cl_crosshairalpha", [&](Config& ch, const std::wstring& val) { ch.alpha = static_cast<uint8_t>(std::stoi(val)); }},
+        //{L"cl_crosshair_dynamic_splitdist", [&](Config& ch, const std::wstring& val) { ch.dynamicSplitDist = static_cast<uint8_t>(std::stoi(val)); }},
+        //{L"cl_fixedcrosshairgap", [&](Config& ch, const std::wstring& val) { ch.fixedCrosshairGap = std::stof(val); }},
+        {L"cl_crosshaircolor", [&](Config& ch, const std::wstring& val) { ch.color = static_cast<uint8_t>(std::stoi(val)); }},
+        {L"cl_crosshair_drawoutline", [&](Config& ch, const std::wstring& val) { ch.drawOutline = val == L"true" || val == L"1"; }},
+        //{L"cl_crosshair_dynamic_splitalpha_innermod", [&](Config& ch, const std::wstring& val) { ch.dynamicSplitAlphaInnerMod = std::stof(val); }},
+        //{L"cl_crosshair_dynamic_splitalpha_outermod", [&](Config& ch, const std::wstring& val) { ch.dynamicSplitAlphaOuterMod = std::stof(val); }},
+        //{L"cl_crosshair_dynamic_maxdist_splitratio", [&](Config& ch, const std::wstring& val) { ch.dynamicMaxDistSplitRatio = std::stof(val); }},
+        {L"cl_crosshairthickness", [&](Config& ch, const std::wstring& val) { ch.thickness = std::stof(val); }},
+        {L"cl_crosshairdot", [&](Config& ch, const std::wstring& val) { ch.dot = val == L"true" || val == L"1"; }},
+        //{L"cl_crosshairgap_useweaponvalue", [&](Config& ch, const std::wstring& val) { ch.gapUseWeaponValue = val == L"true" || val == L"1"; }},
+        //{L"cl_crosshairusealpha", [&](Config& ch, const std::wstring& val) { ch.useAlpha = val == L"true" || val == L"1"; }},
+        {L"cl_crosshair_t", [&](Config& ch, const std::wstring& val) { ch.tStyle = val == L"true" || val == L"1"; }},
+        {L"cl_crosshairstyle", [&](Config& ch, const std::wstring& val) { ch.style = static_cast<uint8_t>(std::stoi(val)); }},
+        {L"cl_crosshairsize", [&](Config& ch, const std::wstring& val) { ch.size = std::stof(val); }}
     };
 
     std::wistringstream iss(content);
@@ -451,7 +451,7 @@ SteamTools::Crosshair SteamTools::parseCrosshairSettings(const std::wstring& fil
     return crosshair;
 }
 
-void SteamTools::printCrosshairSettings(const std::optional<SteamTools::Crosshair>& ch) {
+void SteamTools::printCrosshairSettings(const std::optional<SteamTools::Config>& ch) {
 	Logger::logSuccess("Crosshair settings:");
     Logger::logInfo(std::format("cl_crosshairgap \"{:.1f}\"", ch->gap));
     Logger::logInfo(std::format("cl_crosshair_outlinethickness \"{:.1f}\"", ch->outlineThickness));

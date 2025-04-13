@@ -92,10 +92,10 @@ void Overlay::Render() noexcept {
     if (ErScripts::GetCursorState()) {
         if (!(GetAsyncKeyState(VK_TAB) & 0x8000)) {
             if (cfg->sniperCrosshairState && globals::sniperCrosshairState && !globals::isScope) {
-                RenderCrosshair(*globals::crosshair);
+                RenderCrosshair(*globals::config);
             }
             else if (cfg->recoilCrosshairState && (GetAsyncKeyState(VK_LBUTTON) & 0x8000)) {
-                RenderCrosshair(*globals::crosshair);
+                RenderCrosshair(*globals::config);
             }
         }
 	}

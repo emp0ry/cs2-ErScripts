@@ -28,7 +28,8 @@ public:
     };
 
     // CS2 Crosshair struct
-    struct Crosshair {
+    struct Config {
+        /* Crosshair */
 		float gap = 0.0f;                         // cl_crosshairgap
 		float outlineThickness = 0.0f;            // cl_crosshair_outlinethickness
 		uint8_t red = 0;						  // cl_crosshaircolor_r
@@ -50,6 +51,11 @@ public:
 		uint8_t style = 0;						  // cl_crosshairstyle
 		float size = 0.0f;						  // cl_crosshairsize
 
+        /* Other */
+		float sensitivity = 0.0f;                 // sensitivity
+		float zoomSensitivity = 0.0f;             // zoom_sensitivity_ratio
+		float yaw = 0.0f;                         // m_yaw
+
         [[nodiscard]] bool isEmpty() const noexcept {
             return size == 0.0f && thickness == 0.0f &&
                 red == 0 && green == 0 && blue == 0 && alpha == 0 &&
@@ -67,10 +73,10 @@ public:
     static std::string getSteamNickname();
 
 	// Get crosshair settings for a given Steam AppID
-    static std::optional<Crosshair> getCrosshairSettings(std::string_view appId);
+    static std::optional<Config> getCrosshairSettings(std::string_view appId);
 
 	// Print crosshair settings
-    static void printCrosshairSettings(const std::optional<SteamTools::Crosshair>& ch);
+    static void printCrosshairSettings(const std::optional<SteamTools::Config>& ch);
 
 private:
     // Get Steam installation path from registry
@@ -92,5 +98,5 @@ private:
     static std::wstring trim(std::wstring_view str);
 
 	// Parse a crosshair configuration from a file
-    static Crosshair parseCrosshairSettings(const std::wstring& filePath);
+    static Config parseCrosshairSettings(const std::wstring& filePath);
 };

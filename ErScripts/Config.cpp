@@ -91,6 +91,11 @@ void Config::load(const std::string& filename) {
 	read(json["chat-spammer"]["bind"], chatSpammerBind);
 	read(json["chat-spammer"]["text"], chatSpammerText);
 
+	/* Angle Bind */
+	read(json["angle-bind"]["state"], angleBindState);
+	read(json["angle-bind"]["bind"], angleBindBind);
+	read(json["angle-bind"]["degree"], angleBindDegree);
+
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
     read(json["watermark"]["gradient"]["state"], watermarkGradientState);
@@ -203,6 +208,11 @@ void Config::save(const std::string& filename) const {
 	json["chat-spammer"]["state"] = chatSpammerState;
 	json["chat-spammer"]["bind"] = chatSpammerBind;
 	json["chat-spammer"]["text"] = chatSpammerText;
+
+    /* Angle Bind */
+	json["angle-bind"]["state"] = angleBindState;
+	json["angle-bind"]["bind"] = angleBindBind;
+	json["angle-bind"]["degree"] = angleBindDegree;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;

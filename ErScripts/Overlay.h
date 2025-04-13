@@ -69,6 +69,7 @@ private:
 	void RoundStartAlertMenu() noexcept;
 	void AutoStopMenu() noexcept;
 	void ChatSpammerMenu() noexcept;
+	void AngleBindMenu() noexcept;
 	void GradientManagerMenu() noexcept;
 	void WatermarkMenu() noexcept;
 	void FPSLimitMenu() noexcept;
@@ -77,7 +78,7 @@ private:
 	//void RenderEsp() noexcept;
 
 	FLOAT RenderText(ImFont* font, const std::string& text, const ImVec2& position, const float size, const ImColor& color, const bool centerX, const bool centerY, const bool outline, const bool background) noexcept;
-	void RenderCrosshair(const std::optional<SteamTools::Crosshair>& ch);
+	void RenderCrosshair(const std::optional<SteamTools::Config>& ch);
 	void CircularTimer(const ImVec2& pos, const float min, const float max, const float& time, const int points_count, const float radius, const float thickness, const bool top, const ImColor& color);
 	ID3D11ShaderResourceView* LoadTextureFromPNGShellcode(unsigned char* icon_png, unsigned int icon_png_size);
 	bool ImageButton(const char* str_id, ImTextureID imageTexture, const ImVec2& size);

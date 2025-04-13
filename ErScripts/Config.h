@@ -94,6 +94,11 @@ public:
 	int chatSpammerBind{ 0 };
 	std::string chatSpammerText{ "Enhance Your Skills with emp0ry.github.io/cs2-ErScripts/" };
 
+    /* Angle Bind */
+	bool angleBindState{ false };
+	int angleBindBind{ 0 };
+	float angleBindDegree{ 180.0f };
+
     /* Watermark */
 	bool watermarkState{ true };
 	bool watermarkGradientState{ true };

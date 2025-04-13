@@ -18,8 +18,7 @@ namespace globals {
 	bool localPlayerIsActivityPlaying = false;
 	std::string steamid = "", nickname = "";
 
-	bool crosshairUpdaterState = true;
-	std::optional<SteamTools::Crosshair> crosshair;
+	std::optional<SteamTools::Config> config;
 
 	int cs2_ping = 0;
 }
