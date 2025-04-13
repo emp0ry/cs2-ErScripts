@@ -4,7 +4,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.1.5"
+#define APP_VERSION "1.1.6"
 
 int main() {
     if (!IsDebuggerPresent()) {
@@ -23,6 +23,8 @@ int main() {
         }
     }
 
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
     Logger::EnableANSIColors();
 
     /* Check if program already running */
