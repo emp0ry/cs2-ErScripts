@@ -54,6 +54,9 @@
     <Filter Include="Functions\Updater">
       <UniqueIdentifier>{1ff65aba-bfb7-4875-8138-ecfe24c3d9d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rebuild">
+      <UniqueIdentifier>{8e37d140-a614-43b2-a3a4-89e025f3878f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -170,6 +173,9 @@
     <ClCompile Include="ChatSpammer.cpp">
       <Filter>Functions\Functions</Filter>
     </ClCompile>
+    <ClCompile Include="Rebuild.cpp">
+      <Filter>Rebuild</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h">
@@ -235,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="Updater.h">
       <Filter>Functions\Updater</Filter>
+    </ClInclude>
+    <ClInclude Include="Rebuild.h">
+      <Filter>Rebuild</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

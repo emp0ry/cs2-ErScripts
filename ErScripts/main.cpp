@@ -1,13 +1,43 @@
 #include "GSIServer.h"
 #include "Updater.h"
 #include "UIAccess.h"
+#include "Rebuild.h"
 #include "ErScripts.h"
 #include "Overlay.h"
 
 #define APP_VERSION "1.1.7"
 
-int main() {
+int main(int argc, char* argv[]) {
+    Logger::EnableANSIColors();
+
     if (!IsDebuggerPresent()) {
+		/* Rebuild */
+        bool should_rebuild = true;
+        for (int i = 1; i < argc; ++i) {
+            if (std::string(argv[i]) == "--run") {
+                should_rebuild = false;
+                break;
+            }
+        }
+
+        // Check if program already running
+        CreateMutexA(0, FALSE, "Local\\erscripts");
+        if (GetLastError() == ERROR_ALREADY_EXISTS) {
+            Rebuild::cleanupTempFiles();
+            Updater::cleanupTempFiles();
+            MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
+            return -1;
+        }
+
+        // Rebuild or unpack
+        Rebuild rebuilder;
+        if (!rebuilder.rebuildAndRelaunch(should_rebuild)) {
+            std::cout << "[*] Rebuild or unpack failed. Continuing with current binary.\n";
+        }
+        if (should_rebuild) {
+            return 0; // Exit after relaunch
+        }
+
         /* Auto updater */
         Updater updater(APP_VERSION, "emp0ry", "cs2-ErScripts", "ErScripts");
         if (updater.checkAndUpdate())
@@ -25,14 +55,6 @@ int main() {
 
     AllocConsole();
     freopen("CONOUT$", "w", stdout);
-    Logger::EnableANSIColors();
-
-    /* Check if program already running */
-    CreateMutexA(0, FALSE, "Local\\erscripts");   // Try to create a named mutex
-    if (GetLastError() == ERROR_ALREADY_EXISTS) { // Did the mutex already exist?
-        MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
-        return -1;
-    }
 
     SetConsoleTitleA(std::format("ErScripts {}", APP_VERSION).c_str());
 

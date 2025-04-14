@@ -52,9 +52,9 @@ public:
 		float size = 0.0f;						  // cl_crosshairsize
 
         /* Other */
-		float sensitivity = 0.0f;                 // sensitivity
-		float zoomSensitivity = 0.0f;             // zoom_sensitivity_ratio
-		float yaw = 0.0f;                         // m_yaw
+        float sensitivity = 0.0f;                 // sensitivity
+        float zoomSensitivity = 0.0f;             // zoom_sensitivity_ratio
+        float yaw = 0.0f;                         // m_yaw
 
         [[nodiscard]] bool isEmpty() const noexcept {
             return size == 0.0f && thickness == 0.0f &&

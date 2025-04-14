@@ -1,3 +1,4 @@
+// Updater.cpp
 #include "Updater.h"
 #include "Logger.h"
 #include <iostream>
@@ -6,8 +7,13 @@
 #include <windows.h>
 #include <wininet.h>
 #include <nlohmann/json.hpp>
+#include <filesystem>
+#include <thread>
+#include <random> // Added for random_device, mt19937, uniform_int_distribution
 
 #pragma comment(lib, "wininet.lib")
+
+std::string Updater::random_suffix_;
 
 Updater::Updater(const std::string& currentVersion, const std::string& githubAuthor, const std::string& repoName, const std::string& downloadExeName) :
     currentVersion(currentVersion),
@@ -21,6 +27,23 @@ Updater::Updater(const std::string& currentVersion, const std::string& githubAut
         Logger::logWarning(std::format("Failed to get current executable name, defaulting to {}", downloadExeName));
         currentExeName = downloadExeName;
     }
+    // Generate suffix once
+    if (random_suffix_.empty()) {
+        random_suffix_ = generateRandomString(8);
+    }
+}
+
+std::string Updater::generateRandomString(size_t length) {
+    static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
+    std::string result;
+    result.reserve(length);
+    for (size_t i = 0; i < length; ++i) {
+        result += charset[dist(gen)];
+    }
+    return result;
 }
 
 std::string Updater::getCurrentExeName() {
@@ -126,7 +149,7 @@ bool Updater::downloadFile(const std::string& url, const std::string& outputPath
 
     if (contentLength > 0 && totalBytes != contentLength) {
         Logger::logWarning(std::format("Download incomplete: Expected  {} bytes, got {}", contentLength, totalBytes));
-        std::remove(outputPath.c_str());
+        std::filesystem::remove(outputPath);
         return false;
     }
 
@@ -158,25 +181,73 @@ bool Updater::replaceExecutable(const std::string& newFilePath) {
 
     std::string backupPath = currentExeName + "_old.exe";
     std::string currentPath = currentExeName;
-    std::string batPath = "update.bat";
 
-    std::ofstream batFile(batPath);
-    if (!batFile) {
-        Logger::logWarning("Failed to create update script");
+    // Get TEMP directory
+    char temp_dir[MAX_PATH];
+    if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
+        Logger::logWarning(std::format("Failed to get TEMP path: {}", GetLastError()));
+        return false;
+    }
+    std::string batPath = std::string(temp_dir) + "update_" + random_suffix_ + ".bat";
+
+    // Write batch file
+    for (int retry = 0; retry < 3; ++retry) {
+        std::ofstream batFile(batPath);
+        if (batFile) {
+            batFile << "@echo off\n";
+            batFile << "timeout /t 1 >nul\n";
+            batFile << "move /Y \"" << currentPath << "\" \"" << backupPath << "\"\n";
+            batFile << "move /Y \"" << newFilePath << "\" \"" << currentPath << "\"\n";
+            batFile << "if exist \"" << currentPath << "\" (\n";
+            batFile << "    start \"\" \"" << currentPath << "\"\n";
+            batFile << "    del \"" << backupPath << "\"\n";
+            batFile << "    del \"%~f0\"\n";
+            batFile << ")\n";
+            batFile.close();
+            break;
+        }
+        Logger::logWarning(std::format("Retry {}: Failed to create batch file: {}", retry + 1, GetLastError()));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    if (!std::filesystem::exists(batPath)) {
+        Logger::logWarning("Failed to create batch file after retries");
         return false;
     }
 
-    batFile << "@echo off\n";
-    batFile << "timeout /t 1 >nul\n";
-    batFile << "move \"" << currentPath << "\" \"" << backupPath << "\"\n";
-    batFile << "move \"" << newFilePath << "\" \"" << currentPath << "\"\n";
-    batFile << "start \"\" \"" << currentPath << "\"\n";
-    batFile << "del \"" << backupPath << "\"\n";
-    batFile << "del \"%~f0\"\n";
-    batFile.close();
+    // Run batch file
+    SHELLEXECUTEINFOA sei = { sizeof(sei) };
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+    sei.lpFile = batPath.c_str();
+    sei.lpVerb = "open";
+    sei.nShow = SW_HIDE;
+    if (!ShellExecuteExA(&sei)) {
+        Logger::logWarning(std::format("Failed to execute batch file: {}", GetLastError()));
+        std::filesystem::remove(batPath);
+        return false;
+    }
 
-    ShellExecuteA(NULL, "open", batPath.c_str(), NULL, NULL, SW_HIDE);
     return true;
+}
+
+void Updater::cleanupTempFiles() {
+    char temp_dir[MAX_PATH];
+    if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
+        Logger::logWarning(std::format("Failed to get TEMP path for cleanup: {}", GetLastError()));
+        return;
+    }
+
+    std::string temp_exe = std::string(temp_dir) + "ErScripts_new_" + random_suffix_ + ".exe";
+    std::string temp_bat = std::string(temp_dir) + "update_" + random_suffix_ + ".bat";
+
+    if (std::filesystem::exists(temp_exe)) {
+        std::filesystem::remove(temp_exe);
+        Logger::logInfo(std::format("Cleaned up temp file: {}", temp_exe));
+    }
+    if (std::filesystem::exists(temp_bat)) {
+        std::filesystem::remove(temp_bat);
+        Logger::logInfo(std::format("Cleaned up batch file: {}", temp_bat));
+    }
 }
 
 bool Updater::checkAndUpdate() {
@@ -194,7 +265,14 @@ bool Updater::checkAndUpdate() {
             Logger::logInfo(std::format("New version available: {} (current: {})", latestVersion, currentVersion));
 
             std::string downloadUrl = "https://github.com/" + githubAuthor + "/" + repoName + "/releases/download/v" + latestVersion + "/" + downloadExeName;
-            std::string tempPath = currentExeName + "_new.exe";
+
+            // Use TEMP for temp file
+            char temp_dir[MAX_PATH];
+            if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
+                Logger::logWarning(std::format("Failed to get TEMP path: {}", GetLastError()));
+                return false;
+            }
+            std::string tempPath = std::string(temp_dir) + "ErScripts_new_" + random_suffix_ + ".exe";
 
             if (downloadFile(downloadUrl, tempPath)) {
                 if (replaceExecutable(tempPath)) {
@@ -202,6 +280,7 @@ bool Updater::checkAndUpdate() {
                     return true;
                 }
             }
+            std::filesystem::remove(tempPath);
             return false;
         }
         else {
