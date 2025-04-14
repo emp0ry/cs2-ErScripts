@@ -5,7 +5,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.1.7"
+#define APP_VERSION "1.1.8"
 
 int main(int argc, char* argv[]) {
     Logger::EnableANSIColors();

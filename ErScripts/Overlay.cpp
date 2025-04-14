@@ -457,7 +457,7 @@ void Overlay::Handler() noexcept {
 		toggleKey(VK_OEM_6, keyState[VK_OEM_6], io);			// ]
 		toggleKey(VK_OEM_7, keyState[VK_OEM_7], io);			// /
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::microseconds(15625));
 	}
 }
 

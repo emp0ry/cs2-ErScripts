@@ -16,6 +16,8 @@
 #include <string>
 #include <wincodec.h>
 #include <comdef.h>
+#include <chrono>
+#include <ctime>
 #include <Windows.h>
 
 class Overlay {

@@ -31,17 +31,23 @@ void Overlay::Render() noexcept {
 
         // Get current time
         auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        std::string timeStr = std::ctime(&now);
-        timeStr = timeStr.substr(11, 8); // Extract "HH:MM:SS" (e.g., "14:30:45")
+
+        char timeBuffer[26]; // Buffer size required by ctime_s
+        if (ctime_s(timeBuffer, sizeof(timeBuffer), &now) != 0) {
+            Logger::logWarning("Failed to get current time string.");
+        }
+
+        std::string timeStr(timeBuffer);
+        timeStr = timeStr.substr(11, 8); // Extract "HH:MM:SS"
 
         // Get GMT offset (Windows-specific)
         TIME_ZONE_INFORMATION tzi;
         DWORD tzResult = GetTimeZoneInformation(&tzi);
         int offsetMinutes = 0;
         if (tzResult != TIME_ZONE_ID_INVALID) {
-            offsetMinutes = -tzi.Bias; // Bias is minutes west of UTC, so negate for GMT offset
+            offsetMinutes = -tzi.Bias;
             if (tzResult == TIME_ZONE_ID_DAYLIGHT) {
-                offsetMinutes -= tzi.DaylightBias; // Adjust for daylight saving time
+                offsetMinutes -= tzi.DaylightBias;
             }
         }
 
