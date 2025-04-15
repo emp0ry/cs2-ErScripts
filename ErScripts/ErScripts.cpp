@@ -200,7 +200,6 @@ void ErScripts::ConsoleLogStream() {
                 for (const auto& line : *newLines) {
                     if (line.find(L"Server confirmed all players") != std::wstring::npos) { // Auto Accept
                         foundMatch = true;
-                        std::wcout << "Game Found!!!\n";
                     }
                     else if (line.find(L"Misc: rate ") != std::wstring::npos && line.find(L" latency ") != std::wstring::npos) { // Ping
                         if (std::regex_search(line, match, regexPing) && match.size() > 1) {

@@ -5,7 +5,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.1.9"
+#define APP_VERSION "1.2.0"
 
 int main(int argc, char* argv[]) {
     Logger::EnableANSIColors();
@@ -76,20 +76,19 @@ int main(int argc, char* argv[]) {
     gsi.run();
 
     es.ConsoleLogStream();
-    es.InitBinds();
-
     es.AutoAccept();
+    es.BombTimer();
+    es.KillSound();
+    es.RoundStartAlert();
+    es.InitBinds();
     es.PixelTrigger();
     es.Crosshair();
-    es.BombTimer();
     es.RGBCrosshair();
     es.KnifeSwitch();
     es.AutoPistol();
     es.AntiAfk();
     es.CS2Binds();
     es.KillSay();
-    es.KillSound();
-    es.RoundStartAlert();
     es.AutoStop();
 	es.ChatSpammer();
 
