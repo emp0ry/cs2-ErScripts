@@ -35,30 +35,30 @@ No game files are altered beyond user-created configs, and no hacks are involved
 
 Here’s what *ErScripts* offers:  
 
-| Feature               | Description                                                                 |
-|-----------------------|-----------------------------------------------------------------------------|
-| **Auto Accept**       | Clicks "Accept" when a match is found via `console.log` monitoring.         |
-| ~~**Pixel Trigger**~~ | ~~Disabled feature (previously fired on color changes).~~                   |
-| **Bomb Timer**        | Shows a real-time bomb countdown with defuse kit alerts via GSI.            |
-| **Sniper Crosshair**  | Overlays a custom crosshair for snipers, synced with in-game settings.      |
-| **Recoil Crosshair**  | Enable recoil crosshair with a static center crosshair.                     |
-| **RGB Crosshair**     | Adds a gradient effect to your crosshair using console commands.            |
-| **Keystrokes**        | Displays WASD and mouse inputs on-screen for streams or fun.                |
-| **Knife Switch**      | Switches knife hand based on your weapon via `switchhands`.                 |
-| **Auto Pistol**       | Rapid-fires pistols by repeating `attack` commands.                         |
-| **Anti AFK**          | Prevents AFK kicks with subtle inputs.                                      |
-| **Long Jump**         | Combines duck + jump for longer leaps with one keypress.                    |
-| **Jump Throw**        | Simplifies jump-throw combos for consistent utility tosses.                 |
-| **Drop Bomb**         | Drops the bomb and switches back instantly.                                 |
-| **Kill Say**          | Sends a custom chat message after kills.                                    |
-| **Kill Sound**        | Plays a sound on kills for extra flair.                                     |
-| **Round Start Alert** | Sounds an alert if a round begins while you’re tabbed out.                  |
-| **Auto Stop**         | Press the opposite key for an auto stop.                                    |
-| **Chat Spammer**      | Automatically send repeated messages in chat.                               |
-| **Angle Bind**        | Bind to offset yaw (horizontal view) angle.                                 |
-| **Watermark**         | Shows ping, time, and game info as an overlay.                              |
-| **FPS Limiter**       | Caps overlay FPS for smoother performance.                                  |
-| **Capture Bypass**    | Hides the overlay from recordings/streams.                                  |
+| Feature                  | Description                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|
+| **Auto Accept**          | Clicks "Accept" when a match is found via `console.log` monitoring.         |
+| ~~**Pixel Trigger**~~    | ~~Disabled feature (previously fired on color changes).~~                   |
+| **Bomb Timer**           | Shows a real-time bomb countdown with defuse kit alerts via GSI.            |
+| **Sniper Crosshair**     | Overlays a custom crosshair for snipers, synced with in-game settings.      |
+| ~~**Recoil Crosshair**~~ | ~~Enable recoil crosshair with a static center crosshair.~~              |
+| **RGB Crosshair**        | Adds a gradient effect to your crosshair using console commands.            |
+| **Keystrokes**           | Displays WASD and mouse inputs on-screen for streams or fun.                |
+| **Knife Switch**         | Switches knife hand based on your weapon via `switchhands`.                 |
+| **Auto Pistol**          | Rapid-fires pistols by repeating `attack` commands.                         |
+| **Anti AFK**             | Prevents AFK kicks with subtle inputs.                                      |
+| **Long Jump**            | Combines duck + jump for longer leaps with one keypress.                    |
+| **Jump Throw**           | Simplifies jump-throw combos for consistent utility tosses.                 |
+| **Drop Bomb**            | Drops the bomb and switches back instantly.                                 |
+| **Kill Say**             | Sends a custom chat message after kills.                                    |
+| **Kill Sound**           | Plays a sound on kills for extra flair.                                     |
+| **Round Start Alert**    | Sounds an alert if a round begins while you’re tabbed out.                  |
+| **Auto Stop**            | Press the opposite key for an auto stop.                                    |
+| **Chat Spammer**         | Automatically send repeated messages in chat.                               |
+| **Angle Bind**           | Bind to offset yaw (horizontal view) angle.                                 |
+| **Watermark**            | Shows ping, time, and game info as an overlay.                              |
+| **FPS Limiter**          | Caps overlay FPS for smoother performance.                                  |
+| **Capture Bypass**       | Hides the overlay from recordings/streams.                                  |
 
 ---
 
