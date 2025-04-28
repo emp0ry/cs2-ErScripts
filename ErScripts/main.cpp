@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
     es.CS2Binds();
     es.KillSay();
     es.AutoStop();
-	es.ChatSpammer();
+    es.ChatSpammer();
 
     while (!globals::finish) {
         static int prevExitBind = cfg->erScriptsExitBind;
@@ -139,5 +139,5 @@ int main(int argc, char* argv[]) {
 
     gsi.stop();
 
-	exit(0);
+    exit(0);
 }
