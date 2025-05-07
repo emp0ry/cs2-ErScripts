@@ -42,7 +42,7 @@ Here’s what *ErScripts* offers:
 | ~~**Pixel Trigger**~~    | ~~Disabled feature (previously fired on color changes).~~                   |
 | **Bomb Timer**           | Shows a real-time bomb countdown with defuse kit alerts via GSI.            |
 | **Sniper Crosshair**     | Overlays a custom crosshair for snipers, synced with in-game settings.      |
-| ~~**Recoil Crosshair**~~ | ~~Enable recoil crosshair with a static center crosshair.~~              |
+| **Recoil Crosshair**     | Enable recoil crosshair with a static center crosshair.                     |
 | **RGB Crosshair**        | Adds a gradient effect to your crosshair using console commands.            |
 | **Keystrokes**           | Displays WASD and mouse inputs on-screen for streams or fun.                |
 | **Knife Switch**         | Switches knife hand based on your weapon via `switchhands`.                 |
