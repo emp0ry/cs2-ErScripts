@@ -53,9 +53,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    AllocConsole();
-    freopen("CONOUT$", "w", stdout);
-
     SetConsoleTitleA(std::format("ErScripts {}", APP_VERSION).c_str());
 
     std::cout << "[-] *---------------------------------------*" << std::endl;
