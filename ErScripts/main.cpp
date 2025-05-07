@@ -5,7 +5,7 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.2.1"
+#define APP_VERSION "1.2.2"
 
 int main(int argc, char* argv[]) {
     Logger::EnableANSIColors();
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-            if (cfg->sniperCrosshairState /*|| cfg->recoilCrosshairState*/ || cfg->angleBindState) {
+            if (cfg->sniperCrosshairState || cfg->recoilCrosshairState || cfg->angleBindState) {
                 if (elapsed.count() >= 1.5f) {
                     ErScripts::CommandsSender(5, "print_changed_convars; clear; echo *---------------------------------------*; echo |  ErScripts by emp0ry                  |; echo |  GitHub - github.com/emp0ry/          |; echo *---------------------------------------*");
                 }

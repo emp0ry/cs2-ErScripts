@@ -3,7 +3,7 @@
 void ErScripts::Crosshair() {
 	std::thread([this]() {
 		std::vector<int> blackColor = { 0, 0, 0 };
-		//bool oldRecoilCrosshairState = false;
+		bool oldRecoilCrosshairState = false;
 
 		while (!globals::finish) {
 			if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
@@ -27,16 +27,16 @@ void ErScripts::Crosshair() {
 					globals::isScope = (isColorSimilar(pixelColor1, blackColor, 20) && isColorSimilar(pixelColor2, blackColor, 20));
 				}
 
-				//if (cfg->recoilCrosshairState != oldRecoilCrosshairState) {
-				//	if (cfg->recoilCrosshairState) {
-				//		CommandsSender(3, "cl_crosshair_recoil true");
-				//	}
-				//	else {
-				//		CommandsSender(3, "cl_crosshair_recoil false");
-				//	}
-
-				//	oldRecoilCrosshairState = cfg->recoilCrosshairState;
-				//}
+				if (cfg->recoilCrosshairState != oldRecoilCrosshairState) {
+					if (cfg->recoilCrosshairState) {
+						CommandsSender(3, "cl_crosshair_recoil true");
+					}
+					else {
+						CommandsSender(3, "cl_crosshair_recoil false");
+					}
+				
+					oldRecoilCrosshairState = cfg->recoilCrosshairState;
+				}
 
 				//static bool wasPressed = false;
 

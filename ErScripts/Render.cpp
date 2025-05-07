@@ -100,9 +100,9 @@ void Overlay::Render() noexcept {
             if (cfg->sniperCrosshairState && globals::sniperCrosshairState && !globals::isScope) {
                 RenderCrosshair(*globals::config);
             }
-            //else if (cfg->recoilCrosshairState && (GetAsyncKeyState(VK_LBUTTON) & 0x8000)) {
-            //    RenderCrosshair(*globals::config);
-            //}
+            else if (cfg->recoilCrosshairState && (GetAsyncKeyState(VK_LBUTTON) & 0x8000)) {
+                RenderCrosshair(*globals::config);
+            }
         }
 	}
 

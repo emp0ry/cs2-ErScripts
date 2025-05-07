@@ -145,7 +145,7 @@ void Overlay::Menu() noexcept {
         //TriggerMenu();
         BombTimerMenu();
         SniperCrosshairMenu();
-        //RecoilCrosshairMenu();
+        RecoilCrosshairMenu();
         RGBCrosshairMenu();
         KeystrokesMenu();
         KnifeSwitchMenu();
