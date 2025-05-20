@@ -2,7 +2,7 @@
 
 void Config::load(const std::string& filename) {
     if (!std::filesystem::exists("configs"))
-        std::filesystem::create_directory("configs");
+    std::filesystem::create_directory("configs");
 
     std::ifstream file("configs\\" + filename + ".json");
     if (!file.is_open()) return;
@@ -31,8 +31,8 @@ void Config::load(const std::string& filename) {
     /* Sniper Crosshair */
     read(json["sniper-crosshair"]["state"], sniperCrosshairState);
 
-	/* Recoil Crosshair */
-	read(json["recoil-crosshair"]["state"], recoilCrosshairState);
+    /* Recoil Crosshair */
+    read(json["recoil-crosshair"]["state"], recoilCrosshairState);
 
     /* RGB Crosshair */
     read(json["rgb-crosshair"]["state"], rgbCrosshairState);
@@ -87,14 +87,14 @@ void Config::load(const std::string& filename) {
     read(json["auto-stop"]["toggle"]["state"], autoStopToggleState);
 
     /* Chat Spammer */
-	read(json["chat-spammer"]["state"], chatSpammerState);
-	read(json["chat-spammer"]["bind"], chatSpammerBind);
-	read(json["chat-spammer"]["text"], chatSpammerText);
+    read(json["chat-spammer"]["state"], chatSpammerState);
+    read(json["chat-spammer"]["bind"], chatSpammerBind);
+    read(json["chat-spammer"]["text"], chatSpammerText);
 
-	/* Angle Bind */
-	read(json["angle-bind"]["state"], angleBindState);
-	read(json["angle-bind"]["bind"], angleBindBind);
-	read(json["angle-bind"]["degree"], angleBindDegree);
+    /* Angle Bind */
+    read(json["angle-bind"]["state"], angleBindState);
+    read(json["angle-bind"]["bind"], angleBindBind);
+    read(json["angle-bind"]["degree"], angleBindDegree);
 
     /* Watermark */
     read(json["watermark"]["state"], watermarkState);
@@ -117,9 +117,9 @@ void Config::load(const std::string& filename) {
     read(json["gradient-manager"]["saturation"], gradient.saturation);
     read(json["gradient-manager"]["value"], gradient.value);
 
-	/* ErScripts Binds */
-	read(json["er-scripts"]["menu"]["bind"], erScriptsMenuBind);
-	read(json["er-scripts"]["exit"]["bind"], erScriptsExitBind);
+    /* ErScripts Binds */
+    read(json["er-scripts"]["menu"]["bind"], erScriptsMenuBind);
+    read(json["er-scripts"]["exit"]["bind"], erScriptsExitBind);
 
     /* Vsync */
     read(json["vsync"]["state"], vsyncState);
@@ -152,8 +152,8 @@ void Config::save(const std::string& filename) const {
     /* RGB Crosshair */
     json["rgb-crosshair"]["state"] = rgbCrosshairState;
 
-	/* Recoil Crosshair */
-	json["recoil-crosshair"]["state"] = recoilCrosshairState;
+    /* Recoil Crosshair */
+    json["recoil-crosshair"]["state"] = recoilCrosshairState;
 
     /* Keystrokes */
     json["keystrokes"]["state"] = keystrokesState;
@@ -204,15 +204,15 @@ void Config::save(const std::string& filename) const {
     json["auto-stop"]["bind"] = autoStopBind;
     json["auto-stop"]["toggle"]["state"] = autoStopToggleState;
 
-	/* Chat Spammer */
-	json["chat-spammer"]["state"] = chatSpammerState;
-	json["chat-spammer"]["bind"] = chatSpammerBind;
-	json["chat-spammer"]["text"] = chatSpammerText;
+    /* Chat Spammer */
+    json["chat-spammer"]["state"] = chatSpammerState;
+    json["chat-spammer"]["bind"] = chatSpammerBind;
+    json["chat-spammer"]["text"] = chatSpammerText;
 
     /* Angle Bind */
-	json["angle-bind"]["state"] = angleBindState;
-	json["angle-bind"]["bind"] = angleBindBind;
-	json["angle-bind"]["degree"] = angleBindDegree;
+    json["angle-bind"]["state"] = angleBindState;
+    json["angle-bind"]["bind"] = angleBindBind;
+    json["angle-bind"]["degree"] = angleBindDegree;
 
     /* Watermark */
     json["watermark"]["state"] = watermarkState;
@@ -239,8 +239,8 @@ void Config::save(const std::string& filename) const {
     json["vsync"]["state"] = vsyncState;
 
     /* ErScripts Binds */
-	json["er-scripts"]["menu"]["bind"] = erScriptsMenuBind;
-	json["er-scripts"]["exit"]["bind"] = erScriptsExitBind;
+    json["er-scripts"]["menu"]["bind"] = erScriptsMenuBind;
+    json["er-scripts"]["exit"]["bind"] = erScriptsExitBind;
 
     if (!std::filesystem::exists("configs"))
         std::filesystem::create_directory("configs");

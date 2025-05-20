@@ -234,7 +234,7 @@ std::optional<std::wstring> SteamTools::getAppInstallPath(std::string_view appId
         auto appPaths = parseVdfContent(content);
         auto it = appPaths.find(std::string(appId));
         if (it == appPaths.end()) {
-			Logger::logWarning(std::format(L"AppID {} not found in VDF", std::wstring(appId.begin(), appId.end())));
+            Logger::logWarning(std::format(L"AppID {} not found in VDF", std::wstring(appId.begin(), appId.end())));
             return std::nullopt;
         }
 
@@ -264,7 +264,7 @@ std::optional<std::wstring> SteamTools::getAppInstallPath(std::string_view appId
         return std::nullopt;
     }
     catch (const std::exception& e) {
-		Logger::logWarning(std::format("Error getting app install path: {}", e.what()));
+        Logger::logWarning(std::format("Error getting app install path: {}", e.what()));
         return std::nullopt;
     }
 }
@@ -272,7 +272,7 @@ std::optional<std::wstring> SteamTools::getAppInstallPath(std::string_view appId
 std::wstring SteamTools::getLaunchOptions(std::string_view appId) {
     std::wstring steamConfigPath = getSteamConfigPath();
     if (steamConfigPath.empty()) {
-		Logger::logWarning(L"Failed to get Steam config path.");
+        Logger::logWarning(L"Failed to get Steam config path.");
         return L"";
     }
 
@@ -452,7 +452,7 @@ SteamTools::Config SteamTools::parseCrosshairSettings(const std::wstring& filePa
 }
 
 void SteamTools::printCrosshairSettings(const std::optional<SteamTools::Config>& ch) {
-	Logger::logSuccess("Crosshair settings:");
+    Logger::logSuccess("Crosshair settings:");
     Logger::logInfo(std::format("cl_crosshairgap \"{:.1f}\"", ch->gap));
     Logger::logInfo(std::format("cl_crosshair_outlinethickness \"{:.1f}\"", ch->outlineThickness));
     Logger::logInfo(std::format("cl_crosshaircolor_r \"{}\"", ch->red));

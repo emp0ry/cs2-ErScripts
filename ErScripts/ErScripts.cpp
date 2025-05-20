@@ -91,27 +91,27 @@ void ErScripts::ConsoleLogStream() {
         SteamTools::Config config_default;
         config_default.gap = -2.2f;                      // cl_crosshairgap
         config_default.outlineThickness = 1.0f;          // cl_crosshair_outlinethickness
-        config_default.red = 0;						     // cl_crosshaircolor_r
-        config_default.green = 255;						 // cl_crosshaircolor_g
-        config_default.blue = 0;						 // cl_crosshaircolor_b
-        config_default.alpha = 200;						 // cl_crosshairalpha
+        config_default.red = 0;                             // cl_crosshaircolor_r
+        config_default.green = 255;                         // cl_crosshaircolor_g
+        config_default.blue = 0;                         // cl_crosshaircolor_b
+        config_default.alpha = 200;                         // cl_crosshairalpha
         //config_default.dynamicSplitDist = 3;             // cl_crosshair_dynamic_splitdist
-        //config_default.fixedCrosshairGap = 3.0f;	     // cl_fixedcrosshairgap
-        config_default.color = 5;						 // cl_crosshaircolor
-        config_default.drawOutline = true;				 // cl_crosshair_drawoutline
+        //config_default.fixedCrosshairGap = 3.0f;         // cl_fixedcrosshairgap
+        config_default.color = 5;                         // cl_crosshaircolor
+        config_default.drawOutline = true;                 // cl_crosshair_drawoutline
         //config_default.dynamicSplitAlphaInnerMod = 0.0f; // cl_crosshair_dynamic_splitalpha_innermod
         //config_default.dynamicSplitAlphaOuterMod = 1.0f; // cl_crosshair_dynamic_splitalpha_outermod
         //config_default.dynamicMaxDistSplitRatio = 1.0f;  // cl_crosshair_dynamic_maxdist_splitratio
-        config_default.thickness = 0.6f;				 // cl_crosshairthickness
-        config_default.dot = false;						 // cl_crosshairdot
-        //config_default.gapUseWeaponValue = true;	     // cl_crosshairgap_useweaponvalue
-        //config_default.useAlpha = true;				     // cl_crosshairusealpha
-        config_default.tStyle = false;					 // cl_crosshair_t
-        config_default.style = 2;						 // cl_crosshairstyle
-        config_default.size = 3.9f;					 	 // cl_crosshairsize
-		config_default.sensitivity = 1.25f;              // sensitivity
-		config_default.zoomSensitivity = 1.0f;           // zoom_sensitivity_ratio
-		config_default.yaw = 0.022f;                     // m_yaw
+        config_default.thickness = 0.6f;                 // cl_crosshairthickness
+        config_default.dot = false;                         // cl_crosshairdot
+        //config_default.gapUseWeaponValue = true;         // cl_crosshairgap_useweaponvalue
+        //config_default.useAlpha = true;                     // cl_crosshairusealpha
+        config_default.tStyle = false;                     // cl_crosshair_t
+        config_default.style = 2;                         // cl_crosshairstyle
+        config_default.size = 3.9f;                          // cl_crosshairsize
+        config_default.sensitivity = 1.25f;              // sensitivity
+        config_default.zoomSensitivity = 1.0f;           // zoom_sensitivity_ratio
+        config_default.yaw = 0.022f;                     // m_yaw
 
         std::wregex regexPing(LR"(latency (\d+) msec)");
         std::wsmatch match;
@@ -156,10 +156,10 @@ void ErScripts::ConsoleLogStream() {
                                     //else if (varName == L"cl_crosshairusealpha") globals::config->useAlpha = (value == L"true" || value == L"1");
                                     else if (varName == L"cl_crosshair_t") globals::config->tStyle = (value == L"true" || value == L"1");
                                     else if (varName == L"cl_crosshairstyle") globals::config->style = static_cast<uint8_t>(std::stoi(value));
-									else if (varName == L"cl_crosshairsize") globals::config->size = std::stof(value);
-									else if (varName == L"sensitivity") globals::config->sensitivity = std::stof(value);
-									else if (varName == L"zoom_sensitivity_ratio") globals::config->zoomSensitivity = std::stof(value);
-									else if (varName == L"m_yaw") globals::config->yaw = std::stof(value);
+                                    else if (varName == L"cl_crosshairsize") globals::config->size = std::stof(value);
+                                    else if (varName == L"sensitivity") globals::config->sensitivity = std::stof(value);
+                                    else if (varName == L"zoom_sensitivity_ratio") globals::config->zoomSensitivity = std::stof(value);
+                                    else if (varName == L"m_yaw") globals::config->yaw = std::stof(value);
                                 }
                                 catch (const std::exception& e) {
                                     std::wcout << L"Error parsing " << varName << L": " << e.what() << L"\n";
@@ -188,9 +188,9 @@ void ErScripts::ConsoleLogStream() {
                         if (foundConVars.find(L"cl_crosshair_t\n") == std::wstring::npos) globals::config->tStyle = config_default.tStyle;
                         if (foundConVars.find(L"cl_crosshairstyle\n") == std::wstring::npos) globals::config->style = config_default.style;
                         if (foundConVars.find(L"cl_crosshairsize\n") == std::wstring::npos) globals::config->size = config_default.size;
-						if (foundConVars.find(L"sensitivity\n") == std::wstring::npos) globals::config->sensitivity = config_default.sensitivity;
-						if (foundConVars.find(L"zoom_sensitivity_ratio\n") == std::wstring::npos) globals::config->zoomSensitivity = config_default.zoomSensitivity;
-						if (foundConVars.find(L"m_yaw\n") == std::wstring::npos) globals::config->yaw = config_default.yaw;
+                        if (foundConVars.find(L"sensitivity\n") == std::wstring::npos) globals::config->sensitivity = config_default.sensitivity;
+                        if (foundConVars.find(L"zoom_sensitivity_ratio\n") == std::wstring::npos) globals::config->zoomSensitivity = config_default.zoomSensitivity;
+                        if (foundConVars.find(L"m_yaw\n") == std::wstring::npos) globals::config->yaw = config_default.yaw;
 
                         //SteamTools::printCrosshairSettings(*globals::config);
                         //globals::configUpdaterState = false;

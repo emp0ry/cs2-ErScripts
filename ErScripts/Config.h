@@ -15,13 +15,13 @@ public:
     /* Pixel Trigger */
     bool triggerState{ false };
     int triggerBind{ 0 };
-	int triggerDisplacement[2]{ 1, 1 };
-	int triggerThreshold{ 20 };
+    int triggerDisplacement[2]{ 1, 1 };
+    int triggerThreshold{ 20 };
     int triggerDelayMs{ 0 };
 
     /* Auto Accept */
     bool autoAcceptState{ false };
-	int autoAcceptWaitingTime{ 5 };
+    int autoAcceptWaitingTime{ 5 };
 
     /* Bomb Timer */
     bool bombTimerState{ false };
@@ -31,13 +31,13 @@ public:
     float bombTimerPos[2]{ 0, 0 };
 
     /* Sniper Crosshair */
-	bool sniperCrosshairState{ false };
+    bool sniperCrosshairState{ false };
 
     /* RGB Crosshair */
     bool rgbCrosshairState{ false };
 
     /* Recoil Crosshair */
-	bool recoilCrosshairState{ false };
+    bool recoilCrosshairState{ false };
 
     /* Keystrokes */
     bool keystrokesState{ false };
@@ -90,18 +90,18 @@ public:
     bool autoStopToggleState{ false };
 
     /* Chat Spammer */
-	bool chatSpammerState{ false };
-	int chatSpammerBind{ 0 };
-	std::string chatSpammerText{ "Enhance Your Skills with emp0ry.github.io/cs2-ErScripts/" };
+    bool chatSpammerState{ false };
+    int chatSpammerBind{ 0 };
+    std::string chatSpammerText{ "Enhance Your Skills with emp0ry.github.io/cs2-ErScripts/" };
 
     /* Angle Bind */
-	bool angleBindState{ false };
-	int angleBindBind{ 0 };
-	float angleBindDegree{ 180.0f };
+    bool angleBindState{ false };
+    int angleBindBind{ 0 };
+    float angleBindDegree{ 180.0f };
 
     /* Watermark */
-	bool watermarkState{ true };
-	bool watermarkGradientState{ true };
+    bool watermarkState{ true };
+    bool watermarkGradientState{ true };
     float watermarkTransparency{ 1.0f };
     int watermarkPingUpdateRate{ 3 };
 
@@ -119,8 +119,8 @@ public:
     bool vsyncState{ false };
 
     /* ErScripts Binds */
-	int erScriptsMenuBind{ VK_INSERT };
-	int erScriptsExitBind{ VK_END };
+    int erScriptsMenuBind{ VK_INSERT };
+    int erScriptsExitBind{ VK_END };
 
 private:
     template <typename T>

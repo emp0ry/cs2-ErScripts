@@ -45,7 +45,7 @@ void FileMonitor::pollFile() {
     while (running_) {
         std::wifstream file(filePath_, std::ios::in);
         if (!file.is_open()) {
-			Logger::logWarning(std::format(L"Failed to open CS2 log: {}", filePath_));
+            Logger::logWarning(std::format(L"Failed to open CS2 log: {}", filePath_));
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }

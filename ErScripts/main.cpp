@@ -5,13 +5,13 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.2.2"
+#define APP_VERSION "1.2.3"
 
 int main(int argc, char* argv[]) {
     Logger::EnableANSIColors();
 
     if (!IsDebuggerPresent()) {
-		/* Rebuild */
+        /* Rebuild */
         //bool should_rebuild = true;
         //for (int i = 1; i < argc; ++i) {
         //    if (std::string(argv[i]) == "--run") {

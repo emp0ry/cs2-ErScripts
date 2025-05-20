@@ -10,12 +10,12 @@ const char* GetKeyName(int virtualKeyCode) {
         case VK_MBUTTON:    return "MOUSE3";
         case VK_XBUTTON1:   return "MOUSE4";
         case VK_XBUTTON2:   return "MOUSE5";
-		case VK_END:        return "END";
-		case VK_HOME:       return "HOME";
-		case VK_INSERT:     return "INSERT";
-		case VK_DELETE:     return "DELETE";
-		case VK_PRIOR:      return "PAGE UP";
-		case VK_NEXT:       return "PAGE DOWN";
+        case VK_END:        return "END";
+        case VK_HOME:       return "HOME";
+        case VK_INSERT:     return "INSERT";
+        case VK_DELETE:     return "DELETE";
+        case VK_PRIOR:      return "PAGE UP";
+        case VK_NEXT:       return "PAGE DOWN";
         case VK_LEFT:
         case VK_UP:
         case VK_RIGHT:
@@ -82,7 +82,7 @@ inline char killSoundFileName[256]{};
 inline char roundStartAlertFileName[256]{};
 
 void Overlay::Menu() noexcept {
-	// Get the current window title
+    // Get the current window title
     char window_title[32];
     if (!GetConsoleTitleA(window_title, sizeof(window_title)))
         window_title[0] = '\0';
@@ -156,8 +156,8 @@ void Overlay::Menu() noexcept {
         KillSoundMenu();
         RoundStartAlertMenu();
         AutoStopMenu();
-		ChatSpammerMenu();
-		AngleBindMenu();
+        ChatSpammerMenu();
+        AngleBindMenu();
         GradientManagerMenu();
         WatermarkMenu();
         FPSLimitMenu();
@@ -168,9 +168,9 @@ void Overlay::Menu() noexcept {
     // Config
     ImGui::Separator();
     ImGui::Spacing();
-	if (ImGui::Button("Save Config", { 83.5f, 28.f }))
-		cfg->save("default");
-	ImGui::SameLine();
+    if (ImGui::Button("Save Config", { 83.5f, 28.f }))
+        cfg->save("default");
+    ImGui::SameLine();
     if (ImGui::Button("Load Config", { 83.5f, 28.f })) {
         cfg->load("default");
         gradient.setConfig(cfg->gradient);
@@ -183,8 +183,8 @@ void Overlay::Menu() noexcept {
         autoStopKeyName = GetKeyName(cfg->autoStopBind);
         erScriptsMenuKeyName = GetKeyName(cfg->erScriptsMenuBind);
         erScriptsExitKeyName = GetKeyName(cfg->erScriptsExitBind);
-		chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
-		angleBindKeyName = GetKeyName(cfg->angleBindBind);
+        chatSpammerKeyName = GetKeyName(cfg->chatSpammerBind);
+        angleBindKeyName = GetKeyName(cfg->angleBindBind);
 
         if (ImGui::FindWindowByName(" Bomb Timer"))
         ImGui::SetWindowPos(" Bomb Timer", { cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
@@ -193,13 +193,13 @@ void Overlay::Menu() noexcept {
         ImGui::SetWindowPos(" Keystrokes", { cfg->keystrokesPos[0], cfg->keystrokesPos[1] });
 
         strncpy_s(killSayText, cfg->killSayText.c_str(), sizeof(killSayText) - 1);
-		strncpy_s(chatSpammerText, cfg->chatSpammerText.c_str(), sizeof(chatSpammerText) - 1);
+        strncpy_s(chatSpammerText, cfg->chatSpammerText.c_str(), sizeof(chatSpammerText) - 1);
         strncpy_s(killSoundFileName, cfg->killSoundFileName.c_str(), sizeof(killSoundFileName) - 1);
         strncpy_s(roundStartAlertFileName, cfg->roundStartAlertFileName.c_str(), sizeof(roundStartAlertFileName) - 1);
     }
 
-	ImGui::End();
-	ImGui::PopFont();
+    ImGui::End();
+    ImGui::PopFont();
 
     ImGui::PopStyleVar(5); // Pop all style vars
     ImGui::PopStyleColor(9); // Pop all style colors
@@ -533,7 +533,7 @@ void Overlay::CustomBindsMenu() noexcept {
             ImGui::Spacing();
 
             /* ErScripts Binds */
-			/* Menu */
+            /* Menu */
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Menu Bind ");

@@ -1,29 +1,29 @@
 #include "Overlay.h"
 
 std::string FormatElapsedTime(double timeInMillis) {
-	int totalMillis = std::lround(timeInMillis);
-	int seconds = totalMillis / 1000;
-	int millis = (totalMillis % 1000) / 100;
+    int totalMillis = std::lround(timeInMillis);
+    int seconds = totalMillis / 1000;
+    int millis = (totalMillis % 1000) / 100;
 
-	std::stringstream formattedTime;
-	formattedTime << std::setw(2) << std::setfill('0') << seconds << "."
-				  << std::setw(1) << std::setfill('0') << millis;
+    std::stringstream formattedTime;
+    formattedTime << std::setw(2) << std::setfill('0') << seconds << "."
+                  << std::setw(1) << std::setfill('0') << millis;
 
-	return formattedTime.str();
+    return formattedTime.str();
 }
 
 void Overlay::Render() noexcept {
     RGBColor gradient_color;
 
     if (cfg->watermarkState) {
-		bool initilizeWatermark = false;
+        bool initilizeWatermark = false;
         char window_title[32];
 
         if (!initilizeWatermark) {
             // Get the current window title
             if (!GetConsoleTitleA(window_title, sizeof(window_title)))
                 window_title[0] = '\0';
-			initilizeWatermark = true;
+            initilizeWatermark = true;
         }
 
         // Get FPS directly from ImGui
@@ -104,7 +104,7 @@ void Overlay::Render() noexcept {
                 RenderCrosshair(*globals::config);
             }
         }
-	}
+    }
 
     if (cfg->bombTimerState) {
         if (globals::bombTime || globals::menuState) {
