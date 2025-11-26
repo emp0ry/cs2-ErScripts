@@ -487,8 +487,7 @@ const void ErScripts::Keyboard(int key, bool isPressed, bool useScanCode) {
 const bool ErScripts::GetCursorState() {
     CURSORINFO cinfo = { sizeof(CURSORINFO) };
     GetCursorInfo(&cinfo);
-    if (cinfo.hCursor)
-        return ((WORD)(cinfo.hCursor) > 100);
+    return (WORD)(cinfo.hCursor) == 0;
 }
 
 const bool ErScripts::GetWindowState() {
