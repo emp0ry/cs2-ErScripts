@@ -1753,14 +1753,10 @@ main section[id],
 /* ------------------------------------------------------------------ */
 
 .brand-badge {
-  display: grid;
-  place-items: center;
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
-  font-size: 1.4rem;
-  line-height: 1;
+  object-fit: cover;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
@@ -1768,7 +1764,6 @@ main section[id],
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  font-size: 1.15rem;
 }
 
 .nav-home {
