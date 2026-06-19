@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="language" content="en">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#120b24">
+    <meta name="description" content="ErScripts is a lightweight, open-source external toolkit for Counter-Strike 2 with auto accept, bomb timer, crosshairs, keystrokes overlay, jump throw and more. No memory access, no injection.">
+    <meta name="author" content="emp0ry">
+    <meta name="application-name" content="ErScripts">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="keywords" content="ErScripts, CS2, Counter-Strike 2, cs2 scripts, auto accept, bomb timer, jump throw, sniper crosshair, keystrokes, emp0ry">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https://raw.githubusercontent.com;
+        connect-src 'self';
+        upgrade-insecure-requests;
+    ">
+    <title>ErScripts | External Counter-Strike 2 Toolkit</title>
+    <link rel="icon" href="img/logo.ico" sizes="any">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;family=Sora:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ErScripts">
+    <meta property="og:title" content="ErScripts | External Counter-Strike 2 Toolkit">
+    <meta property="og:description" content="A lightweight, open-source external toolkit for CS2. No memory access, no injection, just clean console, GSI, and log-based features.">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+  </head>
+  <body data-page="home">
+    <div class="backdrop"></div>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="#top" aria-label="ErScripts home">
+          <span class="brand-badge" aria-hidden="true">🎮</span>
+          <span class="brand-copy">
+            <strong>ErScripts</strong>
+          </span>
+        </a>
+
+        <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav class="site-nav" id="site-nav" aria-label="Primary">
+          <a href="#features">Features</a>
+          <a href="#motion">In Motion</a>
+          <a href="#how">How it works</a>
+          <a href="#responsibility">Disclaimer</a>
+          <a
+            class="button button-ghost"
+            href="https://github.com/emp0ry/cs2-ErScripts"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
+          <a class="button button-secondary nav-home" href="https://emp0ry.com">emp0ry.com</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero section" id="top">
+        <div class="container">
+          <div class="hero-copy hero-centered reveal">
+            <div class="eyebrow">
+              <span class="eyebrow-dot"></span>
+              Counter-Strike 2 · External overlay · No memory access · No injection
+            </div>
+            <h1>Play CS2 your way.</h1>
+            <p class="hero-text">
+              ErScripts is a lightweight, open-source toolkit that personalizes and streamlines
+              Counter-Strike 2. It runs fully externally, never modifying game memory or files,
+              using only what CS2 exposes through console commands, Game State Integration, and log files.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="https://github.com/emp0ry/cs2-ErScripts" target="_blank" rel="noreferrer">
+                View on GitHub
+              </a>
+              <a class="button button-secondary" href="#motion">See it in motion</a>
+              <a class="button button-secondary button-accent" href="#responsibility">Read the disclaimer</a>
+            </div>
+            <div class="hero-metrics">
+              <div class="metric-card">
+                <strong>Fully external</strong>
+                <span>Console, GSI, and log files only, no VAC-style injection</span>
+              </div>
+              <div class="metric-card">
+                <strong>20+ features</strong>
+                <span>Crosshairs, bomb timer, keystrokes, jump throw and more</span>
+              </div>
+              <div class="metric-card">
+                <strong>Open source</strong>
+                <span>MIT licensed and built with Dear ImGui</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="section-kicker">What it offers</span>
+            <h2>One overlay. A whole toolkit.</h2>
+            <p>
+              ErScripts adds convenience and flair to CS2 through an external overlay and automation,
+              all driven by CS2's own native systems.
+            </p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card reveal">
+              <div class="feature-icon icon-sun"></div>
+              <h3>Auto Accept</h3>
+              <p>Monitors <code>console.log</code> for match detection and clicks "Accept" the moment a match is found.</p>
+            </article>
+            <article class="feature-card reveal reveal-delay-sm">
+              <div class="feature-icon icon-orbit"></div>
+              <h3>Bomb Timer</h3>
+              <p>A real-time bomb countdown with defuse-kit urgency cues, powered by Game State Integration.</p>
+            </article>
+            <article class="feature-card reveal reveal-delay-md">
+              <div class="feature-icon icon-grid"></div>
+              <h3>Crosshairs</h3>
+              <p>Sniper, recoil, and animated RGB crosshairs synced with your in-game settings via console commands.</p>
+            </article>
+            <article class="feature-card reveal">
+              <div class="feature-icon icon-wave"></div>
+              <h3>Keystrokes overlay</h3>
+              <p>Show WASD and mouse inputs on screen with custom colors, scale, gradient, and animation speed, great for streams.</p>
+            </article>
+            <article class="feature-card reveal reveal-delay-sm">
+              <div class="feature-icon icon-play"></div>
+              <h3>Movement binds</h3>
+              <p>Jump Throw, Long Jump, Auto Stop, Knife Switch, Drop Bomb, and Angle Bind for consistent utility with a single key.</p>
+            </article>
+            <article class="feature-card reveal reveal-delay-md">
+              <div class="feature-icon icon-lock"></div>
+              <h3>Quality of life</h3>
+              <p>Anti-AFK, Auto Pistol, Kill Say, Kill Sound, Round Start Alert, Chat Spammer, Watermark, FPS Limiter, and Capture Bypass.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section screenshots" id="motion">
+        <div class="container">
+          <div class="section-head is-centered reveal">
+            <span class="section-kicker">In motion</span>
+            <h2>See the overlay in action.</h2>
+            <p>
+              Live captures straight from CS2: the keystrokes display, the synced crosshair, and the
+              bomb timer counting down.
+            </p>
+          </div>
+
+          <div class="motion-grid">
+            <figure class="motion-card reveal">
+              <img
+                src="https://raw.githubusercontent.com/emp0ry/cs2-ErScripts/master/Image/keystrokes.gif"
+                alt="ErScripts keystrokes overlay showing WASD and mouse inputs"
+                loading="lazy"
+                decoding="async"
+              >
+              <figcaption class="motion-caption">
+                <strong>Keystrokes</strong>
+                <span>WASD and mouse inputs rendered on screen with custom colors and animation.</span>
+              </figcaption>
+            </figure>
+
+            <figure class="motion-card reveal reveal-delay-sm">
+              <img
+                src="https://raw.githubusercontent.com/emp0ry/cs2-ErScripts/master/Image/crosshair.gif"
+                alt="ErScripts custom crosshair synced with in-game settings"
+                loading="lazy"
+                decoding="async"
+              >
+              <figcaption class="motion-caption">
+                <strong>Crosshair</strong>
+                <span>Sniper and RGB crosshairs synced live with your in-game configuration.</span>
+              </figcaption>
+            </figure>
+
+            <figure class="motion-card reveal reveal-delay-md">
+              <img
+                src="https://raw.githubusercontent.com/emp0ry/cs2-ErScripts/master/Image/bombtimer.gif"
+                alt="ErScripts real-time bomb timer countdown overlay"
+                loading="lazy"
+                decoding="async"
+              >
+              <figcaption class="motion-caption">
+                <strong>Bomb Timer</strong>
+                <span>Real-time countdown with defuse-kit urgency cues via GSI.</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section experience" id="how">
+        <div class="container split-layout">
+          <div class="section-head reveal">
+            <span class="section-kicker">How it works</span>
+            <h2>Built on CS2's own systems.</h2>
+            <p>
+              No memory reading, writing, or injection. ErScripts relies entirely on the interfaces
+              CS2 already provides, which keeps it aligned with standard scripting practices.
+            </p>
+          </div>
+
+          <div class="steps-card reveal reveal-delay">
+            <article class="step-row">
+              <span class="step-index">01</span>
+              <div>
+                <h3>Command sending</h3>
+                <p>Features like Jump Throw and Auto Pistol write CS2 commands to numbered config files, triggered through pre-bound keys that ErScripts simulates.</p>
+              </div>
+            </article>
+            <article class="step-row">
+              <span class="step-index">02</span>
+              <div>
+                <h3>Game State Integration</h3>
+                <p>Live game data (weapon status, bomb state, defuse kits) feeds the bomb timer and sniper crosshair through CS2's official GSI.</p>
+              </div>
+            </article>
+            <article class="step-row">
+              <span class="step-index">03</span>
+              <div>
+                <h3>Console logs</h3>
+                <p>Auto Accept watches <code>console.log</code> for match events, then simulates a click on the Accept button.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section responsibility" id="responsibility">
+        <div class="container">
+          <div class="responsibility-shell reveal">
+            <div class="section-head">
+              <span class="section-kicker">Disclaimer</span>
+              <h2>Use it responsibly.</h2>
+              <p>
+                ErScripts is a personal project by an independent developer, not affiliated with or
+                endorsed by Valve Corporation. It is intended for personal enjoyment, experimentation,
+                and learning, not for gaining an unfair advantage.
+              </p>
+            </div>
+
+            <div class="legal-grid">
+              <article class="legal-card">
+                <h3>Valve's rules</h3>
+                <p>Some features automate actions via external inputs. While ErScripts avoids game memory manipulation, use in official matchmaking may still risk account bans at Valve's discretion.</p>
+              </article>
+              <article class="legal-card">
+                <h3>User responsibility</h3>
+                <p>You are solely responsible for complying with Valve's Terms of Service and the CS2 rules. The developer is not liable for bans, data issues, or loss of functionality.</p>
+              </article>
+              <article class="legal-card">
+                <h3>Intended use</h3>
+                <p>Use it for fun and learning in appropriate settings such as private servers or casual play, and respect the wider CS2 community.</p>
+              </article>
+              <article class="legal-card">
+                <h3>No game tampering</h3>
+                <p>No game files are altered beyond user-created configs, and no hacks are involved, just clean, external tools.</p>
+              </article>
+            </div>
+
+            <div class="responsibility-actions">
+              <a class="button button-secondary button-accent" href="https://github.com/emp0ry/cs2-ErScripts" target="_blank" rel="noreferrer">View on GitHub</a>
+              <a class="button button-secondary" href="https://github.com/emp0ry/cs2-ErScripts/releases" target="_blank" rel="noreferrer">Releases</a>
+              <a class="button button-secondary" href="https://emp0ry.com">Back to emp0ry.com</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <a class="brand brand-footer" href="#top">
+            <span class="brand-badge" aria-hidden="true">🎮</span>
+            <span class="brand-copy">
+              <strong>ErScripts</strong>
+            </span>
+          </a>
+          <p class="footer-copy">
+            An external, open-source toolkit that personalizes Counter-Strike 2 without touching game memory.
+          </p>
+        </div>
+
+        <div class="footer-links">
+          <a href="https://emp0ry.com">emp0ry.com</a>
+          <a href="https://github.com/emp0ry/cs2-ErScripts" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://github.com/emp0ry/cs2-ErScripts/releases" target="_blank" rel="noreferrer">Releases</a>
+        </div>
+
+        <div class="footer-credits">
+          <p>Built and published by emp0ry.</p>
+          <p>MIT licensed · Built with Dear ImGui, nlohmann/json, and cpp-httplib.</p>
+          <p>&copy; <span data-year></span> ErScripts</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
