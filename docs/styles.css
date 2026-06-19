@@ -1752,18 +1752,6 @@ main section[id],
 /* Shared additions for other_repo_sites (ErScripts, Hide Icons, ...) */
 /* ------------------------------------------------------------------ */
 
-.brand-badge {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-  background: transparent;
-}
-
-.brand-footer .brand-badge {
-  width: 36px;
-  height: 36px;
-}
-
 .nav-home {
   border-color: rgba(216, 180, 255, 0.32) !important;
   background: rgba(216, 180, 255, 0.1) !important;
