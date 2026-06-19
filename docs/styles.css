@@ -1755,15 +1755,13 @@ main section[id],
 .brand-badge {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
-  object-fit: cover;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  object-fit: contain;
+  background: transparent;
 }
 
 .brand-footer .brand-badge {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
 }
 
 .nav-home {
