@@ -1,0 +1,22 @@
+
+> erscripts-website@1.0.0 build
+> tsc --noEmit && vite build && node scripts/sync-docs.mjs
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/404.html                       6.62 kB │ gzip: 2.16 kB
+dist/index.html                    21.80 kB │ gzip: 6.36 kB
+dist/site/build/main-VfiohwkN.css  23.68 kB │ gzip: 5.78 kB
+dist/site/build/main-DlEp-3DV.js   15.50 kB │ gzip: 6.18 kB
+
+✓ built in 81ms
+Synced 20 generated website files; original domain and icon retained.
+
+
+> erscripts-website@1.0.0 check:output
+> node scripts/check-output.mjs
+
+Output checks pass: anchors, fallback links, exact setup command, metadata/CSP, local assets, retained domain/icon, and matching Pages output.
