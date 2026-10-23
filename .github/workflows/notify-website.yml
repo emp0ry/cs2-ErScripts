@@ -1,0 +1,41 @@
+name: Notify EMP0RY websites
+
+on:
+  release:
+    types: [published, edited, deleted, unpublished]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: emp0ry-web-notification
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the central static build
+        env:
+          DEPLOY_HOOK: ${{ secrets.EMP0RY_WEB_DEPLOY_HOOK }}
+        shell: python
+        run: |
+          import json, os, sys, time, urllib.request, urllib.error
+          from urllib.parse import urlsplit
+          hook = os.environ.get('DEPLOY_HOOK', '')
+          url = urlsplit(hook)
+          if url.scheme != 'https' or url.hostname != 'api.cloudflare.com' or not url.path.startswith('/client/v4/workers/builds/deploy_hooks/') or url.username or url.password or url.query or url.fragment:
+              sys.exit('Missing or invalid EMP0RY_WEB_DEPLOY_HOOK secret. No request sent.')
+          for attempt in range(3):
+              try:
+                  request = urllib.request.Request(hook, data=b'', method='POST')
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      data = json.load(response)
+                  if not data.get('success') or not data.get('result', {}).get('build_uuid'):
+                      raise ValueError('Build not acknowledged')
+                  print('Central website build queued: ' + data['result']['build_uuid'])
+                  break
+              except Exception:
+                  if attempt == 2:
+                      sys.exit('Cloudflare build notification failed. Retry this workflow manually.')
+                  time.sleep(2 ** attempt)
