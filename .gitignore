@@ -35,3 +35,7 @@
 /x64
 /.vs
 /docs/.vscode
+
+# Product website
+/website/node_modules/
+/website/dist/
