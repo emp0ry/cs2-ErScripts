@@ -45,3 +45,11 @@ Screenshots are in `screenshots/`.
 ## Limitations
 
 Viewport testing uses the in-app browser, not every physical device or browser engine. Physical iOS Safari, low-end hardware, throttled-network performance and the native Windows application were not exercised in this website-only revision. No-script availability was checked in generated HTML; this browser did not expose a JavaScript-disable control. The clipboard permission-denied fallback was retained but not forced in this browser.
+
+## Viewer follow-up
+
+The expanded viewer header retained an old, lighter purple background after the dialog surface changed, creating a rectangular patch behind the title and close control. It now shares one opaque graphite surface, with a transparent header and a separate scrollable screenshot region. Header controls remain outside that region. The region is keyboard-focusable and included in the dialog focus loop.
+
+Rechecked the built viewer at 1440 x 900, 390 x 844 and 844 x 390. The header background computes to transparent over #111116. A keyboard End scroll moved the image without moving the title or close button. Escape restored the screenshot link focus and unlocked the page. Both compact overlay captures also loaded in correctly sized dialogs and closed with the close button. No warning/error logs were observed. Type/build/output checks and all 10 existing logic tests passed again.
+
+The repository README opening now follows MiruShin's centered logo, title, introduction, release/download/support badges, platform/license badges and navigation links. Its release notes, exact setup instructions and remaining sections are unchanged.

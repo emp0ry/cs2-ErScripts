@@ -187,10 +187,13 @@ dialog::backdrop{background:#07070b99;-webkit-backdrop-filter:blur(10px);backdro
 .site-menu nav{display:flex;flex-direction:column}
 .site-menu nav a{padding-block:15px;border-top:1px solid var(--line);font-size:15px}
 .site-menu .menu-secondary{margin-top:20px;color:var(--faint);font-size:12px}
-.image-viewer{width:fit-content;max-width:calc(100vw - 40px);overflow:auto}
-.image-viewer .dialog-heading{position:sticky;top:-32px;background:#17151df0;padding-block:8px;z-index:1}
+.image-viewer{width:fit-content;max-width:calc(100vw - 40px);overflow:hidden;background:var(--surface)}
+.image-viewer[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
+.image-viewer .dialog-heading{position:static;background:transparent;padding-block:8px}
 .image-viewer .dialog-heading h2{font-size:17px;letter-spacing:-.025em}
-.image-viewer>img{display:block;max-width:min(1100px,calc(100vw - 106px));height:auto;max-height:none;object-fit:contain;margin:auto;border-radius:4px}
+.image-stage{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.image-stage:focus-visible{outline-offset:-3px}
+.image-viewer .image-stage img{display:block;max-width:min(1100px,calc(100vw - 106px));height:auto;max-height:none;object-fit:contain;margin:auto;border-radius:4px}
 .not-found{min-height:calc(100svh - var(--header) - 340px);display:flex;align-items:center;padding-block:64px}
 .not-found h1{font-size:clamp(44px,6vw,80px);margin-block:20px 24px}
 .not-found p{max-width:480px;margin-bottom:24px}
@@ -320,8 +323,8 @@ kbd{font-size:11px;padding-inline:10px;min-width:32px}
 .site-menu{padding:24px}
 .dialog-heading h2{font-size:22px}
 .image-viewer{padding:18px;max-width:calc(100vw - 20px)}
-.image-viewer>img{max-width:calc(100vw - 58px)}
-.image-viewer .dialog-heading{top:-18px;gap:14px}
+.image-viewer .image-stage img{max-width:calc(100vw - 58px)}
+.image-viewer .dialog-heading{gap:14px}
 .image-viewer .dialog-heading h2{font-size:14px}
 .not-found{min-height:55svh}
 .not-found h1{font-size:44px}}
@@ -340,5 +343,5 @@ p{overflow-wrap:anywhere}
 .download-option>div{min-width:0}
 .asset-size{overflow-wrap:anywhere}
 .gallery-tabs,.install-tabs{position:relative}
-dialog{overflow:auto}
+dialog:not(.image-viewer){overflow:auto}
 @media(max-width:700px){.gallery-tabs button,.install-tabs button{font-size:12px}}

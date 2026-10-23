@@ -1,10 +1,44 @@
-# ErScripts
+<p align="center">
+  <img src="docs/site/icon.svg" alt="ErScripts logo" width="180">
+</p>
 
-Crosshairs, overlays and config backups for Counter-Strike 2. External, open source and built for Windows.
+<h1 align="center">ErScripts</h1>
 
-**[Download 2.0.0](https://github.com/emp0ry/cs2-ErScripts/releases/tag/v2.0.0)** · [Website](https://erscripts.emp0ry.com/) · [Report a bug](https://github.com/emp0ry/cs2-ErScripts/issues)
+<p align="center">
+  <b>Crosshairs, overlays and config backups for Counter-Strike 2.</b>
+</p>
 
-![ErScripts 2.0.0 General menu](docs/img/screenshots/general.png)
+<p align="center">
+  <a href="https://github.com/emp0ry/cs2-ErScripts/releases/latest">
+    <img alt="Latest Release" src="https://img.shields.io/github/v/release/emp0ry/cs2-ErScripts?style=flat-square&amp;logo=github&amp;logoColor=white&amp;label=Release&amp;color=8b5cf6&amp;labelColor=1f2937">
+  </a>
+  <a href="https://github.com/emp0ry/cs2-ErScripts/releases">
+    <img alt="Total Downloads" src="https://img.shields.io/github/downloads/emp0ry/cs2-ErScripts/total?style=flat-square&amp;logo=github&amp;logoColor=white&amp;label=Downloads&amp;color=ff6d00&amp;labelColor=1f2937">
+  </a>
+  <a href="https://www.buymeacoffee.com/emp0ry">
+    <img alt="Buy Me a Coffee" src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-emp0ry-FFDD00?style=flat-square&amp;logo=buymeacoffee&amp;logoColor=111827">
+  </a>
+  <br>
+  <img alt="Platforms: Windows 10 and 11, x64" src="https://img.shields.io/badge/Platforms-Windows%2010%20%7C%2011%20%C2%B7%20x64-111827?style=flat-square">
+  <img alt="C++20" src="https://img.shields.io/badge/C%2B%2B-20-00599C?style=flat-square&amp;logo=cplusplus&amp;logoColor=white&amp;labelColor=1f2937">
+  <a href="LICENSE.txt">
+    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-8b5cf6?style=flat-square&amp;labelColor=1f2937">
+  </a>
+</p>
+
+<p align="center">
+Fine-tune your crosshair, keep round information visible and back up your CS2 settings in one compact Windows app. External, free and open source.
+</p>
+
+<p align="center">
+  <a href="https://github.com/emp0ry/cs2-ErScripts/releases/tag/v2.0.0"><b>Download 2.0.0</b></a> ·
+  <a href="https://erscripts.emp0ry.com/">Website</a> ·
+  <a href="https://github.com/emp0ry/cs2-ErScripts/issues">Report a bug</a>
+</p>
+
+<p align="center">
+  <img src="docs/img/screenshots/general.png" alt="ErScripts 2.0.0 General menu" width="820">
+</p>
 
 ## What's new in 2.0.0
 
