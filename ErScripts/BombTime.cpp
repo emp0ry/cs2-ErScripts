@@ -14,11 +14,13 @@ void ErScripts::BombTimer() {
                     }
 
                     if (isbombTimerStarted) {
-                        globals::bombTime = 40000 - std::chrono::duration<double, std::milli>(std::chrono::system_clock::now() - bombPlantedTime).count();
-                        if (globals::bombTime <= 0) globals::bombTime = 0.0l;
+                        globals::bombTime = 40000 - std::chrono::duration<double, std::milli>(
+                                                        std::chrono::system_clock::now() - bombPlantedTime)
+                                                        .count();
+                        if (globals::bombTime <= 0)
+                            globals::bombTime = 0.0l;
                     }
-                }
-                else {
+                } else {
                     globals::bombTime = 0.0l;
                     isbombTimerStarted = false;
                 }

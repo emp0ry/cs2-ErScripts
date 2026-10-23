@@ -9,14 +9,14 @@
 #include <string>
 
 class ErScripts {
-public:
+  public:
     void Initalization();
     void ConsoleLogStream();
     static const bool GetCursorState();
     static const bool GetWindowState();
-    static const void GetWindowInfo(int& width, int& height, int& posX, int& posY);
-    static void CommandsSender(const int num, const std::string& command);
-    static const void Keyboard(int wScan, bool isPressed, bool useScanCode = true);
+    static const void GetWindowInfo(int &width, int &height, int &posX, int &posY);
+    static bool CommandsSender(const int num, const std::string &command);
+    static void Keyboard(int wScan, bool isPressed);
 
     void InitBinds();
     void AutoAccept();
@@ -33,21 +33,22 @@ public:
     void RoundStartAlert();
     void AutoStop();
     void ChatSpammer();
-private:
-    static HWND hwnd;
 
-    std::wstring path;          // CS2 installation path
-    static std::wstring config; // Path to cfg file
-    std::wstring gsi;           // Path to gamestate_integration file
-    std::wstring consoleLog;    // Path to console.log file
+  private:
+    static std::atomic<HWND> hwnd;
 
-    bool foundMatch = false;    // For Auto Accept
+    std::wstring path;
+    static std::wstring config;
+    std::wstring gsi;
+    std::wstring consoleLog;
 
-    static bool bindsInit;      // Init Binds
+    bool foundMatch = false;
 
-    bool setPaths();            // Returns true if path is found and set
-    bool configsValidation();   // Configs validation if not exist create
+    static bool bindsInit;
+
+    bool setPaths();
+    bool configsValidation();
 
     const std::vector<int> GetPixelColor(int x, int y);
-    const bool isColorSimilar(const std::vector<int>& color, const std::vector<int>& targetColor, int range);
+    const bool isColorSimilar(const std::vector<int> &color, const std::vector<int> &targetColor, int range);
 };

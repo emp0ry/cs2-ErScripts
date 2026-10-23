@@ -1,8 +1,9 @@
 #include "ErScripts.h"
 #include <random>
 
-inline int GenerateUniqueRandomDelay(std::vector<int>& recentDelays, int minDelay, int maxDelay) {
-    static std::mt19937 rng(static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+inline int GenerateUniqueRandomDelay(std::vector<int> &recentDelays, int minDelay, int maxDelay) {
+    static std::mt19937 rng(
+        static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
     std::uniform_int_distribution<int> dist(minDelay, maxDelay);
 
     int delay;
@@ -18,19 +19,19 @@ inline int GenerateUniqueRandomDelay(std::vector<int>& recentDelays, int minDela
     return delay;
 }
 
-inline void PressAndRelease(char key, std::vector<int>& recentDelays) {
-    int minDelay = 5;       // Min delay in ms
-    int maxDelay = 30;      // Max delay in ms
-    int baseTimeout = 115;  // Base timeout (115)
+inline void PressAndRelease(char key, std::vector<int> &recentDelays) {
+    int minDelay = 5;
+    int maxDelay = 30;
+    int baseTimeout = 115;
 
     int delay = GenerateUniqueRandomDelay(recentDelays, minDelay, maxDelay);
 
     int totalTimeout = baseTimeout - delay;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-    ErScripts::Keyboard(key, true, false);
+    ErScripts::Keyboard(key, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(totalTimeout));
-    ErScripts::Keyboard(key, false, false);
+    ErScripts::Keyboard(key, false);
 }
 
 void ErScripts::AutoStop() {
@@ -51,8 +52,7 @@ void ErScripts::AutoStop() {
                         if (bindState && !statePrev) {
                             state = !state;
                         }
-                    }
-                    else {
+                    } else {
                         state = bindState;
                     }
                     statePrev = bindState;
@@ -61,11 +61,10 @@ void ErScripts::AutoStop() {
                         bool aPressed = GetAsyncKeyState('A') & 0x8000;
                         bool dPressed = GetAsyncKeyState('D') & 0x8000;
 
-                        // Detect release of A while not pressing D
                         if (aWasPressed && !aPressed && !dPressed) {
                             PressAndRelease('D', recentDelays);
                         }
-                        // Detect release of D while not pressing A
+
                         else if (dWasPressed && !dPressed && !aPressed) {
                             PressAndRelease('A', recentDelays);
                         }

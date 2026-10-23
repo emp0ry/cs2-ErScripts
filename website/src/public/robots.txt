@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://erscripts.emp0ry.com/sitemap.xml

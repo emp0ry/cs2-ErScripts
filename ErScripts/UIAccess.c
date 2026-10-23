@@ -34,12 +34,13 @@ static DWORD DuplicateWinloginToken(DWORD dwSessionId, DWORD dwDesiredAccess, PH
                         BOOL fTcb;
 
                         if (PrivilegeCheck(hToken, &ps, &fTcb) && fTcb) {
-                            if (GetTokenInformation(hToken, TokenSessionId, &sid, sizeof(sid), &dwRetLen) && sid == dwSessionId) {
+                            if (GetTokenInformation(hToken, TokenSessionId, &sid, sizeof(sid), &dwRetLen) &&
+                                sid == dwSessionId) {
                                 bFound = TRUE;
-                                if (DuplicateTokenEx(hToken, dwDesiredAccess, NULL, SecurityImpersonation, TokenImpersonation, phToken)) {
+                                if (DuplicateTokenEx(hToken, dwDesiredAccess, NULL, SecurityImpersonation,
+                                                     TokenImpersonation, phToken)) {
                                     dwErr = ERROR_SUCCESS;
-                                }
-                                else {
+                                } else {
                                     dwErr = GetLastError();
                                 }
                             }
@@ -49,19 +50,17 @@ static DWORD DuplicateWinloginToken(DWORD dwSessionId, DWORD dwDesiredAccess, PH
                     CloseHandle(hProcess);
                 }
 
-                if (bFound) break;
+                if (bFound)
+                    break;
             }
 
             CloseHandle(hSnapshot);
-        }
-        else {
+        } else {
             dwErr = GetLastError();
         }
-    }
-    else {
+    } else {
         dwErr = GetLastError();
     }
-
 
     return dwErr;
 }
@@ -79,39 +78,37 @@ static DWORD CreateUIAccessToken(PHANDLE phToken) {
             dwErr = DuplicateWinloginToken(dwSessionId, TOKEN_IMPERSONATE, &hTokenSystem);
             if (ERROR_SUCCESS == dwErr) {
                 if (SetThreadToken(NULL, hTokenSystem)) {
-                    if (DuplicateTokenEx(hTokenSelf, TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_ADJUST_DEFAULT, NULL, SecurityAnonymous, TokenPrimary, phToken)) {
+                    if (DuplicateTokenEx(hTokenSelf,
+                                         TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_ADJUST_DEFAULT,
+                                         NULL, SecurityAnonymous, TokenPrimary, phToken)) {
                         BOOL bUIAccess = TRUE;
 
                         if (!SetTokenInformation(*phToken, TokenUIAccess, &bUIAccess, sizeof(bUIAccess))) {
                             dwErr = GetLastError();
                             CloseHandle(*phToken);
                         }
-                    }
-                    else {
+                    } else {
                         dwErr = GetLastError();
                     }
                     RevertToSelf();
-                }
-                else {
+                } else {
                     dwErr = GetLastError();
                 }
                 CloseHandle(hTokenSystem);
             }
-        }
-        else {
+        } else {
             dwErr = GetLastError();
         }
 
         CloseHandle(hTokenSelf);
-    }
-    else {
+    } else {
         dwErr = GetLastError();
     }
 
     return dwErr;
 }
 
-static BOOL CheckForUIAccess(DWORD* pdwErr, DWORD* pfUIAccess) {
+static BOOL CheckForUIAccess(DWORD *pdwErr, DWORD *pfUIAccess) {
     BOOL result = FALSE;
     HANDLE hToken;
 
@@ -120,13 +117,11 @@ static BOOL CheckForUIAccess(DWORD* pdwErr, DWORD* pfUIAccess) {
 
         if (GetTokenInformation(hToken, TokenUIAccess, pfUIAccess, sizeof(*pfUIAccess), &dwRetLen)) {
             result = TRUE;
-        }
-        else {
+        } else {
             *pdwErr = GetLastError();
         }
         CloseHandle(hToken);
-    }
-    else {
+    } else {
         *pdwErr = GetLastError();
     }
 
@@ -141,19 +136,18 @@ DWORD PrepareForUIAccess() {
     if (CheckForUIAccess(&dwErr, &fUIAccess)) {
         if (fUIAccess) {
             dwErr = ERROR_SUCCESS;
-        }
-        else {
+        } else {
             dwErr = CreateUIAccessToken(&hTokenUIAccess);
             if (ERROR_SUCCESS == dwErr) {
                 STARTUPINFO si;
                 PROCESS_INFORMATION pi;
 
                 GetStartupInfo(&si);
-                if (CreateProcessAsUserW(hTokenUIAccess, NULL, GetCommandLine(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+                if (CreateProcessAsUserW(hTokenUIAccess, NULL, GetCommandLine(), NULL, NULL, FALSE, 0, NULL, NULL, &si,
+                                         &pi)) {
                     CloseHandle(pi.hProcess), CloseHandle(pi.hThread);
                     ExitProcess(0);
-                }
-                else {
+                } else {
                     dwErr = GetLastError();
                 }
 

@@ -1,33 +1,31 @@
-// Updater.cpp
 #include "Updater.h"
 #include "Logger.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <windows.h>
+#include <shellapi.h>
 #include <wininet.h>
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <thread>
-#include <random> // Added for random_device, mt19937, uniform_int_distribution
+#include <random>
 
 #pragma comment(lib, "wininet.lib")
 
 std::string Updater::random_suffix_;
 
-Updater::Updater(const std::string& currentVersion, const std::string& githubAuthor, const std::string& repoName, const std::string& downloadExeName) :
-    currentVersion(currentVersion),
-    currentExeName(getCurrentExeName()),
-    downloadExeName(downloadExeName + ".exe"),
-    releasesUrl("https://api.github.com/repos/" + githubAuthor + "/" + repoName + "/releases/latest"),
-    githubAuthor(githubAuthor),
-    repoName(repoName) {
+Updater::Updater(const std::string &currentVersion, const std::string &githubAuthor, const std::string &repoName,
+                 const std::string &downloadExeName)
+    : currentVersion(currentVersion), currentExeName(getCurrentExeName()), downloadExeName(downloadExeName + ".exe"),
+      releasesUrl("https://api.github.com/repos/" + githubAuthor + "/" + repoName + "/releases/latest"),
+      githubAuthor(githubAuthor), repoName(repoName) {
     Logger::EnableANSIColors();
     if (currentExeName.empty()) {
         Logger::logWarning(std::format("Failed to get current executable name, defaulting to {}", downloadExeName));
         currentExeName = downloadExeName;
     }
-    // Generate suffix once
+
     if (random_suffix_.empty()) {
         random_suffix_ = generateRandomString(8);
     }
@@ -62,14 +60,14 @@ std::string Updater::getCurrentExeName() {
     return fullPath;
 }
 
-std::wstring Updater::stringToWstring(const std::string& str) {
+std::wstring Updater::stringToWstring(const std::string &str) {
     int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
     std::wstring wstr(size, 0);
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], size);
     return wstr;
 }
 
-std::string Updater::downloadJsonData(const std::string& url) {
+std::string Updater::downloadJsonData(const std::string &url) {
     std::string jsonData;
     std::wstring wideUrl = stringToWstring(url);
 
@@ -85,19 +83,17 @@ std::string Updater::downloadJsonData(const std::string& url) {
             }
             jsonData = ss.str();
             InternetCloseHandle(hConnect);
-        }
-        else {
+        } else {
             Logger::logWarning(std::format("Failed to open URL: {}", GetLastError()));
         }
         InternetCloseHandle(hInternet);
-    }
-    else {
+    } else {
         Logger::logWarning(std::format("Failed to initialize WinINet: {}", GetLastError()));
     }
     return jsonData;
 }
 
-bool Updater::downloadFile(const std::string& url, const std::string& outputPath) {
+bool Updater::downloadFile(const std::string &url, const std::string &outputPath) {
     std::wstring wideUrl = stringToWstring(url);
     std::cout << "Downloading from: " << url << std::endl;
 
@@ -117,10 +113,10 @@ bool Updater::downloadFile(const std::string& url, const std::string& outputPath
     DWORD contentLength = 0;
     DWORD bufferLength = sizeof(contentLength);
     DWORD index = 0;
-    if (!HttpQueryInfoW(hConnect, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &contentLength, &bufferLength, &index)) {
+    if (!HttpQueryInfoW(hConnect, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &contentLength, &bufferLength,
+                        &index)) {
         Logger::logWarning(std::format("Warning: Could not get Content-Length: {}", GetLastError()));
-    }
-    else {
+    } else {
         Logger::logInfo(std::format("Expected file size: {} bytes", contentLength));
     }
 
@@ -136,7 +132,8 @@ bool Updater::downloadFile(const std::string& url, const std::string& outputPath
     DWORD bytesRead;
     size_t totalBytes = 0;
     while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead)) {
-        if (bytesRead == 0) break;
+        if (bytesRead == 0)
+            break;
         outFile.write(buffer, bytesRead);
         totalBytes += bytesRead;
     }
@@ -156,7 +153,7 @@ bool Updater::downloadFile(const std::string& url, const std::string& outputPath
     return true;
 }
 
-bool Updater::isValidExecutable(const std::string& filePath) {
+bool Updater::isValidExecutable(const std::string &filePath) {
     std::ifstream file(filePath, std::ios::binary);
     if (!file) {
         Logger::logWarning(std::format("Cannot open file for validation: {}", filePath));
@@ -173,7 +170,7 @@ bool Updater::isValidExecutable(const std::string& filePath) {
     return isValid;
 }
 
-bool Updater::replaceExecutable(const std::string& newFilePath) {
+bool Updater::replaceExecutable(const std::string &newFilePath) {
     if (!isValidExecutable(newFilePath)) {
         Logger::logWarning("Downloaded file is not a valid executable");
         return false;
@@ -182,7 +179,6 @@ bool Updater::replaceExecutable(const std::string& newFilePath) {
     std::string backupPath = currentExeName + "_old.exe";
     std::string currentPath = currentExeName;
 
-    // Get TEMP directory
     char temp_dir[MAX_PATH];
     if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
         Logger::logWarning(std::format("Failed to get TEMP path: {}", GetLastError()));
@@ -190,7 +186,6 @@ bool Updater::replaceExecutable(const std::string& newFilePath) {
     }
     std::string batPath = std::string(temp_dir) + "update_" + random_suffix_ + ".bat";
 
-    // Write batch file
     for (int retry = 0; retry < 3; ++retry) {
         std::ofstream batFile(batPath);
         if (batFile) {
@@ -215,8 +210,7 @@ bool Updater::replaceExecutable(const std::string& newFilePath) {
         return false;
     }
 
-    // Run batch file
-    SHELLEXECUTEINFOA sei = { sizeof(sei) };
+    SHELLEXECUTEINFOA sei = {sizeof(sei)};
     sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
     sei.lpFile = batPath.c_str();
     sei.lpVerb = "open";
@@ -264,9 +258,9 @@ bool Updater::checkAndUpdate() {
         if (latestVersion > currentVersion) {
             Logger::logInfo(std::format("New version available: {} (current: {})", latestVersion, currentVersion));
 
-            std::string downloadUrl = "https://github.com/" + githubAuthor + "/" + repoName + "/releases/download/v" + latestVersion + "/" + downloadExeName;
+            std::string downloadUrl = "https://github.com/" + githubAuthor + "/" + repoName + "/releases/download/v" +
+                                      latestVersion + "/" + downloadExeName;
 
-            // Use TEMP for temp file
             char temp_dir[MAX_PATH];
             if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
                 Logger::logWarning(std::format("Failed to get TEMP path: {}", GetLastError()));
@@ -282,12 +276,10 @@ bool Updater::checkAndUpdate() {
             }
             std::filesystem::remove(tempPath);
             return false;
-        }
-        else {
+        } else {
             return false;
         }
-    }
-    catch (const nlohmann::json::exception& e) {
+    } catch (const nlohmann::json::exception &e) {
         Logger::logWarning(std::format("JSON parsing error: {}", e.what()));
         return false;
     }

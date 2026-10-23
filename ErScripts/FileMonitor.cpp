@@ -1,84 +1,75 @@
 #include "FileMonitor.h"
 #include "Logger.h"
-#include <iostream>
+#include <windows.h>
+#include <filesystem>
+#include <array>
 #include <chrono>
 
 FileMonitor::FileMonitor(std::wstring filePath) : filePath_(std::move(filePath)) {
-    // Start at the end of the file
-    std::wifstream file(filePath_, std::ios::in);
-    if (file.is_open()) {
-        file.seekg(0, std::ios::end);
-        lastOffset_ = file.tellg();
-        file.close();
-    }
+    std::error_code error;
+    const auto size = std::filesystem::file_size(filePath_, error);
+    if (!error)
+        lastOffset_ = static_cast<std::streamoff>(size);
 }
-
 FileMonitor::~FileMonitor() {
     stop();
 }
-
 void FileMonitor::start() {
-    if (running_.exchange(true)) {
-        return;
-    }
-    monitorThread_ = std::thread(&FileMonitor::pollFile, this);
+    if (!running_.exchange(true))
+        monitorThread_ = std::thread(&FileMonitor::pollFile, this);
 }
-
 void FileMonitor::stop() {
     running_ = false;
-    if (monitorThread_.joinable()) {
+    if (monitorThread_.joinable())
         monitorThread_.join();
-    }
 }
-
 std::optional<std::deque<std::wstring>> FileMonitor::getNewLines() {
-    std::lock_guard<std::mutex> lock(linesMutex_);
-    if (newLines_.empty()) {
+    std::lock_guard lock(linesMutex_);
+    if (newLines_.empty())
         return std::nullopt;
-    }
     auto result = std::move(newLines_);
     newLines_.clear();
     return result;
 }
-
 void FileMonitor::pollFile() {
+    std::string pending;
     while (running_) {
-        std::wifstream file(filePath_, std::ios::in);
-        if (!file.is_open()) {
-            Logger::logWarning(std::format(L"Failed to open CS2 log: {}", filePath_));
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::ifstream file(std::filesystem::path(filePath_), std::ios::binary);
+        if (!file) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
-
-        // Move to last known offset
-        file.seekg(lastOffset_, std::ios::beg);
-
-        std::deque<std::wstring> tempLines;
-        std::wstring line;
-
-        // Read all new lines from current position
-        while (std::getline(file, line)) {
-            if (!line.empty()) {
-                tempLines.push_back(std::move(line));
-            }
+        file.seekg(0, std::ios::end);
+        if (file.tellg() < lastOffset_) {
+            lastOffset_ = 0;
+            pending.clear();
         }
-
-        // Update offset to current position
-        lastOffset_ = file.tellg();
-        if (lastOffset_ == -1) {  // Handle potential EOF or error
-            file.clear();
-            file.seekg(0, std::ios::end);
-            lastOffset_ = file.tellg();
+        file.seekg(lastOffset_);
+        std::array<char, 16384> buffer;
+        while (file.read(buffer.data(), buffer.size()) || file.gcount()) {
+            pending.append(buffer.data(), static_cast<size_t>(file.gcount()));
+            lastOffset_ += file.gcount();
         }
-
-        if (!tempLines.empty()) {
-            std::lock_guard<std::mutex> lock(linesMutex_);
-            newLines_.insert(newLines_.end(),
-                std::move_iterator(tempLines.begin()),
-                std::move_iterator(tempLines.end()));
+        std::deque<std::wstring> lines;
+        size_t begin = 0, end;
+        while ((end = pending.find('\n', begin)) != std::string::npos) {
+            auto line = pending.substr(begin, end - begin);
+            begin = end + 1;
+            if (!line.empty() && line.back() == '\r')
+                line.pop_back();
+            if (line.empty())
+                continue;
+            const int length = MultiByteToWideChar(CP_UTF8, 0, line.data(), static_cast<int>(line.size()), nullptr, 0);
+            std::wstring wide(length, L'\0');
+            MultiByteToWideChar(CP_UTF8, 0, line.data(), static_cast<int>(line.size()), wide.data(), length);
+            lines.push_back(std::move(wide));
         }
-
-        file.close();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Fast but light
+        pending.erase(0, begin);
+        if (!lines.empty()) {
+            std::lock_guard lock(linesMutex_);
+            newLines_.insert(newLines_.end(), std::make_move_iterator(lines.begin()),
+                             std::make_move_iterator(lines.end()));
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }

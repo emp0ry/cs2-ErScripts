@@ -5,45 +5,52 @@
 #include "ErScripts.h"
 #include "Overlay.h"
 
-#define APP_VERSION "1.2.4"
+#include "AppVersion.h"
+#include "ConfigExport.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
+    ImGui_ImplWin32_EnableDpiAwareness();
+    bool preview = false, checkUpdates = true;
+    for (int i = 1; i < argc; ++i) {
+        const std::string_view argument(argv[i]);
+        if (argument == "--preview")
+            preview = true;
+        if (argument == "--no-update")
+            checkUpdates = false;
+    }
     Logger::EnableANSIColors();
+    if (preview) {
+        globals::previewMode = true;
+        globals::width = 1280;
+        globals::height = 900;
+        crosshair::Settings settings;
+        settings.modernFields = 15;
+        settings.loaded = true;
+        globals::setConfig(settings);
+        SetConsoleTitleA("ErScripts preview");
+        Overlay overlay;
+        overlay.run();
+        while (!globals::finish)
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        return 0;
+    }
 
     if (!IsDebuggerPresent()) {
-        /* Rebuild */
-        //bool should_rebuild = true;
-        //for (int i = 1; i < argc; ++i) {
-        //    if (std::string(argv[i]) == "--run") {
-        //        should_rebuild = false;
-        //        break;
-        //    }
-        //}
 
-        // Check if program already running
         CreateMutexA(0, FALSE, "Local\\erscripts");
         if (GetLastError() == ERROR_ALREADY_EXISTS) {
-            //Rebuild::cleanupTempFiles();
+
             Updater::cleanupTempFiles();
             MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
             return -1;
         }
 
-        // Rebuild or unpack
-        //Rebuild rebuilder;
-        //if (!rebuilder.rebuildAndRelaunch(should_rebuild)) {
-        //    std::cout << "[*] Rebuild or unpack failed. Continuing with current binary.\n";
-        //}
-        //if (should_rebuild) {
-        //    return 0; // Exit after relaunch
-        //}
+        if (checkUpdates) {
+            Updater updater(APP_VERSION, "emp0ry", "cs2-ErScripts", "ErScripts");
+            if (updater.checkAndUpdate())
+                return 0;
+        }
 
-        /* Auto updater */
-        Updater updater(APP_VERSION, "emp0ry", "cs2-ErScripts", "ErScripts");
-        if (updater.checkAndUpdate())
-            return 0;
-
-        /* Ui Access */
         DWORD dwErr = PrepareForUIAccess();
         if (dwErr != ERROR_SUCCESS) {
             Logger::logWarning(std::format("Failed to prepare for UI Access: {}", dwErr));
@@ -98,36 +105,30 @@ int main(int argc, char* argv[]) {
             prevExitBind = cfg->erScriptsExitBind;
             changeTime = std::chrono::steady_clock::now();
             isDelayActive = true;
-        }
-        else if (isDelayActive) {
+        } else if (isDelayActive) {
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - changeTime).count();
             if (elapsed >= 2000) {
                 isDelayActive = false;
             }
+        } else {
+            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000)
+                globals::finish = true;
         }
-        else {
-            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000) globals::finish = true;
-        }
 
-        /* Update Ping */
-        if (ErScripts::GetWindowState && ErScripts::GetCursorState()) {
-            static auto lastUpdate = std::chrono::steady_clock::now();
-
-            auto now = std::chrono::steady_clock::now();
-            std::chrono::duration<float> elapsed = now - lastUpdate;
-
-            if (cfg->watermarkState) {
-                if (elapsed.count() >= cfg->watermarkPingUpdateRate) {
-                    ErScripts::CommandsSender(5, "sys_info;clear");
-                    lastUpdate = now;
-                }
+        auto &exporter = ConfigExport::instance();
+        exporter.flush();
+        if (!exporter.status().busy && ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
+            static auto lastPing = std::chrono::steady_clock::now();
+            static auto lastSettings = lastPing;
+            const auto now = std::chrono::steady_clock::now();
+            if (cfg->watermarkState && now - lastPing >= std::chrono::seconds(cfg->watermarkPingUpdateRate)) {
+                ErScripts::CommandsSender(5, "sys_info");
+                lastPing = now;
             }
-
-            if (cfg->sniperCrosshairState || cfg->recoilCrosshairState || cfg->angleBindState) {
-                if (elapsed.count() >= 1.5f) {
-                    ErScripts::CommandsSender(5, "print_changed_convars; clear; echo *---------------------------------------*; echo |  ErScripts by emp0ry                  |; echo |  GitHub - github.com/emp0ry/          |; echo *---------------------------------------*");
-                }
+            if (now - lastSettings >= std::chrono::milliseconds(1500)) {
+                ErScripts::CommandsSender(5, "print_changed_convars; echo [ErScripts] convars_end");
+                lastSettings = now;
             }
         }
 

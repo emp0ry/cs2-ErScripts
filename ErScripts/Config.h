@@ -8,136 +8,110 @@
 #include <string>
 
 class Config {
-public:
-    void load(const std::string& filename);
-    void save(const std::string& filename) const;
+  public:
+    static constexpr const char *defaultChatMessage = "Customize CS2 with ErScripts: erscripts.emp0ry.com";
 
-    /* Pixel Trigger */
-    bool triggerState{ false };
-    int triggerBind{ 0 };
-    int triggerDisplacement[2]{ 1, 1 };
-    int triggerThreshold{ 20 };
-    int triggerDelayMs{ 0 };
+    void load(const std::string &filename);
+    void save(const std::string &filename) const;
 
-    /* Auto Accept */
-    bool autoAcceptState{ false };
-    int autoAcceptWaitingTime{ 5 };
+    bool triggerState{false};
+    int triggerBind{0};
+    int triggerDisplacement[2]{1, 1};
+    int triggerThreshold{20};
+    int triggerDelayMs{0};
 
-    /* Bomb Timer */
-    bool bombTimerState{ false };
-    float bombTimerScale{ 1.0f };
-    bool bombTimerGradientState{ false };
-    float bombTimerTransparency{ 1.0f };
-    float bombTimerPos[2]{ 0, 0 };
+    bool autoAcceptState{false};
+    int autoAcceptWaitingTime{5};
 
-    /* Sniper Crosshair */
-    bool sniperCrosshairState{ false };
+    bool bombTimerState{false};
+    float bombTimerScale{1.0f};
+    bool bombTimerGradientState{false};
+    float bombTimerTransparency{1.0f};
+    float bombTimerPos[2]{0, 0};
 
-    /* RGB Crosshair */
-    bool rgbCrosshairState{ false };
+    bool sniperCrosshairState{false};
 
-    /* Recoil Crosshair */
-    bool recoilCrosshairState{ false };
+    bool rgbCrosshairState{false};
 
-    /* Keystrokes */
-    bool keystrokesState{ false };
-    float keystrokesScale{ 1.5f };
-    bool keystrokesGradientState{ true };
-    float keystrokesAnimationSpeed{ 15.0f };
-    RGBColor keystrokesPressedColor{ 15, 15, 15 };
-    RGBColor keystrokesReleasedColor{ 20, 20, 20 };
-    float keystrokesTransparency{ 0.6f };
-    float keystrokesPos[2]{ 0, 0 };
+    bool recoilCrosshairState{false};
 
-    /* Keystrokes */
-    bool knifeSwitchState{ false };
+    bool keystrokesState{false};
+    float keystrokesScale{1.5f};
+    bool keystrokesGradientState{true};
+    float keystrokesAnimationSpeed{15.0f};
+    RGBColor keystrokesPressedColor{15, 15, 15};
+    RGBColor keystrokesReleasedColor{20, 20, 20};
+    float keystrokesTransparency{0.6f};
+    float keystrokesPos[2]{0, 0};
 
-    /* Auto pistol */
-    bool autoPistolState{ false };
+    bool knifeSwitchState{false};
 
-    /* Anti Afk */
-    bool antiAfkState{ false };
+    bool autoPistolState{false};
 
-    /* Long Jump */
-    int longJumpBind{ 0 };
+    bool antiAfkState{false};
 
-    /* Jump Throw */
-    int jumpThrowBind{ 0 };
+    int longJumpBind{0};
 
-    /* Drop Bomb */
-    int dropBombBind{ 0 };
+    int jumpThrowBind{0};
 
-    /* Self Kick */
-    int selfKickBind{ 0 };
+    int dropBombBind{0};
 
-    /* Kill Say */
-    bool killSayState{ false };
-    std::string killSayText{ "1" };
+    int selfKickBind{0};
 
-    /* Kill Sound */
-    bool killSoundState{ false };
-    int killSoundVolume{ 100 };
-    std::string killSoundFileName{ "" };
+    bool killSayState{false};
+    std::string killSayText{"1"};
 
-    /* Round Start Alert */
-    bool roundStartAlertState{ false };
-    int roundStartAlertVolume{ 100 };
-    std::string roundStartAlertFileName{ "" };
+    bool killSoundState{false};
+    int killSoundVolume{100};
+    std::string killSoundFileName{""};
 
-    /* Auto Stop */
-    bool autoStopState{ false };
-    int autoStopBind{ 0 };
-    bool autoStopToggleState{ false };
+    bool roundStartAlertState{false};
+    int roundStartAlertVolume{100};
+    std::string roundStartAlertFileName{""};
 
-    /* Chat Spammer */
-    bool chatSpammerState{ false };
-    int chatSpammerBind{ 0 };
-    std::string chatSpammerText{ "Enhance Your Skills with emp0ry.github.io/cs2-ErScripts/" };
+    bool autoStopState{false};
+    int autoStopBind{0};
+    bool autoStopToggleState{false};
 
-    /* Angle Bind */
-    bool angleBindState{ false };
-    int angleBindBind{ 0 };
-    float angleBindDegree{ 180.0f };
+    bool chatSpammerState{false};
+    int chatSpammerBind{0};
+    std::string chatSpammerText{defaultChatMessage};
 
-    /* Watermark */
-    bool watermarkState{ true };
-    bool watermarkGradientState{ true };
-    float watermarkTransparency{ 1.0f };
-    int watermarkPingUpdateRate{ 3 };
+    bool angleBindState{false};
+    int angleBindBind{0};
+    float angleBindDegree{180.0f};
 
-    /* FPS Limiter */
-    bool fpsLimiterState{ true };
-    int fpsLimiter{ 350 };
+    bool watermarkState{true};
+    bool watermarkGradientState{true};
+    float watermarkTransparency{1.0f};
+    int watermarkPingUpdateRate{3};
 
-    /* Capture Bypass */
-    bool captureBypassState{ false };
+    bool fpsLimiterState{true};
+    int fpsLimiter{120};
 
-    /* Gradient Manager */
+    bool captureBypassState{false};
+
     GradientConfig gradient;
 
-    /* Vsync */
-    bool vsyncState{ false };
+    bool vsyncState{false};
 
-    /* ErScripts Binds */
-    int erScriptsMenuBind{ VK_INSERT };
-    int erScriptsExitBind{ VK_END };
+    int erScriptsMenuBind{VK_INSERT};
+    int erScriptsExitBind{VK_END};
 
-private:
-    template <typename T>
-    void read(const nlohmann::json& src, T& dest) {
+  private:
+    template <typename T> void read(const nlohmann::json &src, T &dest) {
         try {
             if (!src.is_null()) {
                 dest = src.get<T>();
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             Logger::logWarning(std::format("Config Error Code: {}", e.what()));
         }
     }
 
-    void readArray(const nlohmann::json& src, float(&dest)[2]);
-    void readArray(const nlohmann::json& src, int(&dest)[2]);
-    void readRGB(const nlohmann::json& src, RGBColor& dest);
+    void readArray(const nlohmann::json &src, float (&dest)[2]);
+    void readArray(const nlohmann::json &src, int (&dest)[2]);
+    void readRGB(const nlohmann::json &src, RGBColor &dest);
 };
 
 inline std::unique_ptr<Config> cfg = std::make_unique<Config>();

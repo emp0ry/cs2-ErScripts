@@ -5,14 +5,15 @@
 #include <random>
 #include <thread>
 #include <windows.h>
+#include <shellapi.h>
 #include <shlwapi.h>
 
 #pragma comment(lib, "shlwapi.lib")
 
-std::string Rebuild::random_suffix_; // Initialize static member
+std::string Rebuild::random_suffix_;
 
 Rebuild::Rebuild() {
-    // Generate suffix once per run
+
     if (random_suffix_.empty()) {
         random_suffix_ = generateRandomString(8);
     }
@@ -31,7 +32,7 @@ std::string Rebuild::generateRandomString(size_t length) {
     return result;
 }
 
-bool Rebuild::isValidExecutable(const std::string& filePath) {
+bool Rebuild::isValidExecutable(const std::string &filePath) {
     std::ifstream file(filePath, std::ios::binary);
     if (!file) {
         Logger::logWarning(std::format("Cannot open file for validation: {}", filePath));
@@ -77,7 +78,6 @@ std::string Rebuild::getCurrentExePath() {
 bool Rebuild::unpackIfNeeded() {
     std::string current_exe = getCurrentExePath();
 
-    // Read binary
     std::ifstream in_file(current_exe, std::ios::binary);
     if (!in_file) {
         Logger::logWarning(std::format("Failed to read binary for unpacking: {}", current_exe));
@@ -86,16 +86,13 @@ bool Rebuild::unpackIfNeeded() {
     std::vector<char> binary_data((std::istreambuf_iterator<char>(in_file)), std::istreambuf_iterator<char>());
     in_file.close();
 
-    // Check for marker (2 bytes: random byte + 0xFF)
     if (binary_data.size() < 2 || binary_data[binary_data.size() - 1] != 0xFF) {
-        return true; // Not packed
+        return true;
     }
 
-    // Remove random byte and marker
-    binary_data.pop_back(); // Marker (0xFF)
-    binary_data.pop_back(); // Random byte
+    binary_data.pop_back();
+    binary_data.pop_back();
 
-    // Write unpacked binary
     for (int retry = 0; retry < 3; ++retry) {
         std::ofstream out_file(current_exe, std::ios::binary);
         if (out_file) {
@@ -110,18 +107,16 @@ bool Rebuild::unpackIfNeeded() {
     return false;
 }
 
-bool Rebuild::createPolymorphicBinary(std::string& output_path) {
-    // Get TEMP directory
+bool Rebuild::createPolymorphicBinary(std::string &output_path) {
+
     char temp_dir[MAX_PATH];
     if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
         Logger::logWarning(std::format("Failed to get TEMP path: {}", GetLastError()));
         return false;
     }
 
-    // Use stored suffix
     output_path = std::string(temp_dir) + "ErScripts_temp_" + random_suffix_ + ".exe";
 
-    // Check disk space (~10MB)
     ULARGE_INTEGER freeBytes;
     if (GetDiskFreeSpaceExA(temp_dir, &freeBytes, NULL, NULL)) {
         if (freeBytes.QuadPart < 10 * 1024 * 1024) {
@@ -130,7 +125,6 @@ bool Rebuild::createPolymorphicBinary(std::string& output_path) {
         }
     }
 
-    // Read current binary
     std::string current_exe = getCurrentExePath();
     std::ifstream in_file(current_exe, std::ios::binary);
     if (!in_file) {
@@ -140,16 +134,13 @@ bool Rebuild::createPolymorphicBinary(std::string& output_path) {
     std::vector<char> binary_data((std::istreambuf_iterator<char>(in_file)), std::istreambuf_iterator<char>());
     in_file.close();
 
-    // Append one random byte
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> byte_dis(0, 255);
     binary_data.push_back(static_cast<char>(byte_dis(gen)));
 
-    // Append marker (0xFF)
     binary_data.push_back(static_cast<char>(0xFF));
 
-    // Write temp binary
     for (int retry = 0; retry < 3; ++retry) {
         std::ofstream out_file(output_path, std::ios::binary);
         if (out_file) {
@@ -164,7 +155,7 @@ bool Rebuild::createPolymorphicBinary(std::string& output_path) {
     return false;
 }
 
-bool Rebuild::replaceWithNewBinary(const std::string& newFilePath, const std::string& bat_path) {
+bool Rebuild::replaceWithNewBinary(const std::string &newFilePath, const std::string &bat_path) {
     if (!isValidExecutable(newFilePath)) {
         Logger::logWarning("New binary is not a valid executable");
         return false;
@@ -172,7 +163,6 @@ bool Rebuild::replaceWithNewBinary(const std::string& newFilePath, const std::st
 
     std::string current_exe = getCurrentExePath();
 
-    // Write batch file
     for (int retry = 0; retry < 3; ++retry) {
         std::ofstream bat_file(bat_path);
         if (bat_file) {
@@ -195,8 +185,7 @@ bool Rebuild::replaceWithNewBinary(const std::string& newFilePath, const std::st
         return false;
     }
 
-    // Run batch file
-    SHELLEXECUTEINFOA sei = { sizeof(sei) };
+    SHELLEXECUTEINFOA sei = {sizeof(sei)};
     sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
     sei.lpFile = bat_path.c_str();
     sei.lpVerb = "open";
@@ -232,24 +221,21 @@ void Rebuild::cleanupTempFiles() {
 
 bool Rebuild::rebuildAndRelaunch(bool should_rebuild) {
     if (!should_rebuild) {
-        // Unpack for --run
+
         return unpackIfNeeded();
     }
 
-    // Unpack before rebuild
     if (!unpackIfNeeded()) {
         Logger::logWarning("Failed to unpack binary before rebuild");
         return false;
     }
 
-    // Create new binary
     std::string new_binary;
     if (!createPolymorphicBinary(new_binary)) {
         Logger::logWarning("Failed to create polymorphic binary");
         return false;
     }
 
-    // Create batch file in TEMP
     char temp_dir[MAX_PATH];
     if (GetTempPathA(MAX_PATH, temp_dir) == 0) {
         Logger::logWarning(std::format("Failed to get TEMP path: {}", GetLastError()));
@@ -258,12 +244,10 @@ bool Rebuild::rebuildAndRelaunch(bool should_rebuild) {
     }
     std::string bat_path = std::string(temp_dir) + "rebuild_" + random_suffix_ + ".bat";
 
-    // Replace and relaunch
     if (replaceWithNewBinary(new_binary, bat_path)) {
         Logger::logInfo("Rebuild initiated. Relaunching...");
         return true;
-    }
-    else {
+    } else {
         Logger::logWarning("Failed to replace binary for rebuild");
         std::filesystem::remove(new_binary);
         if (std::filesystem::exists(bat_path)) {

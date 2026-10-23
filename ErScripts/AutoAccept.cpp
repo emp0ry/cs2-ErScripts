@@ -2,7 +2,7 @@
 
 void ErScripts::AutoAccept() {
     std::thread([this]() {
-        const std::vector<int> targetColor = { 54, 183, 82 };
+        const std::vector<int> targetColor = {54, 183, 82};
 
         while (!globals::finish) {
             if (cfg->autoAcceptState) {
@@ -14,15 +14,17 @@ void ErScripts::AutoAccept() {
 
                     bool isInCS2 = GetWindowState();
 
-                    // Maximize cs2
                     ShowWindow(hwnd, SW_RESTORE);
                     SetForegroundWindow(hwnd);
 
                     bool colorState = false;
                     auto startTime = std::chrono::steady_clock::now();
 
-                    while (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime).count() <= cfg->autoAcceptWaitingTime) {
-                        int buttonX = static_cast<int>(round(globals::width / 2.f + globals::posX)), buttonY = static_cast<int>(round(globals::height / 2.215f + globals::posY));
+                    while (
+                        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime)
+                            .count() <= cfg->autoAcceptWaitingTime) {
+                        int buttonX = static_cast<int>(round(globals::width / 2.f + globals::posX)),
+                            buttonY = static_cast<int>(round(globals::height / 2.215f + globals::posY));
 
                         if (GetWindowState()) {
                             std::vector color = GetPixelColor(buttonX, buttonY);
@@ -31,16 +33,13 @@ void ErScripts::AutoAccept() {
                                 colorState = true;
                                 Logger::logInfo("AutoAccept button clicking");
 
-                                // Move cursor to correct position
                                 SetCursorPos(buttonX, buttonY);
                                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-                                // Click accept button
                                 mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                                 std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
                                 mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                            }
-                            else if (colorState) {
+                            } else if (colorState) {
                                 break;
                             }
                         }
@@ -48,13 +47,13 @@ void ErScripts::AutoAccept() {
                     }
 
                     if (!isInCS2) {
-                        Keyboard(56, true, false);
+                        Keyboard(56, true);
                         std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                        Keyboard(15, true, false);
+                        Keyboard(15, true);
                         std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                        Keyboard(15, false, false);
+                        Keyboard(15, false);
                         std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                        Keyboard(56, false, false);
+                        Keyboard(56, false);
                     }
 
                     SetCursorPos(mousePos.x, mousePos.y);

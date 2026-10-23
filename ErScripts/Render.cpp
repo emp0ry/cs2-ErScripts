@@ -1,4 +1,5 @@
 #include "Overlay.h"
+#include "AppVersion.h"
 
 std::string FormatElapsedTime(double timeInMillis) {
     int totalMillis = std::lround(timeInMillis);
@@ -6,102 +7,62 @@ std::string FormatElapsedTime(double timeInMillis) {
     int millis = (totalMillis % 1000) / 100;
 
     std::stringstream formattedTime;
-    formattedTime << std::setw(2) << std::setfill('0') << seconds << "."
-                  << std::setw(1) << std::setfill('0') << millis;
+    formattedTime << std::setw(2) << std::setfill('0') << seconds << "." << std::setw(1) << std::setfill('0') << millis;
 
     return formattedTime.str();
 }
 
-void Overlay::Render() noexcept {
-    RGBColor gradient_color;
-
-    if (cfg->watermarkState) {
-        bool initilizeWatermark = false;
-        char window_title[32];
-
-        if (!initilizeWatermark) {
-            // Get the current window title
-            if (!GetConsoleTitleA(window_title, sizeof(window_title)))
-                window_title[0] = '\0';
-            initilizeWatermark = true;
-        }
-
-        // Get FPS directly from ImGui
-        //float fps = ImGui::GetIO().Framerate;
-
-        // Get current time
-        auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-
-        char timeBuffer[26]; // Buffer size required by ctime_s
-        if (ctime_s(timeBuffer, sizeof(timeBuffer), &now) != 0) {
-            Logger::logWarning("Failed to get current time string.");
-        }
-
-        std::string timeStr(timeBuffer);
-        timeStr = timeStr.substr(11, 8); // Extract "HH:MM:SS"
-
-        // Get GMT offset (Windows-specific)
-        TIME_ZONE_INFORMATION tzi;
-        DWORD tzResult = GetTimeZoneInformation(&tzi);
-        int offsetMinutes = 0;
-        if (tzResult != TIME_ZONE_ID_INVALID) {
-            offsetMinutes = -tzi.Bias;
-            if (tzResult == TIME_ZONE_ID_DAYLIGHT) {
-                offsetMinutes -= tzi.DaylightBias;
-            }
-        }
-
-        // Convert minutes to hours and determine GMT+ or GMT-
-        int offsetHours = offsetMinutes / 60;
-        std::string gmtOffset = " GMT";
-        if (offsetHours > 0) {
-            gmtOffset += "+" + std::to_string(offsetHours);
-        }
-        else if (offsetHours < 0) {
-            gmtOffset += std::to_string(offsetHours); // Includes the negative sign
-        }
-        else {
-            gmtOffset += "0";
-        }
-
-        // Append GMT offset to time string
-        timeStr += gmtOffset;
-
-        // Format watermark text
-        std::string watermarkText = std::format(" {} | {} | Ping {}ms | {}", window_title, globals::nickname, globals::cs2_ping, timeStr);
-
-        ImGui::SetNextWindowBgAlpha(cfg->watermarkTransparency);
-
-        if (!cfg->watermarkTransparency) ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        else ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f);
-        ImGui::Begin(" Watermark", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
-        ImGui::PushFont(arial_font);
-        ImGui::SetWindowFontScale(16.0f / ImGui::GetFontSize());
-
-        float watermarkSize = ImGui::CalcTextSize(watermarkText.c_str()).x + 20.0f;
-
-        ImGui::SetWindowPos({ globals::width - watermarkSize - 6.0f, 5.0f });
-        ImGui::SetWindowSize({ watermarkSize, 25 });
-
-        // Use ImGui::Text() instead of AddText() for better UTF-8 handling
-        gradient_color = gradient.getCurrentColor();
-        ImColor color = cfg->watermarkGradientState ? ImColor(gradient_color.r, gradient_color.g, gradient_color.b) : ImColor(1.f, 1.f, 1.f);
-        ImGui::TextColored(color, watermarkText.c_str());
-
-        ImGui::SetWindowFontScale(1.0f);
-        ImGui::PopFont();
-        ImGui::PopStyleVar(2);
-        ImGui::End();
+void Overlay::RenderWatermark() noexcept {
+    if (!cfg->watermarkState)
+        return;
+    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    tm local{};
+    localtime_s(&local, &now);
+    char clock[16]{};
+    std::strftime(clock, sizeof(clock), "%H:%M:%S", &local);
+    std::string text = "ErScripts " APP_VERSION;
+    if (!globals::nickname.empty())
+        text += " | " + globals::nickname;
+    text += std::format(" | {} ms | {}", globals::cs2_ping, clock);
+    constexpr float fontSize = 15.f, paddingX = 10.f, paddingY = 6.f, margin = 8.f;
+    const float available = std::max(1.f, globals::width - 2 * margin - 2 * paddingX);
+    const char *end = nullptr;
+    auto size = arial_font->CalcTextSizeA(fontSize, available, 0, text.c_str(), nullptr, &end);
+    if (end && *end) {
+        text.resize(static_cast<size_t>(end - text.c_str()));
+        text += "...";
+        size = arial_font->CalcTextSizeA(fontSize, FLT_MAX, 0, text.c_str());
     }
+    const float width = std::min(size.x + 2 * paddingX, globals::width - 2 * margin);
+    const ImVec2 start{std::max(margin, globals::width - width - margin), margin};
+    const ImVec2 endPos{start.x + width, start.y + fontSize + 2 * paddingY};
+    const int alpha = static_cast<int>(std::clamp(cfg->watermarkTransparency, 0.f, 1.f) * 255);
+    draw_list->AddRectFilled(start, endPos, IM_COL32(16, 20, 25, alpha), 6.f);
+    if (alpha)
+        draw_list->AddRect(start, endPos, IM_COL32(65, 76, 86, alpha), 6.f);
+    const auto rgb = gradient.getCurrentColor();
+    const ImU32 color = cfg->watermarkGradientState
+                            ? IM_COL32((rgb.r + 255) / 2, (rgb.g + 255) / 2, (rgb.b + 255) / 2, 255)
+                            : IM_COL32(235, 239, 243, 255);
+    draw_list->PushClipRect(start, endPos, true);
+    draw_list->AddText(arial_font, fontSize, {start.x + paddingX, start.y + paddingY}, color, text.c_str());
+    draw_list->PopClipRect();
+}
+
+void Overlay::Render() noexcept {
+    const auto settings = globals::getConfig().value_or(SteamTools::Config{});
+    const auto viewport = globals::getVideoSize();
+    RenderWatermark();
+    RGBColor gradient_color;
 
     if (ErScripts::GetCursorState()) {
         if (!(GetAsyncKeyState(VK_TAB) & 0x8000)) {
-            if (cfg->sniperCrosshairState && globals::sniperCrosshairState && !globals::isScope) {
-                RenderCrosshair(*globals::config);
-            }
-            else if (cfg->recoilCrosshairState && (GetAsyncKeyState(VK_LBUTTON) & 0x8000)) {
-                RenderCrosshair(*globals::config);
+            const auto frame =
+                cfg->sniperCrosshairState ? globals::getSniperFrame(settings, viewport.height) : std::nullopt;
+            if (frame && !globals::isScope) {
+                RenderCrosshair(settings, *frame, viewport);
+            } else if (cfg->recoilCrosshairState && (GetAsyncKeyState(VK_LBUTTON) & 0x8000)) {
+                RenderCrosshair(settings, {}, viewport);
             }
         }
     }
@@ -112,16 +73,20 @@ void Overlay::Render() noexcept {
 
             ImGui::SetNextWindowBgAlpha(cfg->bombTimerTransparency);
             if (!isBombTimerWindowInitilized) {
-                ImGui::SetNextWindowPos({ cfg->bombTimerPos[0], cfg->bombTimerPos[1] });
+                ImGui::SetNextWindowPos({cfg->bombTimerPos[0], cfg->bombTimerPos[1]});
                 isBombTimerWindowInitilized = true;
             }
 
-            if (!cfg->bombTimerTransparency) ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            else ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f * cfg->bombTimerScale); // Scaled border size
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f * cfg->bombTimerScale); // Scaled rounding
-            ImGui::Begin(" Bomb Timer", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+            if (!cfg->bombTimerTransparency)
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            else
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f * cfg->bombTimerScale);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f * cfg->bombTimerScale);
+            ImGui::Begin(" Bomb Timer", nullptr,
+                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize |
+                             ImGuiWindowFlags_NoTitleBar);
 
-            ImGui::SetWindowSize({ 146.0f * cfg->bombTimerScale, 70.0f * cfg->bombTimerScale }); // Scaled window size
+            ImGui::SetWindowSize({146.0f * cfg->bombTimerScale, 70.0f * cfg->bombTimerScale});
 
             ImVec2 bombTimer_pos = ImGui::GetWindowPos();
             ImVec2 bombTimer_size = ImGui::GetWindowSize();
@@ -139,54 +104,51 @@ void Overlay::Render() noexcept {
                 bombTimer_pos.y = globals::height - bombTimer_size.y;
             }
 
-            if ((bombTimer_pos.x != ImGui::GetWindowPos().x || bombTimer_pos.y != ImGui::GetWindowPos().y) && (GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
+            if ((bombTimer_pos.x != ImGui::GetWindowPos().x || bombTimer_pos.y != ImGui::GetWindowPos().y) &&
+                (GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
                 ImGui::SetWindowPos(" Bomb Timer", bombTimer_pos);
             }
 
             ImVec2 windowPos = ImGui::GetWindowPos();
             ImVec2 windowSize = ImGui::GetWindowSize();
-            ImVec2 iconPos = ImVec2(windowPos.x + 5.0f * cfg->bombTimerScale, windowPos.y + (windowSize.y - 64.0f * cfg->bombTimerScale) / 2); // Scaled position and icon size
-            ImVec2 c4IconSize = ImVec2(64.0f * cfg->bombTimerScale, 64.0f * cfg->bombTimerScale); // Scaled icon size
+            ImVec2 iconPos = ImVec2(windowPos.x + 5.0f * cfg->bombTimerScale,
+                                    windowPos.y + (windowSize.y - 64.0f * cfg->bombTimerScale) / 2);
+            ImVec2 c4IconSize = ImVec2(64.0f * cfg->bombTimerScale, 64.0f * cfg->bombTimerScale);
 
             gradient_color = gradient.getCurrentColor();
-            ImColor color = cfg->bombTimerGradientState ? ImColor(gradient_color.r, gradient_color.g, gradient_color.b) : ImColor(1.f, 1.f, 1.f);
-            ImGui::GetWindowDrawList()->AddImage(
-                (ImTextureID)bombTexture,
-                iconPos,
-                ImVec2(iconPos.x + c4IconSize.x, iconPos.y + c4IconSize.y),
-                ImVec2(0, 0), ImVec2(1, 1),
-                ImColor(color)
-            );
+            ImColor color = cfg->bombTimerGradientState ? ImColor(gradient_color.r, gradient_color.g, gradient_color.b)
+                                                        : ImColor(1.f, 1.f, 1.f);
+            ImGui::GetWindowDrawList()->AddImage((ImTextureID)bombTexture, iconPos,
+                                                 ImVec2(iconPos.x + c4IconSize.x, iconPos.y + c4IconSize.y),
+                                                 ImVec2(0, 0), ImVec2(1, 1), ImColor(color));
 
-            // Position for circular timer (right side, centered vertically)
-            ImVec2 timerCenter = ImVec2(
-                windowPos.x + windowSize.x - 39.0f * cfg->bombTimerScale, // Scaled from right edge
-                windowPos.y + windowSize.y / 2                            // Center vertically
-            );
+            ImVec2 timerCenter =
+                ImVec2(windowPos.x + windowSize.x - 39.0f * cfg->bombTimerScale, windowPos.y + windowSize.y / 2);
 
-            // Set text color based on time remaining
-            ImVec4 timeColor = ImVec4(1.0f, 0.3f, 0.0f, 1.0f); // Red default
+            ImVec4 timeColor = ImVec4(1.0f, 0.3f, 0.0f, 1.0f);
+            ImDrawList *window_draw_list = ImGui::GetWindowDrawList();
 
             if (globals::bombTime) {
                 if ((globals::defusekitState && globals::bombTime >= 5000) ||
                     (!globals::defusekitState && globals::bombTime >= 10000)) {
-                    timeColor = ImVec4(0.3f, 1.0f, 0.0f, 1.0f); // Green when safe
+                    timeColor = ImVec4(0.3f, 1.0f, 0.0f, 1.0f);
                 }
 
-                // Draw circular timer with scaled parameters
-                CircularTimer(timerCenter, 0.0f, 40000.0f, globals::bombTime, 32 * cfg->bombTimerScale, 22.0f * cfg->bombTimerScale, 4.0f * cfg->bombTimerScale, true, timeColor);
+                CircularTimer(timerCenter, 0.0f, 40000.0f, static_cast<float>(globals::bombTime),
+                              static_cast<int>(32 * cfg->bombTimerScale), 22.0f * cfg->bombTimerScale,
+                              4.0f * cfg->bombTimerScale, true, timeColor);
 
-                // Center the time text below the timer with scaled font size
                 std::string timeText = FormatElapsedTime(globals::bombTime);
-                RenderText(bold_font, timeText, timerCenter, 14.0f * cfg->bombTimerScale, ImColor(timeColor), true, true, false, false);
-            }
-            else if (globals::menuState) {
-                CircularTimer(timerCenter, 0.0f, 40000.0f, 10000.0f, 32 * cfg->bombTimerScale, 22.0f * cfg->bombTimerScale, 4.0f * cfg->bombTimerScale, true, timeColor);
+                RenderText(window_draw_list, bold_font, timeText, timerCenter, 14.0f * cfg->bombTimerScale,
+                           ImColor(timeColor), true, true, false, false);
+            } else if (globals::menuState) {
+                CircularTimer(timerCenter, 0.0f, 40000.0f, 10000.0f, static_cast<int>(32 * cfg->bombTimerScale),
+                              22.0f * cfg->bombTimerScale, 4.0f * cfg->bombTimerScale, true, timeColor);
 
-                RenderText(bold_font, "10.0", timerCenter, 14.0f * cfg->bombTimerScale, ImColor(timeColor), true, true, false, false);
+                RenderText(window_draw_list, bold_font, "10.0", timerCenter, 14.0f * cfg->bombTimerScale,
+                           ImColor(timeColor), true, true, false, false);
             }
 
-            // Store window position
             cfg->bombTimerPos[0] = windowPos.x;
             cfg->bombTimerPos[1] = windowPos.y;
 
@@ -201,23 +163,29 @@ void Overlay::Render() noexcept {
         ImGui::SetNextWindowBgAlpha(0.5f);
 
         if (!isKeystrokesWindowInitilized) {
-            ImGui::SetNextWindowPos({ cfg->keystrokesPos[0], cfg->keystrokesPos[1] });
+            ImGui::SetNextWindowPos({cfg->keystrokesPos[0], cfg->keystrokesPos[1]});
             isKeystrokesWindowInitilized = true;
         }
 
+        ImGui::Begin(" Keystrokes", nullptr,
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_NoTitleBar |
+                         (globals::menuState ? ImGuiWindowFlags_None : ImGuiWindowFlags_NoBackground));
 
-        ImGui::Begin(" Keystrokes", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | (globals::menuState ? ImGuiWindowFlags_None : ImGuiWindowFlags_NoBackground));
-        
         ImGui::PushFont(arial_font);
         ImGui::SetWindowFontScale(cfg->keystrokesScale * 0.5f);
 
-        // Style settings for a beautiful look, scaled
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f * cfg->keystrokesScale); // Rounded corners
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f * cfg->keystrokesScale, 4.0f * cfg->keystrokesScale)); // Padding inside buttons
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6.0f * cfg->keystrokesScale, 6.0f * cfg->keystrokesScale)); // Spacing between elements
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f * cfg->keystrokesScale);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                            ImVec2(4.0f * cfg->keystrokesScale, 4.0f * cfg->keystrokesScale));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+                            ImVec2(6.0f * cfg->keystrokesScale, 6.0f * cfg->keystrokesScale));
 
         gradient_color = gradient.getCurrentColor();
-        ImGui::PushStyleColor(ImGuiCol_Text, cfg->keystrokesGradientState ? ImVec4(gradient_color.r / 255.0f, gradient_color.g / 255.0f, gradient_color.b / 255.0f, 1.0f) : ImVec4(1.f, 1.f, 1.f, 1.f));
+        ImGui::PushStyleColor(ImGuiCol_Text, cfg->keystrokesGradientState
+                                                 ? ImVec4(gradient_color.r / 255.0f, gradient_color.g / 255.0f,
+                                                          gradient_color.b / 255.0f, 1.0f)
+                                                 : ImVec4(1.f, 1.f, 1.f, 1.f));
 
         ImVec2 keystrokes_pos = ImGui::GetWindowPos();
         ImVec2 keystrokes_size = ImGui::GetWindowSize();
@@ -235,11 +203,11 @@ void Overlay::Render() noexcept {
             keystrokes_pos.y = globals::height - keystrokes_size.y;
         }
 
-        if ((keystrokes_pos.x != ImGui::GetWindowPos().x || keystrokes_pos.y != ImGui::GetWindowPos().y) && (GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
+        if ((keystrokes_pos.x != ImGui::GetWindowPos().x || keystrokes_pos.y != ImGui::GetWindowPos().y) &&
+            (GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
             ImGui::SetWindowPos(" Keystrokes", keystrokes_pos);
         }
 
-        // Key states with smooth transitions
         static float wAlpha = 0.0f, aAlpha = 0.0f, sAlpha = 0.0f, dAlpha = 0.0f, lmbAlpha = 0.0f, rmbAlpha = 0.0f;
         bool wPressed = GetAsyncKeyState('W') & 0x8000;
         bool aPressed = GetAsyncKeyState('A') & 0x8000;
@@ -248,55 +216,52 @@ void Overlay::Render() noexcept {
         bool lmbPressed = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
         bool rmbPressed = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
 
-        ImVec4 releasedColor = ImVec4(cfg->keystrokesReleasedColor.r / 255.0f, cfg->keystrokesReleasedColor.g / 255.0f, cfg->keystrokesReleasedColor.b / 255.0f, cfg->keystrokesTransparency);
-        ImVec4 pressedColor = ImVec4(cfg->keystrokesPressedColor.r / 255.0f, cfg->keystrokesPressedColor.g / 255.0f, cfg->keystrokesPressedColor.b / 255.0f, 1.0f);
+        ImVec4 releasedColor = ImVec4(cfg->keystrokesReleasedColor.r / 255.0f, cfg->keystrokesReleasedColor.g / 255.0f,
+                                      cfg->keystrokesReleasedColor.b / 255.0f, cfg->keystrokesTransparency);
+        ImVec4 pressedColor = ImVec4(cfg->keystrokesPressedColor.r / 255.0f, cfg->keystrokesPressedColor.g / 255.0f,
+                                     cfg->keystrokesPressedColor.b / 255.0f, 1.0f);
 
-        // Smoothly interpolate alpha values for animation
         wAlpha += (wPressed ? 1.0f - wAlpha : -wAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
         aAlpha += (aPressed ? 1.0f - aAlpha : -aAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
         sAlpha += (sPressed ? 1.0f - sAlpha : -sAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
         dAlpha += (dPressed ? 1.0f - dAlpha : -dAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
-        lmbAlpha += (lmbPressed ? 1.0f - lmbAlpha : -lmbAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
-        rmbAlpha += (rmbPressed ? 1.0f - rmbAlpha : -rmbAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
+        lmbAlpha +=
+            (lmbPressed ? 1.0f - lmbAlpha : -lmbAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
+        rmbAlpha +=
+            (rmbPressed ? 1.0f - rmbAlpha : -rmbAlpha) * ImGui::GetIO().DeltaTime * cfg->keystrokesAnimationSpeed;
 
-        // WASD Layout
+        const auto key = [&](const char *label, float width, float animation) {
+            const auto color = ImLerp(releasedColor, pressedColor, std::clamp(animation, 0.f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_Button, color);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+            ImGui::Button(label, {width * cfg->keystrokesScale, 30.f * cfg->keystrokesScale});
+            ImGui::PopStyleColor(3);
+        };
         ImGui::BeginGroup();
-        ImGui::Dummy(ImVec2(0, 0)); ImGui::SameLine(36.0f * cfg->keystrokesScale); // Offset for centering
-        ImGui::PushStyleColor(ImGuiCol_Button, ImLerp(releasedColor, pressedColor, wAlpha));
-        ImGui::Button("W", ImVec2(30.0f * cfg->keystrokesScale, 30.0f * cfg->keystrokesScale));
-        ImGui::PopStyleColor();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImLerp(releasedColor, pressedColor, aAlpha));
-        ImGui::Button("A", ImVec2(30.0f * cfg->keystrokesScale, 30.0f * cfg->keystrokesScale)); ImGui::SameLine();
-        ImGui::PopStyleColor();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImLerp(releasedColor, pressedColor, sAlpha));
-        ImGui::Button("S", ImVec2(30.0f * cfg->keystrokesScale, 30.0f * cfg->keystrokesScale)); ImGui::SameLine();
-        ImGui::PopStyleColor();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImLerp(releasedColor, pressedColor, dAlpha));
-        ImGui::Button("D", ImVec2(30.0f * cfg->keystrokesScale, 30.0f * cfg->keystrokesScale));
-        ImGui::PopStyleColor();
+        ImGui::Dummy({0, 0});
+        ImGui::SameLine(36.f * cfg->keystrokesScale);
+        key("W", 30, wAlpha);
+        key("A", 30, aAlpha);
+        ImGui::SameLine();
+        key("S", 30, sAlpha);
+        ImGui::SameLine();
+        key("D", 30, dAlpha);
         ImGui::EndGroup();
-
-        // Mouse Buttons
         ImGui::BeginGroup();
-        ImGui::PushStyleColor(ImGuiCol_Button, ImLerp(releasedColor, pressedColor, lmbAlpha));
-        ImGui::Button("LMB", ImVec2(48.0f * cfg->keystrokesScale, 30.0f * cfg->keystrokesScale)); ImGui::SameLine();
-        ImGui::PopStyleColor();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImLerp(releasedColor, pressedColor, rmbAlpha));
-        ImGui::Button("RMB", ImVec2(48.0f * cfg->keystrokesScale, 30.0f * cfg->keystrokesScale));
-        ImGui::PopStyleColor();
+        key("LMB", 48, lmbAlpha);
+        ImGui::SameLine();
+        key("RMB", 48, rmbAlpha);
         ImGui::EndGroup();
 
         ImVec2 pos = ImGui::GetWindowPos();
         cfg->keystrokesPos[0] = pos.x;
         cfg->keystrokesPos[1] = pos.y;
 
-        ImGui::SetWindowFontScale(1.f); // Restore the original font size
-        ImGui::PopFont();               // Restore the original font
-        ImGui::PopStyleVar(3);          // Restore style vars
-        ImGui::PopStyleColor(1);        // Restore style colors
+        ImGui::SetWindowFontScale(1.f);
+        ImGui::PopFont();
+        ImGui::PopStyleVar(3);
+        ImGui::PopStyleColor(1);
         ImGui::End();
-    }}
+    }
+}

@@ -4,6 +4,7 @@ void ErScripts::CS2Binds() {
     std::thread([]() {
         while (!globals::finish) {
             if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
+                const auto settings = globals::getConfig().value_or(SteamTools::Config{});
                 if (cfg->longJumpBind) {
                     if (GetAsyncKeyState(cfg->longJumpBind) & 0x8000) {
                         ErScripts::CommandsSender(7, "jump 1 1 0");
@@ -12,7 +13,8 @@ void ErScripts::CS2Binds() {
                         std::this_thread::sleep_for(std::chrono::milliseconds((rand() % 5) + 1));
                         ErScripts::CommandsSender(7, "jump -999 1 0");
                         while ((GetAsyncKeyState(cfg->longJumpBind) & 0x8000)) {
-                            if (globals::finish) break;
+                            if (globals::finish)
+                                break;
                             std::this_thread::sleep_for(std::chrono::milliseconds((rand() % 5) + 1));
                         }
                         ErScripts::CommandsSender(7, "duck -999 1 0");
@@ -49,20 +51,24 @@ void ErScripts::CS2Binds() {
                 }
 
                 static bool isBindPressed = false;
-                if (cfg->angleBindState) {
+                if (cfg->angleBindState && settings.sensitivity != 0 && settings.zoomSensitivity != 0 &&
+                    settings.yaw != 0) {
                     bool isPressed = GetAsyncKeyState(cfg->angleBindBind) & 0x8000;
                     if (isPressed && !isBindPressed) {
                         float yaw = 0.0f;
                         if (globals::isScope) {
-                            yaw = roundf((cfg->angleBindDegree / (globals::config->sensitivity * globals::config->zoomSensitivity * 0.4444444444f) / globals::config->yaw) * 10000.0f) / 10000.0f;
-                        }
-                        else {
-                            yaw = roundf((cfg->angleBindDegree / globals::config->sensitivity / globals::config->yaw) * 10000.0f) / 10000.0f;
+                            yaw = roundf((cfg->angleBindDegree /
+                                          (settings.sensitivity * settings.zoomSensitivity * 0.4444444444f) /
+                                          settings.yaw) *
+                                         10000.0f) /
+                                  10000.0f;
+                        } else {
+                            yaw = roundf((cfg->angleBindDegree / settings.sensitivity / settings.yaw) * 10000.0f) /
+                                  10000.0f;
                         }
                         ErScripts::CommandsSender(7, std::format("yaw {} 1 0", yaw));
                         isBindPressed = true;
-                    }
-                    else if (!isPressed && isBindPressed) {
+                    } else if (!isPressed && isBindPressed) {
                         isBindPressed = false;
                     }
                 }

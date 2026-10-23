@@ -1,41 +1,51 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
+.vs/
+.vscode/
+.idea/
+build/
+out/
+x64/
+Win32/
+Debug/
+Release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+build.ninja
+.ninja_*
+node_modules/
+dist/
+__pycache__/
+*.pyc
+*.user
+*.aps
+*.suo
 *.obj
-
-# Precompiled Headers
-*.gch
 *.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
+*.pdb
+*.ilk
+*.idb
+*.tlog
+*.log
 *.exe
-*.out
-*.app
-/ErScripts/configs
-/ErScripts/x64
-/x64
-/.vs
-/docs/.vscode
-
-# Product website
-/website/node_modules/
-/website/dist/
+*.dll
+*.lib
+*.exp
+*.o
+*.a
+*.i64
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+.DS_Store
+Thumbs.db
+/ErScripts/configs/
+/configs/
+exports/
+/tests/
+/tools/
+/analysis/
+/work/
+/outputs/
+/docs/crosshair-renderer.md

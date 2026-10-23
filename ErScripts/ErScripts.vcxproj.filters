@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resource Files">
@@ -65,6 +65,7 @@
     <ClCompile Include="Logger.cpp">
       <Filter>Functions\Logger</Filter>
     </ClCompile>
+    <ClCompile Include="ConfigExport.cpp"><Filter>Config</Filter></ClCompile>
     <ClCompile Include="Config.cpp">
       <Filter>Config</Filter>
     </ClCompile>
@@ -80,25 +81,25 @@
     <ClCompile Include="Globals.cpp">
       <Filter>Functions\Globals</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
+    <ClCompile Include="..\third_party\imgui\imgui_widgets.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
+    <ClCompile Include="..\third_party\imgui\imgui.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_demo.cpp">
+    <ClCompile Include="..\third_party\imgui\imgui_demo.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
+    <ClCompile Include="..\third_party\imgui\imgui_draw.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_dx11.cpp">
+    <ClCompile Include="..\third_party\imgui\backends\imgui_impl_dx11.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_win32.cpp">
+    <ClCompile Include="..\third_party\imgui\backends\imgui_impl_win32.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
+    <ClCompile Include="..\third_party\imgui\imgui_tables.cpp">
       <Filter>Render\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="Render.cpp">
@@ -181,6 +182,13 @@
     <ClInclude Include="Logger.h">
       <Filter>Functions\Logger</Filter>
     </ClInclude>
+    <ClInclude Include="AppVersion.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="CS2Config.h"><Filter>Config</Filter></ClInclude>
+    <ClInclude Include="GameVideo.h"><Filter>Config</Filter></ClInclude>
+    <ClInclude Include="D3DResize.h"><Filter>Render</Filter></ClInclude>
+    <ClInclude Include="ConfigExport.h"><Filter>Config</Filter></ClInclude>
     <ClInclude Include="Config.h">
       <Filter>Config</Filter>
     </ClInclude>
@@ -190,34 +198,43 @@
     <ClInclude Include="ErScripts.h">
       <Filter>Functions\ErScripts</Filter>
     </ClInclude>
+    <ClInclude Include="SniperDynamics.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SniperProfiles.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GSIPlayerState.h">
+      <Filter>Functions\GSI Server</Filter>
+    </ClInclude>
     <ClInclude Include="GSIServer.h">
       <Filter>Functions\GSI Server</Filter>
     </ClInclude>
     <ClInclude Include="Globals.h">
       <Filter>Functions\Globals</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imconfig.h">
+    <ClInclude Include="..\third_party\imgui\imconfig.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui.h">
+    <ClInclude Include="..\third_party\imgui\imgui.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_dx11.h">
+    <ClInclude Include="..\third_party\imgui\backends\imgui_impl_dx11.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_win32.h">
+    <ClInclude Include="..\third_party\imgui\backends\imgui_impl_win32.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
+    <ClInclude Include="..\third_party\imgui\imgui_internal.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imstb_rectpack.h">
+    <ClInclude Include="..\third_party\imgui\imstb_rectpack.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imstb_textedit.h">
+    <ClInclude Include="..\third_party\imgui\imstb_textedit.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui\imstb_truetype.h">
+    <ClInclude Include="..\third_party\imgui\imstb_truetype.h">
       <Filter>Render\Imgui</Filter>
     </ClInclude>
     <ClInclude Include="SteamTools.h">

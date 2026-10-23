@@ -11,9 +11,9 @@ void ErScripts::AntiAfk() {
 
                         if (globals::roundStartState) {
                             if (!(GetAsyncKeyState('W') & 0x8000)) {
-                                Keyboard('W', true, false);
+                                Keyboard('W', true);
                                 std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 3) + 16));
-                                Keyboard('W', false, false);
+                                Keyboard('W', false);
                             }
                         }
                     }

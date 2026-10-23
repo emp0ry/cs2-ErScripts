@@ -1,4 +1,5 @@
 #include "ErScripts.h"
+#include "ConfigExport.h"
 #include <unordered_set>
 #include <filesystem>
 #include <fstream>
@@ -6,7 +7,7 @@
 #include <cstdlib>
 #include <thread>
 
-HWND ErScripts::hwnd = nullptr;
+std::atomic<HWND> ErScripts::hwnd = nullptr;
 std::wstring ErScripts::config;
 bool ErScripts::bindsInit = false;
 
@@ -15,28 +16,26 @@ namespace fs = std::filesystem;
 void ErScripts::Initalization() {
     if (setPaths()) {
         Logger::logSuccess(std::format(L"CS2 Path: {}", path));
-    }
-    else {
+    } else {
         Logger::logWarning("Initialization failed: Could not find installation path");
         std::cout << "[*] Press Enter to exit...";
         std::cin.get();
         std::exit(1);
     }
 
+    if (auto settings = SteamTools::getCrosshairSettings("730"))
+        globals::setConfig(*settings);
     bool validationState = configsValidation();
 
     std::wstring launchOptions = SteamTools::getLaunchOptions("730");
     if (!launchOptions.empty()) {
         Logger::logSuccess(std::format(L"CS2 Launch Options: {}", launchOptions));
 
-        std::vector<std::wstring> requiredOptions = {
-            L"+bind scancode104 exec erscripts1",
-            L"-conclearlog",
-            L"-condebug"
-        };
+        std::vector<std::wstring> requiredOptions = {L"+bind scancode104 exec erscripts1", L"-conclearlog",
+                                                     L"-condebug"};
 
         bool isLaunchOptionsGood = true;
-        for (const auto& option : requiredOptions) {
+        for (const auto &option : requiredOptions) {
             if (launchOptions.find(option) == std::wstring::npos) {
                 isLaunchOptionsGood = false;
             }
@@ -44,15 +43,16 @@ void ErScripts::Initalization() {
 
         if (!isLaunchOptionsGood) {
             Logger::logWarning("Missing required launch options");
-            Logger::logWarning("Add these launch options to make the ErScripts work: -conclearlog -condebug +bind scancode104 exec erscripts1");
+            Logger::logWarning("Add these launch options to make the ErScripts work: -conclearlog -condebug +bind "
+                               "scancode104 exec erscripts1");
             std::cout << "[*] Press Enter to exit...";
             std::cin.get();
             std::exit(1);
         }
-    }
-    else {
+    } else {
         Logger::logWarning("No launch options found");
-        Logger::logWarning("Add these launch options to make the ErScripts work: -conclearlog -condebug +bind scancode104 exec erscripts1");
+        Logger::logWarning("Add these launch options to make the ErScripts work: -conclearlog -condebug +bind "
+                           "scancode104 exec erscripts1");
         std::cout << "[*] Press Enter to exit...";
         std::cin.get();
         std::exit(1);
@@ -67,8 +67,7 @@ void ErScripts::Initalization() {
             std::cin.get();
             std::exit(1);
         }
-    }
-    else {
+    } else {
         Logger::logInfo("Please start CS2!");
 
         while (!(hwnd = FindWindowA(nullptr, "Counter-Strike 2"))) {
@@ -88,131 +87,83 @@ void ErScripts::ConsoleLogStream() {
         monitor.start();
         Logger::logInfo("Start CS2 console.log monitoring");
 
-        SteamTools::Config config_default;
-        config_default.gap = -2.2f;                      // cl_crosshairgap
-        config_default.outlineThickness = 1.0f;          // cl_crosshair_outlinethickness
-        config_default.red = 0;                             // cl_crosshaircolor_r
-        config_default.green = 255;                         // cl_crosshaircolor_g
-        config_default.blue = 0;                         // cl_crosshaircolor_b
-        config_default.alpha = 200;                         // cl_crosshairalpha
-        //config_default.dynamicSplitDist = 3;             // cl_crosshair_dynamic_splitdist
-        //config_default.fixedCrosshairGap = 3.0f;         // cl_fixedcrosshairgap
-        config_default.color = 5;                         // cl_crosshaircolor
-        config_default.drawOutline = true;                 // cl_crosshair_drawoutline
-        //config_default.dynamicSplitAlphaInnerMod = 0.0f; // cl_crosshair_dynamic_splitalpha_innermod
-        //config_default.dynamicSplitAlphaOuterMod = 1.0f; // cl_crosshair_dynamic_splitalpha_outermod
-        //config_default.dynamicMaxDistSplitRatio = 1.0f;  // cl_crosshair_dynamic_maxdist_splitratio
-        config_default.thickness = 0.6f;                 // cl_crosshairthickness
-        config_default.dot = false;                         // cl_crosshairdot
-        //config_default.gapUseWeaponValue = true;         // cl_crosshairgap_useweaponvalue
-        //config_default.useAlpha = true;                     // cl_crosshairusealpha
-        config_default.tStyle = false;                     // cl_crosshair_t
-        config_default.style = 2;                         // cl_crosshairstyle
-        config_default.size = 3.9f;                          // cl_crosshairsize
-        config_default.sensitivity = 1.25f;              // sensitivity
-        config_default.zoomSensitivity = 1.0f;           // zoom_sensitivity_ratio
-        config_default.yaw = 0.022f;                     // m_yaw
-
+        video::ModeChanges videoChanges;
+        fs::path videoPath;
+        try {
+            videoPath = SteamTools::getCS2ConfigFolder() / L"cs2_video.txt";
+        } catch (const std::exception &) {
+            Logger::logWarning("Video settings unavailable; tracking the CS2 window and console instead");
+        }
+        fs::file_time_type lastVideoWrite{};
+        auto nextVideoCheck = std::chrono::steady_clock::time_point{};
+        SteamTools::Config batch;
+        bool readingConvars = false;
+        auto lastConvar = std::chrono::steady_clock::now();
+        const std::wregex convarPattern(
+            LR"((cl_[a-zA-Z0-9_]+|sensitivity|zoom_sensitivity_ratio|m_yaw|m_pitch)\s+"?(-?[0-9]+(?:\.[0-9]+)?|true|false))");
         std::wregex regexPing(LR"(latency (\d+) msec)");
         std::wsmatch match;
 
         while (!globals::finish) {
-            if (auto newLines = monitor.getNewLines()) {
-                if (newLines && !(*newLines).empty() && (*newLines).size() >= 3) {
-                    // Ensure there are at least 3 lines before trying to access them
-                    std::wstring combined = (*newLines)[0] + (*newLines)[1] + (*newLines)[2];
-
-                    if (combined.find(L"ConVars (non-default):") != std::wstring::npos) {
-                        std::wregex convarPattern(L"^\\S+ \\S+\\s+(\\S+)\\s+(\\S+)\\s+\\S+$");
-                        std::wstring foundConVars = L"";
-
-                        for (const auto& line : *newLines) {
-                            // Parse and extract crosshair variables from the line
-                            std::wsmatch matches;
-                            if (std::regex_search(line, matches, convarPattern)) {
-                                std::wstring varName = matches[1];
-                                std::wstring value = matches[2];
-                                foundConVars += varName + L"\n";
-
-                                //Logger::logInfo(std::format(L"Found ConVar: {} {}", varName, value));
-
-                                try {
-                                    if (varName == L"cl_crosshairgap") globals::config->gap = std::stof(value);
-                                    else if (varName == L"cl_crosshair_outlinethickness") globals::config->outlineThickness = std::stof(value);
-                                    else if (varName == L"cl_crosshaircolor_r") globals::config->red = static_cast<uint8_t>(std::stoi(value));
-                                    else if (varName == L"cl_crosshaircolor_g") globals::config->green = static_cast<uint8_t>(std::stoi(value));
-                                    else if (varName == L"cl_crosshaircolor_b") globals::config->blue = static_cast<uint8_t>(std::stoi(value));
-                                    else if (varName == L"cl_crosshairalpha") globals::config->alpha = static_cast<uint8_t>(std::stoi(value));
-                                    //else if (varName == L"cl_crosshair_dynamic_splitdist") globals::config->dynamicSplitDist = static_cast<uint8_t>(std::stoi(value));
-                                    //else if (varName == L"cl_fixedcrosshairgap") globals::config->fixedCrosshairGap = std::stof(value);
-                                    else if (varName == L"cl_crosshaircolor") globals::config->color = static_cast<uint8_t>(std::stoi(value));
-                                    else if (varName == L"cl_crosshair_drawoutline") globals::config->drawOutline = (value == L"true" || value == L"1");
-                                    //else if (varName == L"cl_crosshair_dynamic_splitalpha_innermod") globals::config->dynamicSplitAlphaInnerMod = std::stof(value);
-                                    //else if (varName == L"cl_crosshair_dynamic_splitalpha_outermod") globals::config->dynamicSplitAlphaOuterMod = std::stof(value);
-                                    //else if (varName == L"cl_crosshair_dynamic_maxdist_splitratio") globals::config->dynamicMaxDistSplitRatio = std::stof(value);
-                                    else if (varName == L"cl_crosshairthickness") globals::config->thickness = std::stof(value);
-                                    else if (varName == L"cl_crosshairdot") globals::config->dot = (value == L"true" || value == L"1");
-                                    //else if (varName == L"cl_crosshairgap_useweaponvalue") globals::config->gapUseWeaponValue = (value == L"true" || value == L"1");
-                                    //else if (varName == L"cl_crosshairusealpha") globals::config->useAlpha = (value == L"true" || value == L"1");
-                                    else if (varName == L"cl_crosshair_t") globals::config->tStyle = (value == L"true" || value == L"1");
-                                    else if (varName == L"cl_crosshairstyle") globals::config->style = static_cast<uint8_t>(std::stoi(value));
-                                    else if (varName == L"cl_crosshairsize") globals::config->size = std::stof(value);
-                                    else if (varName == L"sensitivity") globals::config->sensitivity = std::stof(value);
-                                    else if (varName == L"zoom_sensitivity_ratio") globals::config->zoomSensitivity = std::stof(value);
-                                    else if (varName == L"m_yaw") globals::config->yaw = std::stof(value);
-                                }
-                                catch (const std::exception& e) {
-                                    std::wcout << L"Error parsing " << varName << L": " << e.what() << L"\n";
-                                }
-                            }
+            const auto now = std::chrono::steady_clock::now();
+            if (!videoPath.empty() && now >= nextVideoCheck) {
+                nextVideoCheck = now + std::chrono::milliseconds(200);
+                std::error_code error;
+                const auto written = fs::last_write_time(videoPath, error);
+                if (!error && written != lastVideoWrite) {
+                    try {
+                        if (const auto size = video::saved(cs2config::read(videoPath))) {
+                            globals::setVideoSize(*size);
+                            lastVideoWrite = written;
                         }
-
-                        // Apply defaults for missing parameters
-                        if (foundConVars.find(L"cl_crosshairgap\n") == std::wstring::npos) globals::config->gap = config_default.gap;
-                        if (foundConVars.find(L"cl_crosshair_outlinethickness\n") == std::wstring::npos) globals::config->outlineThickness = config_default.outlineThickness;
-                        if (foundConVars.find(L"cl_crosshaircolor_r\n") == std::wstring::npos) globals::config->red = config_default.red;
-                        if (foundConVars.find(L"cl_crosshaircolor_g\n") == std::wstring::npos) globals::config->green = config_default.green;
-                        if (foundConVars.find(L"cl_crosshaircolor_b\n") == std::wstring::npos) globals::config->blue = config_default.blue;
-                        if (foundConVars.find(L"cl_crosshairalpha\n") == std::wstring::npos) globals::config->alpha = config_default.alpha;
-                        //if (foundConVars.find(L"cl_crosshair_dynamic_splitdist\n") == std::wstring::npos) globals::config->dynamicSplitDist = config_default.dynamicSplitDist;
-                        //if (foundConVars.find(L"cl_fixedcrosshairgap\n") == std::wstring::npos) globals::config->fixedCrosshairGap = config_default.fixedCrosshairGap;
-                        if (foundConVars.find(L"cl_crosshaircolor\n") == std::wstring::npos) globals::config->color = config_default.color;
-                        if (foundConVars.find(L"cl_crosshair_drawoutline\n") == std::wstring::npos) globals::config->drawOutline = config_default.drawOutline;
-                        //if (foundConVars.find(L"cl_crosshair_dynamic_splitalpha_innermod\n") == std::wstring::npos) globals::config->dynamicSplitAlphaInnerMod = config_default.dynamicSplitAlphaInnerMod;
-                        //if (foundConVars.find(L"cl_crosshair_dynamic_splitalpha_outermod\n") == std::wstring::npos) globals::config->dynamicSplitAlphaOuterMod = config_default.dynamicSplitAlphaOuterMod;
-                        //if (foundConVars.find(L"cl_crosshair_dynamic_maxdist_splitratio\n") == std::wstring::npos) globals::config->dynamicMaxDistSplitRatio = config_default.dynamicMaxDistSplitRatio;
-                        if (foundConVars.find(L"cl_crosshairthickness\n") == std::wstring::npos) globals::config->thickness = config_default.thickness;
-                        if (foundConVars.find(L"cl_crosshairdot\n") == std::wstring::npos) globals::config->dot = config_default.dot;
-                        //if (foundConVars.find(L"cl_crosshairgap_useweaponvalue\n") == std::wstring::npos) globals::config->gapUseWeaponValue = config_default.gapUseWeaponValue;
-                        //if (foundConVars.find(L"cl_crosshairusealpha\n") == std::wstring::npos) globals::config->useAlpha = config_default.useAlpha;
-                        if (foundConVars.find(L"cl_crosshair_t\n") == std::wstring::npos) globals::config->tStyle = config_default.tStyle;
-                        if (foundConVars.find(L"cl_crosshairstyle\n") == std::wstring::npos) globals::config->style = config_default.style;
-                        if (foundConVars.find(L"cl_crosshairsize\n") == std::wstring::npos) globals::config->size = config_default.size;
-                        if (foundConVars.find(L"sensitivity\n") == std::wstring::npos) globals::config->sensitivity = config_default.sensitivity;
-                        if (foundConVars.find(L"zoom_sensitivity_ratio\n") == std::wstring::npos) globals::config->zoomSensitivity = config_default.zoomSensitivity;
-                        if (foundConVars.find(L"m_yaw\n") == std::wstring::npos) globals::config->yaw = config_default.yaw;
-
-                        //SteamTools::printCrosshairSettings(*globals::config);
-                        //globals::configUpdaterState = false;
+                    } catch (const std::exception &) {
                     }
                 }
-
-                for (const auto& line : *newLines) {
-                    if (line.find(L"Server confirmed all players") != std::wstring::npos) { // Auto Accept
-                        foundMatch = true;
+            }
+            if (auto newLines = monitor.getNewLines()) {
+                for (const auto &line : *newLines) {
+                    if (const auto size = videoChanges.consume(line))
+                        globals::setVideoSize(*size);
+                    ConfigExport::instance().consume(line);
+                    if (line.find(L"ConVars (non-default):") != std::wstring::npos) {
+                        batch = SteamTools::Config{};
+                        batch.modernFields = 15;
+                        batch.loaded = true;
+                        readingConvars = true;
+                        lastConvar = std::chrono::steady_clock::now();
                     }
-                    else if (line.find(L"Misc: rate ") != std::wstring::npos && line.find(L" latency ") != std::wstring::npos) { // Ping
+                    std::wsmatch convar;
+                    if (readingConvars && std::regex_search(line, convar, convarPattern)) {
+                        const auto name = convar[1].str(), value = convar[2].str();
+                        const auto ascii = [](const std::wstring &text) {
+                            std::string result;
+                            for (wchar_t c : text)
+                                result.push_back(static_cast<char>(c));
+                            return result;
+                        };
+                        crosshair::apply(batch, ascii(name), ascii(value));
+                        lastConvar = std::chrono::steady_clock::now();
+                    }
+                    if (readingConvars && line.find(L"[ErScripts] convars_end") != std::wstring::npos) {
+                        globals::setConfig(batch);
+                        readingConvars = false;
+                    }
+                    if (line.find(L"Server confirmed all players") != std::wstring::npos) {
+                        foundMatch = true;
+                    } else if (line.find(L"Misc: rate ") != std::wstring::npos &&
+                               line.find(L" latency ") != std::wstring::npos) {
                         if (std::regex_search(line, match, regexPing) && match.size() > 1) {
                             globals::cs2_ping = std::stoi(match[1].str());
                         }
-                    }
-                    else if (line.find(L"[*] ErScripts Bind Initalization") != std::wstring::npos) { // If ErScripts configs binds set
+                    } else if (line.find(L"[*] ErScripts Bind Initalization") != std::wstring::npos) {
                         bindsInit = true;
-                    }
-                    else if (line.find(L"[Client] source   : slot ") != std::wstring::npos) {
+                    } else if (line.find(L"[Client] source   : slot ") != std::wstring::npos) {
                         globals::localPlayerSlotNumber = std::stoi(line.substr(line.find(L"slot ") + wcslen(L"slot ")));
                     }
                 }
+            }
+            if (readingConvars && std::chrono::steady_clock::now() - lastConvar > std::chrono::seconds(2)) {
+                readingConvars = false;
             }
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
@@ -222,15 +173,12 @@ void ErScripts::ConsoleLogStream() {
     }).detach();
 }
 
-
 bool ErScripts::setPaths() {
-    // CS2-specific configuration
-    SteamTools::GameConfig cs2Config{
-        .possibleFolders = {
-            L"Counter-Strike Global Offensive",
-            //L"Counter-Strike 2",
-        }
-    };
+
+    SteamTools::GameConfig cs2Config{.possibleFolders = {
+                                         L"Counter-Strike Global Offensive",
+
+                                     }};
 
     try {
         auto cs2Path = SteamTools::getAppInstallPath("730", cs2Config);
@@ -241,12 +189,10 @@ bool ErScripts::setPaths() {
 
         path = *cs2Path;
 
-        // Set cfg and gsi paths
         config = path + L"/game/csgo/cfg/erscripts";
         gsi = path + L"/game/csgo/cfg/gamestate_integration_erscripts.cfg";
         consoleLog = path + L"/game/csgo/console.log";
 
-        // Verify paths exist
         if (!fs::exists(path) || !fs::is_directory(path)) {
             Logger::logWarning(std::format(L"CS2 path exists but is invalid: {}", path));
             path.clear();
@@ -257,8 +203,7 @@ bool ErScripts::setPaths() {
         }
 
         return true;
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         Logger::logWarning(std::format("[!] Error during path retrieval: {}", e.what()));
         path.clear();
         config.clear();
@@ -269,8 +214,8 @@ bool ErScripts::setPaths() {
 }
 
 bool ErScripts::configsValidation() {
-    std::string gamestateContent = \
-R"("GSI Config for ErScripts"
+    std::string gamestateContent =
+        R"("GSI Config for ErScripts"
 {
     "uri" "http://127.0.0.1:23561"
 
@@ -281,25 +226,14 @@ R"("GSI Config for ErScripts"
 
     "data"
     {
-        "map_round_wins" "1"          // history of round wins
-        "map" "1"                     // mode, map, phase, team scores
-        "player_id" "1"               // steamid
-        "player_match_stats" "1"      // scoreboard info
-        "player_state" "1"            // armor, flashed, equip_value, health, etc.
-        "player_weapons" "1"          // list of player weapons and weapon state
-        "provider" "1"               // info about the game providing info
-        "round" "1"                   // round phase and the winning team
-
-        // Below this line must be spectating or observing
-        "allgrenades" "0"             // grenade effecttime, lifetime, owner, position, type, velocity
-        "allplayers_id" "0"           // the steam id of each player
-        "allplayers_match_stats" "0"  // the scoreboard info for each player
-        "allplayers_position" "0"     // player_position but for each player
-        "allplayers_state" "0"        // the player_state for each player
-        "allplayers_weapons" "0"      // the player_weapons for each player
-        "bomb" "0"                    // location of the bomb, who's carrying it, dropped or not
-        "phase_countdowns" "0"        // time remaining in tenths of a second, which phase
-        "player_position" "0"         // forward direction, position for currently spectated player
+        "map_round_wins" "1"
+        "map" "1"
+        "player_id" "1"
+        "player_match_stats" "1"
+        "player_state" "1"
+        "player_weapons" "1"
+        "provider" "1"
+        "round" "1"
     }
 })";
 
@@ -316,15 +250,13 @@ R"("GSI Config for ErScripts"
             if (file.is_open()) {
                 file.close();
                 Logger::logSuccess(std::format(L"Created config: {}", cfg));
-            }
-            else {
+            } else {
                 Logger::logWarning(std::format(L"Failed to create config: {}", cfg));
                 std::cout << "[*] Press Enter to exit...";
                 std::cin.get();
                 std::exit(1);
             }
-        }
-        else {
+        } else {
             returnState = true;
         }
     }
@@ -337,18 +269,16 @@ R"("GSI Config for ErScripts"
             file << gamestateContent;
             file.close();
             Logger::logSuccess(std::format(L"Created gsi config: {}", gsi));
-        }
-        else {
+        } else {
             Logger::logWarning(std::format(L"Failed to create gsi config: {}", gsi));
             std::cout << "[*] Press Enter to exit...";
             std::cin.get();
             std::exit(1);
         }
-    }
-    else {
+    } else {
         returnState = true;
     }
-    
+
     return returnState;
 }
 
@@ -366,16 +296,15 @@ void ErScripts::InitBinds() {
             prevExitBind = cfg->erScriptsExitBind;
             changeTime = std::chrono::steady_clock::now();
             isDelayActive = true;
-        }
-        else if (isDelayActive) {
+        } else if (isDelayActive) {
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - changeTime).count();
             if (elapsed >= 2000) {
                 isDelayActive = false;
             }
-        }
-        else {
-            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000) globals::finish = true;
+        } else {
+            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000)
+                globals::finish = true;
         }
 
         if (GetWindowState() && GetCursorState() && globals::localPlayerIsActivityPlaying) {
@@ -405,15 +334,16 @@ void ErScripts::InitBinds() {
             configFile.close();
 
             if (!(GetAsyncKeyState(VK_LWIN) & 0x8000) && !(GetAsyncKeyState(VK_RWIN) & 0x8000)) {
-                Keyboard(VK_F13, true, false);
+                Keyboard(VK_F13, true);
                 std::this_thread::sleep_for(std::chrono::milliseconds((rand() % 5) + 1));
-                Keyboard(VK_F13, false, false);
+                Keyboard(VK_F13, false);
                 startTime = std::chrono::steady_clock::now();
                 timerStart = true;
             }
         }
 
-        if (bindsInit || globals::finish) break;
+        if (bindsInit || globals::finish)
+            break;
 
         if (timerStart) {
             auto currentTime = std::chrono::steady_clock::now();
@@ -433,116 +363,133 @@ void ErScripts::InitBinds() {
         std::cout << "[*] Press Enter to exit...";
         std::cin.get();
         std::exit(1);
-    }
-    else {
+    } else {
         Logger::logSuccess("ErScripts binds initialized");
     }
 }
 
-void ErScripts::CommandsSender(const int num, const std::string& command) {
+bool ErScripts::CommandsSender(const int num, const std::string &command) {
     if (GetWindowState() && GetCursorState()) {
         if (!bindsInit) {
             Logger::logWarning(std::format("CommandsSender {}: Binds not initialized!!!", num));
-            return;
+            return false;
         }
         std::wstring cfg = config + std::to_wstring(num) + L".cfg";
 
         std::fstream configFile(cfg, std::ios::out | std::ios::trunc);
         if (!configFile.is_open()) {
             Logger::logWarning("CommandsSender: Failed to open config file!");
-            return;
+            return false;
         }
 
         configFile.write(command.c_str(), command.length());
         configFile.close();
 
         if (!(GetAsyncKeyState(VK_LWIN) & 0x8000) && !(GetAsyncKeyState(VK_RWIN) & 0x8000)) {
-            Keyboard(VK_F13 + (num - 1), true, false);
+            Keyboard(VK_F13 + (num - 1), true);
             std::this_thread::sleep_for(std::chrono::milliseconds((rand() % 5) + 1));
-            Keyboard(VK_F13 + (num - 1), false, false);
+            Keyboard(VK_F13 + (num - 1), false);
+            return true;
         }
     }
+    return false;
 }
 
-const void ErScripts::Keyboard(int key, bool isPressed, bool useScanCode) {
+void ErScripts::Keyboard(int key, bool isPressed) {
+    static HMODULE win32u = LoadLibraryA("win32u.dll");
+    static auto NtUserSendInput = reinterpret_cast<UINT(WINAPI *)(UINT, LPINPUT, INT)>(
+        win32u ? GetProcAddress(win32u, "NtUserSendInput") : nullptr);
+
     INPUT input{};
-    input.type = INPUT_KEYBOARD;
 
-    if (useScanCode) {
-        // Use scancode
-        input.ki.wScan = static_cast<WORD>(key);
-        input.ki.dwFlags = KEYEVENTF_SCANCODE | (isPressed ? 0 : KEYEVENTF_KEYUP);
-    }
-    else {
-        // Use virtual key code
+    if (key == VK_LBUTTON || key == VK_RBUTTON || key == VK_MBUTTON || key == VK_XBUTTON1 || key == VK_XBUTTON2) {
+        input.type = INPUT_MOUSE;
+
+        if (key == VK_LBUTTON)
+            input.mi.dwFlags = isPressed ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+        else if (key == VK_RBUTTON)
+            input.mi.dwFlags = isPressed ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+        else if (key == VK_MBUTTON)
+            input.mi.dwFlags = isPressed ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+        else {
+            input.mi.dwFlags = isPressed ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            input.mi.mouseData = (key == VK_XBUTTON1) ? XBUTTON1 : XBUTTON2;
+        }
+    } else {
+        input.type = INPUT_KEYBOARD;
         input.ki.wVk = static_cast<WORD>(key);
-        input.ki.dwFlags = (isPressed ? 0 : KEYEVENTF_KEYUP);
+        input.ki.dwFlags = isPressed ? 0 : KEYEVENTF_KEYUP;
     }
 
-    if (SendInput(1, &input, sizeof(INPUT)) != 1) {
-        Logger::logWarning(std::format("SendInput failed, Error: {}", GetLastError()));
+    if (NtUserSendInput) {
+        UINT r = NtUserSendInput(1, &input, sizeof(INPUT));
+        if (r == 1)
+            return;
     }
+
+    SendInput(1, &input, sizeof(INPUT));
 }
 
 const bool ErScripts::GetCursorState() {
-    CURSORINFO cinfo = { sizeof(CURSORINFO) };
-    GetCursorInfo(&cinfo);
-    return (WORD)(cinfo.hCursor) == 0;
+    CURSORINFO cinfo = {sizeof(CURSORINFO)};
+    if (!GetCursorInfo(&cinfo))
+        return false;
+    return LOWORD(reinterpret_cast<ULONG_PTR>(cinfo.hCursor)) == 0;
 }
 
 const bool ErScripts::GetWindowState() {
-    return GetForegroundWindow() == hwnd;
+    const auto target = hwnd.load();
+    return target && GetForegroundWindow() == target;
 }
 
-const void ErScripts::GetWindowInfo(int& width, int& height, int& posX, int& posY) {
-    RECT rect;
-    if (GetClientRect(hwnd, &rect)) {
-        width = rect.right - rect.left;
-        height = rect.bottom - rect.top;
-
-        POINT point = { 0, 0 }; // Top-left of the client area
-        if (ClientToScreen(hwnd, &point)) {
-            posX = point.x < -20000 ? 0 : point.x;
-            posY = point.y < -20000 ? 0 : point.y;
-        }
-        else {
-            posX = posY = 0; // Error handling
+const void ErScripts::GetWindowInfo(int &width, int &height, int &posX, int &posY) {
+    auto target = hwnd.load();
+    static auto nextWindowCheck = std::chrono::steady_clock::time_point{};
+    const auto now = std::chrono::steady_clock::now();
+    if (!IsWindow(target) || !IsWindowVisible(target) || now >= nextWindowCheck) {
+        nextWindowCheck = now + std::chrono::milliseconds(250);
+        if (const auto current = FindWindowA(nullptr, "Counter-Strike 2")) {
+            target = current;
+            hwnd = current;
         }
     }
-    else {
-        width = height = 0; // Error handling
+    RECT rect{};
+    POINT point{};
+    if (IsIconic(target) || !GetClientRect(target, &rect) || !ClientToScreen(target, &point)) {
+        width = height = 0;
+        return;
     }
+    width = rect.right - rect.left;
+    height = rect.bottom - rect.top;
+    posX = point.x;
+    posY = point.y;
 }
 
 const std::vector<int> ErScripts::GetPixelColor(int x, int y) {
-    std::vector<int> color(3, -1); // Vector RGB, default value -1
-
-    //Logger::logInfo(std::format("x = {}; y = {}", x, y));
+    std::vector<int> color(3, -1);
 
     HDC hdc = GetDC(nullptr);
 
     if (!hdc)
         return color;
 
-    // Get the pixel color
     COLORREF pixelColor = GetPixel(hdc, x, y);
 
-    color[0] = GetRValue(pixelColor); // red
-    color[1] = GetGValue(pixelColor); // green
-    color[2] = GetBValue(pixelColor); // blue
+    color[0] = GetRValue(pixelColor);
+    color[1] = GetGValue(pixelColor);
+    color[2] = GetBValue(pixelColor);
 
     ReleaseDC(nullptr, hdc);
 
     return color;
 }
 
-const bool ErScripts::isColorSimilar(const std::vector<int>& color, const std::vector<int>& targetColor, int range) {
+const bool ErScripts::isColorSimilar(const std::vector<int> &color, const std::vector<int> &targetColor, int range) {
     if (color.size() != 3 || targetColor.size() != 3) {
         Logger::logWarning("isColorSimilar: Invalid color vector size!");
         return false;
     }
 
-    return (std::abs(color[0] - targetColor[0]) <= range &&
-            std::abs(color[1] - targetColor[1]) <= range &&
+    return (std::abs(color[0] - targetColor[0]) <= range && std::abs(color[1] - targetColor[1]) <= range &&
             std::abs(color[2] - targetColor[2]) <= range);
 }
