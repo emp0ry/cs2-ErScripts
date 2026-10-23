@@ -1,0 +1,86 @@
+/* Shared EMP0RY product components. Canonical source: ErScripts website. */
+.site-header{height:var(--header);padding-inline:var(--gutter);position:fixed;inset:0 0 auto;z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:28px;border-bottom:1px solid var(--line);background:#09090dc7;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.identity{display:flex;align-items:center;gap:18px;white-space:nowrap}
+.emp0ry{font-size:25px;font-weight:900;letter-spacing:-.07em;line-height:1;display:inline-flex;align-items:center;min-height:44px}
+.emp0ry span{color:var(--accent)}
+.identity-divider{font-size:22px;font-weight:300;color:#736b81}
+.product-name{font-size:14px;font-weight:500;min-height:44px;display:flex;align-items:center}
+.desktop-nav,.header-actions{display:flex;gap:28px;align-items:center}
+.desktop-nav a,.github-link{font-size:14px;color:#c8c4d0;min-height:44px;display:flex;align-items:center;gap:6px;transition:color 160ms}
+.desktop-nav a:hover,.github-link:hover{color:var(--text)}
+.header-actions{justify-content:end;gap:24px}
+.github-link span{color:var(--faint)}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:28px;min-height:48px;padding:11px 19px;border:1px solid #c5b0e43b;border-radius:5px;font-size:14px;font-weight:400;line-height:1.5;background:#17131f75;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);white-space:nowrap;transition:background 160ms,border-color 160ms,transform 160ms}
+.button:hover{background:#30263f;border-color:#c5b0e480}
+.button:active{transform:translateY(1px)}
+.button span{font-size:19px;color:var(--soft)}
+.button.small{min-height:44px;padding:9px 15px;font-size:13px;gap:18px}
+.menu-toggle{display:none;place-items:center;width:44px;height:44px;border:1px solid var(--line-strong);border-radius:7px}
+.text-link{display:inline-flex;align-items:center;gap:20px;min-height:44px;font-size:14px;font-weight:500;line-height:1.5;padding:0}
+.text-link>span:last-child{color:var(--accent);transition:transform 180ms var(--ease)}
+.text-link:hover{color:var(--soft)}
+.text-link:hover>span:last-child{transform:translate(2px,-2px)}
+@media(max-width:1150px){.site-header{gap:20px}
+.desktop-nav{gap:18px}
+.header-actions{gap:18px}
+.github-link{display:none}
+.identity{gap:12px}}
+@media(max-width:850px){.desktop-nav{gap:14px}
+.desktop-nav a{font-size:12px}
+.product-name{font-size:13px}
+.identity{gap:10px}
+.emp0ry{font-size:23px}
+.header-actions .button{font-size:12px;gap:12px}}
+@media(max-width:700px){.site-header{grid-template-columns:1fr auto;gap:12px}
+.desktop-nav,.header-download,.github-link{display:none!important}
+.header-actions{gap:10px}
+.menu-toggle{display:grid}
+.identity-divider{font-size:18px}
+.product-name{font-size:13px}
+.hero-actions .button{font-size:13px;gap:24px;padding-inline:18px}
+.hero-actions .text-link{font-size:12px;gap:12px}}
+@media(max-width:370px){.emp0ry{font-size:22px}
+.identity{gap:10px}
+.hero-actions .button{padding-inline:14px;gap:16px}
+.hero-actions .text-link{font-size:11px}}
+/* Common text treatment; individual compositions keep their own proportions. */
+body{line-height:1.6}button{background:none;touch-action:manipulation}
+.hero h1{font-weight:600;line-height:1.02;letter-spacing:-.064em}
+.section h2{font-size:clamp(34px,3.4vw,48px);line-height:1.13;letter-spacing:-.05em}
+.eyebrow,.section-kicker{color:var(--muted)}
+.hero .eyebrow{font-size:11px;margin-bottom:28px}
+.download-option .button{min-width:120px;justify-self:start}
+.diagram-copy .text-link,.install-copy .text-link{margin-top:20px}
+.contact-links{display:flex;gap:24px;border-top:1px solid var(--line);margin-top:24px;padding-top:22px}
+.contact-links a{display:flex;align-items:baseline;justify-content:center;gap:16px;min-width:0;min-height:44px;padding-block:5px}
+.contact-role{font-size:11px;line-height:1.5;color:var(--muted)}
+.contact-address{font-size:14px;line-height:1.5;color:var(--text);transition:color 160ms;overflow-wrap:anywhere}
+.contact-links a:hover .contact-address{color:var(--accent)}
+@media(max-width:700px){.hero h1{line-height:1.03}.hero .eyebrow{margin-bottom:24px}.section h2{font-size:clamp(31px,8.2vw,42px);line-height:1.15}.download-option .button{font-size:13px;gap:24px;padding-inline:18px;min-width:112px}.contact-links{flex-wrap:wrap;gap:12px 20px;padding-top:18px;margin-top:20px}.contact-role{font-size:10px}.contact-address{font-size:12px}}
+
+@media(max-height:600px) and (min-width:701px){:root{--header:64px}}
+/* Shared supporting typography and navigation sheet. */
+.hero-description{font-size:18px;line-height:1.8}
+.hero-detail{font-size:12px}
+.hero-note{font-size:12px;padding-block:24px}
+.section-heading>p{font-size:14px}
+.download-option p,.steps p,.faqs details>p{font-size:14px}
+.faqs summary{font-size:15px}
+.gallery-tabs button,.install-tabs button{font-size:13px;padding:10px 18px;border-radius:6px}
+.footer-product{font-weight:600}
+.site-menu{width:440px;padding:0;border-color:#ded2f233}
+.site-menu .dialog-heading{margin:0;padding:20px 24px;border-bottom:1px solid var(--line)}
+.site-menu .dialog-heading h2{font-size:19px;line-height:1.5;letter-spacing:-.035em}
+.dialog-heading h2:focus{outline:0}
+.site-menu nav{padding:12px 24px 24px}
+.site-menu nav a{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:56px;padding-block:15px;border-top:0;border-bottom:1px solid var(--line);font-size:15px}
+.site-menu nav .menu-secondary{font-size:12px;color:var(--faint);margin-top:20px}
+.close-button{display:grid;place-items:center;padding:0;border-color:var(--line);background:#ffffff05;color:#bcb6c8}
+@media(max-width:850px){.hero-description{font-size:16px}.hero-detail{font-size:11px}.section-heading>p{font-size:13px}}
+@media(max-width:700px){.hero-description{font-size:16px}.hero-detail{font-size:11px}.hero-note{font-size:11px;padding-block:20px}.download-option p,.steps p,.faqs details>p{font-size:13px}.faqs summary{font-size:14px}.gallery-tabs button,.install-tabs button{font-size:12px;padding-inline:13px}.site-menu .dialog-heading{padding:16px 18px}.site-menu .dialog-heading h2{font-size:17px}.site-menu nav{padding-inline:20px}}
+
+/* Native dialog frames and close glyph match the established product sites. */
+dialog{border-color:#ded2f233;background:#111117ed;-webkit-backdrop-filter:none;backdrop-filter:none;max-height:calc(100dvh - 32px);box-shadow:0 32px 100px #0007}
+dialog::backdrop{background:#04040866;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.site-menu{background:#111117ed}
+.close-button svg{width:20px;height:20px}

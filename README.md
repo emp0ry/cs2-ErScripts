@@ -98,6 +98,22 @@ cmake --build build
 
 Dependencies are pinned in `.gitmodules`: [Dear ImGui 1.91.5](https://github.com/ocornut/imgui), [JSON for Modern C++ 3.11.3](https://github.com/nlohmann/json), and [cpp-httplib 0.19.0](https://github.com/yhirose/cpp-httplib).
 
+## Website
+
+The GitHub Pages site is authored in [`website/src/`](website/src/) and published from `docs/`. Its shared EMP0RY design is specified in [`website/DESIGN.md`](website/DESIGN.md). Product releases should update the facts, screenshots and download links within that design.
+
+```sh
+cd website
+npm ci
+npm run dev
+npm test
+npm run build
+npm run check:output
+npm run preview
+```
+
+The build updates `docs/` while preserving the domain and release screenshot URLs. See [`website/README.md`](website/README.md) for maintenance and verification.
+
 ## License
 
 [MIT](LICENSE.txt). Dependency licenses are included in their submodules. The website uses [Geist under the SIL Open Font License](docs/site/fonts/OFL.txt).
