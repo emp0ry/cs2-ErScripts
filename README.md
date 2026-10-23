@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/site/icon.svg" alt="ErScripts logo" width="180">
+  <img src="https://erscripts.emp0ry.com/site/icon.svg" alt="ErScripts logo" width="180">
 </p>
 
 <h1 align="center">ErScripts</h1>
@@ -37,7 +37,7 @@ Fine-tune your crosshair, keep round information visible and back up your CS2 se
 </p>
 
 <p align="center">
-  <img src="docs/img/screenshots/general.png" alt="ErScripts 2.0.0 General menu" width="820">
+  <img src="https://erscripts.emp0ry.com/img/screenshots/general.png" alt="ErScripts 2.0.0 General menu" width="820">
 </p>
 
 ## What's new in 2.0.0
@@ -92,19 +92,19 @@ All captures below are from 2.0.0. Click an image to open it at full size.
 
 | Crosshair editor | Crosshair features |
 | --- | --- |
-| ![Crosshair editor with preview](docs/img/screenshots/crosshair.png) | ![Sniper, recoil and RGB crosshair controls](docs/img/screenshots/crosshair2.png) |
+| ![Crosshair editor with preview](https://erscripts.emp0ry.com/img/screenshots/crosshair.png) | ![Sniper, recoil and RGB crosshair controls](https://erscripts.emp0ry.com/img/screenshots/crosshair2.png) |
 
 | Overlay | Audio / chat |
 | --- | --- |
-| ![Bomb timer, keystrokes and watermark controls](docs/img/screenshots/overlay.png) | ![Sound and chat controls](docs/img/screenshots/audio_chat.png) |
+| ![Bomb timer, keystrokes and watermark controls](https://erscripts.emp0ry.com/img/screenshots/overlay.png) | ![Sound and chat controls](https://erscripts.emp0ry.com/img/screenshots/audio_chat.png) |
 
 | Settings | Config export |
 | --- | --- |
-| ![Performance, gradient and shortcut controls](docs/img/screenshots/settings.png) | ![Saved and live CS2 config export](docs/img/screenshots/config.png) |
+| ![Performance, gradient and shortcut controls](https://erscripts.emp0ry.com/img/screenshots/settings.png) | ![Saved and live CS2 config export](https://erscripts.emp0ry.com/img/screenshots/config.png) |
 
 | Bomb Timer | Keystrokes |
 | --- | --- |
-| ![Bomb timer overlay](docs/img/screenshots/bomb_timer.png) | ![WASD and mouse keystrokes overlay](docs/img/screenshots/keystrokes.png) |
+| ![Bomb timer overlay](https://erscripts.emp0ry.com/img/screenshots/bomb_timer.png) | ![WASD and mouse keystrokes overlay](https://erscripts.emp0ry.com/img/screenshots/keystrokes.png) |
 
 ## Use responsibly
 
@@ -134,22 +134,10 @@ Dependencies are pinned in `.gitmodules`: [Dear ImGui 1.91.5](https://github.com
 
 ## Website
 
-The GitHub Pages site is authored in [`website/src/`](website/src/) and published from `docs/`. Its shared EMP0RY design is specified in [`website/DESIGN.md`](website/DESIGN.md). Product releases should update the facts, screenshots and download links within that design.
-
-```sh
-cd website
-npm ci
-npm run dev
-npm test
-npm run build
-npm run check:output
-npm run preview
-```
-
-The build updates `docs/` while preserving the domain and release screenshot URLs. See [`website/README.md`](website/README.md) for maintenance and verification.
+The [product website](https://erscripts.emp0ry.com/) is also available at [emp0ry.com/cs2-ErScripts/](https://emp0ry.com/cs2-ErScripts/). Website sources and publication are maintained in the private emp0ry.com project. Completed application releases notify its central static build; this repository contains the application and its technical documentation.
 
 ## License
 
-[MIT](LICENSE.txt). Dependency licenses are included in their submodules. The website uses [Geist under the SIL Open Font License](docs/site/fonts/OFL.txt).
+[MIT](LICENSE.txt). Dependency licenses are included in their submodules. The website uses [Geist under the SIL Open Font License](https://erscripts.emp0ry.com/site/fonts/OFL.txt).
 
 [Support the project](https://www.buymeacoffee.com/emp0ry) · [More by emp0ry](https://emp0ry.com/)
