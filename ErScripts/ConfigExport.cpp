@@ -22,12 +22,13 @@ ConfigExport &ConfigExport::instance() {
     return exporter;
 }
 ConfigExport::~ConfigExport() {
+    worker.request_stop();
     if (worker.joinable())
         worker.join();
 }
 ConfigExport::Status ConfigExport::status() {
     std::lock_guard lock(mutex);
-    if (state.busy && !state.ready && deadline.time_since_epoch().count() &&
+    if ((state.queued || state.capturing) && deadline.time_since_epoch().count() &&
         std::chrono::steady_clock::now() > deadline) {
         state.busy = state.queued = state.capturing = false;
         state.message = "Export timed out. Use Saved files or try again with CS2 focused.";
@@ -39,23 +40,33 @@ void ConfigExport::start(bool live, const fs::path &source) {
         std::lock_guard lock(mutex);
         if (state.busy)
             return;
+    }
+    if (worker.joinable())
+        worker.join();
+    {
+        std::lock_guard lock(mutex);
         state = {};
         state.busy = true;
         state.message = "Reading settings...";
         deadline = {};
     }
-    if (worker.joinable())
-        worker.join();
-    worker = std::jthread([this, live, source] { prepare(live, source); });
+    try {
+        worker = std::jthread([this, live, source](std::stop_token stop) { prepare(stop, live, source); });
+    } catch (const std::system_error &error) {
+        std::lock_guard lock(mutex);
+        state.busy = false;
+        state.message = std::format("Cannot start export: {}", error.what());
+    }
 }
 void ConfigExport::cancel() {
     std::lock_guard lock(mutex);
-    if (!state.queued && !state.capturing)
+    if (!state.busy || writing)
         return;
+    worker.request_stop();
     state.busy = state.queued = state.capturing = false;
     state.message = "Cancelled. Source files were not changed.";
 }
-void ConfigExport::prepare(bool live, const fs::path &selectedSource) {
+void ConfigExport::prepare(std::stop_token stop, bool live, const fs::path &selectedSource) {
     Status prepared;
     cs2config::Snapshot values;
     try {
@@ -83,6 +94,8 @@ void ConfigExport::prepare(bool live, const fs::path &selectedSource) {
         }
         std::sort(paths.begin(), paths.end());
         for (const auto &path : paths) {
+            if (stop.stop_requested())
+                return;
             const auto text = cs2config::read(path);
             cs2config::write(prepared.folder / "source" / path.filename(), text);
             const auto name = path.filename().string();
@@ -103,6 +116,8 @@ void ConfigExport::prepare(bool live, const fs::path &selectedSource) {
             if (fs::is_directory(configs)) {
                 fs::create_directory(prepared.folder / "scripts");
                 for (const auto &entry : fs::directory_iterator(configs)) {
+                    if (stop.stop_requested())
+                        return;
                     if (!entry.is_regular_file() || entry.is_symlink() || entry.path().extension() != ".cfg")
                         continue;
                     const auto name = entry.path().filename().string();
@@ -115,7 +130,9 @@ void ConfigExport::prepare(bool live, const fs::path &selectedSource) {
             }
         }
         cs2config::write(prepared.folder / "manifest.json", manifest.dump(2));
-        std::lock_guard lock(mutex);
+        std::unique_lock lock(mutex);
+        if (stop.stop_requested())
+            return;
         prepared.busy = true;
         state = std::move(prepared);
         snapshot = std::move(values);
@@ -128,49 +145,71 @@ void ConfigExport::prepare(bool live, const fs::path &selectedSource) {
             state.message = "Waiting for CS2 input. Return to the game and close its console.";
             deadline = std::chrono::steady_clock::now() + std::chrono::minutes(2);
         } else
-            finish();
+            finish(lock);
     } catch (const std::exception &error) {
         std::lock_guard lock(mutex);
+        if (stop.stop_requested())
+            return;
         if (state.folder.empty())
             state.folder = prepared.folder;
         state.busy = state.queued = state.capturing = false;
         state.message = error.what();
     }
 }
-void ConfigExport::finish() {
-    cs2config::write(state.folder / "erscripts-export.cfg", snapshot.cfg());
-    nlohmann::ordered_json values;
-    values["convars"] = snapshot.convars;
-    values["bindings"] = snapshot.binds;
-    values["aliases"] = snapshot.aliases;
-    values["session_convars"] = snapshot.session;
-    cs2config::write(state.folder / "settings.json", values.dump(2));
-    if (!capture.empty())
-        cs2config::write(state.folder / "session.txt", capture);
-    cs2config::write(
-        state.folder / "README.txt",
-        "CS2 settings export\r\n\r\n"
-        "erscripts-export.cfg: saved client convars and primary bindings, updated by live values when available.\r\n"
-        "Copy this file into game/csgo/cfg, then run: exec erscripts-export\r\n"
-        "No unbindall is inserted. Existing unlisted keys are retained.\r\n"
-        "source/: exact saved settings, video, machine and additional split-screen files.\r\n"
-        "scripts/: copies of local CFG files; none are executed.\r\n"
-        "settings.json / session.txt: captured values and original live output for inspection.\r\n\r\n"
-        "Video and machine-specific settings are preserved as raw files, not portable console commands.\r\n"
-        "Saved files may lag behind unsaved in-game changes. Live capture reads cvarlist, binds and "
-        "aliases.\r\n"
-        "Hidden/protected variables and engine state are not guaranteed to be exposed. This is not a memory dump.\r\n");
-    state.convars = snapshot.convars.size();
-    state.binds = snapshot.binds.size();
-    state.aliases = snapshot.aliases.size();
-    state.busy = state.queued = state.capturing = false;
+void ConfigExport::finish(std::unique_lock<std::mutex> &lock) {
+    auto data = std::move(snapshot);
+    auto session = std::move(capture);
+    const auto folder = state.folder;
+    const auto rows = liveRows;
+    state.queued = state.capturing = false;
+    state.message = "Writing export...";
+    writing = true;
+    lock.unlock();
+    std::string error;
+    try {
+        cs2config::write(folder / "erscripts-export.cfg", data.cfg());
+        nlohmann::ordered_json values;
+        values["convars"] = data.convars;
+        values["bindings"] = data.binds;
+        values["aliases"] = data.aliases;
+        values["session_convars"] = data.session;
+        cs2config::write(folder / "settings.json", values.dump(2));
+        if (!session.empty())
+            cs2config::write(folder / "session.txt", session);
+        cs2config::write(
+            folder / "README.txt",
+            "CS2 settings export\r\n\r\n"
+            "erscripts-export.cfg: saved client convars and primary bindings, updated by live values when "
+            "available.\r\n"
+            "Copy this file into game/csgo/cfg, then run: exec erscripts-export\r\n"
+            "No unbindall is inserted. Existing unlisted keys are retained.\r\n"
+            "source/: exact saved settings, video, machine and additional split-screen files.\r\n"
+            "scripts/: copies of local CFG files; none are executed.\r\n"
+            "settings.json / session.txt: captured values and original live output for inspection.\r\n\r\n"
+            "Video and machine-specific settings are preserved as raw files, not portable console commands.\r\n"
+            "Saved files may lag behind unsaved in-game changes. Live capture reads cvarlist, binds and "
+            "aliases.\r\n"
+            "Hidden/protected variables and engine state are not guaranteed to be exposed. This is not a memory "
+            "dump.\r\n");
+    } catch (const std::exception &failure) {
+        error = failure.what();
+    }
+    lock.lock();
+    writing = false;
+    state.busy = false;
+    if (!error.empty()) {
+        state.message = std::move(error);
+        return;
+    }
+    state.convars = data.convars.size();
+    state.binds = data.binds.size();
+    state.aliases = data.aliases.size();
     state.ready = true;
-    state.message = capture.empty() || liveRows
-                        ? "Export saved."
-                        : "Saved files exported. Live output was not recognized; see session.txt.";
+    state.message = session.empty() || rows ? "Export saved."
+                                            : "Saved files exported. Live output was not recognized; see session.txt.";
 }
 void ConfigExport::flush() {
-    std::lock_guard lock(mutex);
+    std::unique_lock lock(mutex);
     if ((state.queued || state.capturing) && std::chrono::steady_clock::now() > deadline) {
         state.busy = state.queued = state.capturing = false;
         state.message = "Live capture timed out. Saved files are available in the partial export.";
@@ -178,18 +217,27 @@ void ConfigExport::flush() {
     }
     if (!state.queued || globals::menuState)
         return;
+    const auto currentToken = token;
+    const auto queuedDeadline = deadline;
     const auto command = "echo " + token + "_vars; cvarlist; echo " + token + "_binds; key_listboundkeys; echo " +
                          token + "_aliases; alias; echo " + token + "_end";
-    if (ErScripts::CommandsSender(6, command)) {
-        state.queued = false;
-        state.capturing = true;
-        section = 0;
-        deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
-        state.message = "Capturing live settings...";
+    state.queued = false;
+    state.capturing = true;
+    section = 0;
+    deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+    state.message = "Capturing live settings...";
+    lock.unlock();
+    const bool sent = ErScripts::CommandsSender(6, command);
+    lock.lock();
+    if (!sent && state.capturing && token == currentToken && section == 0) {
+        deadline = queuedDeadline;
+        state.capturing = false;
+        state.queued = true;
+        state.message = "Waiting for CS2 input. Return to the game and close its console.";
     }
 }
 void ConfigExport::consume(std::wstring_view raw) {
-    std::lock_guard lock(mutex);
+    std::unique_lock lock(mutex);
     if (!state.capturing)
         return;
     try {
@@ -212,7 +260,7 @@ void ConfigExport::consume(std::wstring_view raw) {
         if (marker == token + "_end") {
             if (section != 3)
                 throw std::runtime_error("Incomplete live capture.");
-            finish();
+            finish(lock);
             return;
         }
         if (!section)

@@ -23,6 +23,8 @@ class VdfParseError : public std::runtime_error {
 };
 
 class SteamTools {
+    friend struct SteamToolsTestAccess;
+
   public:
     struct GameConfig {
         std::vector<std::wstring> possibleFolders;

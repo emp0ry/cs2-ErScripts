@@ -10,8 +10,38 @@
 #include <filesystem>
 #include <thread>
 #include <random>
+#include <array>
+#include <charconv>
+#include <memory>
+#include <optional>
 
 #pragma comment(lib, "wininet.lib")
+
+namespace {
+    using InternetHandle = std::unique_ptr<void, decltype(&InternetCloseHandle)>;
+
+    std::optional<std::array<unsigned, 4>> versionParts(std::string_view version) {
+        if (version.starts_with('v'))
+            version.remove_prefix(1);
+        std::array<unsigned, 4> parts{};
+        for (auto &part : parts) {
+            const auto dot = version.find('.');
+            const auto field = version.substr(0, dot);
+            const auto parsed = std::from_chars(field.data(), field.data() + field.size(), part);
+            if (parsed.ec != std::errc{} || parsed.ptr != field.data() + field.size())
+                return std::nullopt;
+            if (dot == version.npos)
+                return parts;
+            version.remove_prefix(dot + 1);
+        }
+        return std::nullopt;
+    }
+} // namespace
+
+bool Updater::newerVersion(std::string_view candidate, std::string_view current) {
+    const auto next = versionParts(candidate), previous = versionParts(current);
+    return next && previous && *next > *previous;
+}
 
 std::string Updater::random_suffix_;
 
@@ -23,7 +53,7 @@ Updater::Updater(const std::string &currentVersion, const std::string &githubAut
     Logger::EnableANSIColors();
     if (currentExeName.empty()) {
         Logger::logWarning(std::format("Failed to get current executable name, defaulting to {}", downloadExeName));
-        currentExeName = downloadExeName;
+        currentExeName = downloadExeName + ".exe";
     }
 
     if (random_suffix_.empty()) {
@@ -47,17 +77,12 @@ std::string Updater::generateRandomString(size_t length) {
 std::string Updater::getCurrentExeName() {
     char exePath[MAX_PATH];
     DWORD pathLength = GetModuleFileNameA(NULL, exePath, MAX_PATH);
-    if (pathLength == 0) {
+    if (pathLength == 0 || pathLength >= MAX_PATH) {
         Logger::logWarning(std::format("Failed to get module filename: {}", GetLastError()));
         return "";
     }
 
-    std::string fullPath(exePath, pathLength);
-    size_t lastSlash = fullPath.find_last_of("\\/");
-    if (lastSlash != std::string::npos) {
-        return fullPath.substr(lastSlash + 1);
-    }
-    return fullPath;
+    return std::string(exePath, pathLength);
 }
 
 std::wstring Updater::stringToWstring(const std::string &str) {
@@ -68,88 +93,82 @@ std::wstring Updater::stringToWstring(const std::string &str) {
 }
 
 std::string Updater::downloadJsonData(const std::string &url) {
-    std::string jsonData;
-    std::wstring wideUrl = stringToWstring(url);
-
-    HINTERNET hInternet = InternetOpenW(L"ProgramUpdater", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-    if (hInternet) {
-        HINTERNET hConnect = InternetOpenUrlW(hInternet, wideUrl.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
-        if (hConnect) {
-            std::ostringstream ss;
-            char buffer[4096];
-            DWORD bytesRead;
-            while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
-                ss.write(buffer, bytesRead);
-            }
-            jsonData = ss.str();
-            InternetCloseHandle(hConnect);
-        } else {
-            Logger::logWarning(std::format("Failed to open URL: {}", GetLastError()));
-        }
-        InternetCloseHandle(hInternet);
-    } else {
+    InternetHandle internet(InternetOpenW(L"ProgramUpdater", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0),
+                            InternetCloseHandle);
+    if (!internet) {
         Logger::logWarning(std::format("Failed to initialize WinINet: {}", GetLastError()));
+        return {};
     }
-    return jsonData;
+    const auto wideUrl = stringToWstring(url);
+    InternetHandle request(InternetOpenUrlW(internet.get(), wideUrl.c_str(), nullptr, 0, INTERNET_FLAG_RELOAD, 0),
+                           InternetCloseHandle);
+    DWORD status = 0, length = sizeof(status);
+    if (!request ||
+        !HttpQueryInfoW(request.get(), HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &status, &length, nullptr) ||
+        status != HTTP_STATUS_OK) {
+        Logger::logWarning("Cannot read the latest release information");
+        return {};
+    }
+    std::string data;
+    char buffer[4096];
+    DWORD bytes = 0;
+    do {
+        if (!InternetReadFile(request.get(), buffer, sizeof(buffer), &bytes)) {
+            Logger::logWarning("Release information download failed");
+            return {};
+        }
+        if (data.size() + bytes > 4 * 1024 * 1024) {
+            Logger::logWarning("Release information exceeded 4 MiB");
+            return {};
+        }
+        data.append(buffer, bytes);
+    } while (bytes);
+    return data;
 }
 
 bool Updater::downloadFile(const std::string &url, const std::string &outputPath) {
-    std::wstring wideUrl = stringToWstring(url);
-    std::cout << "Downloading from: " << url << std::endl;
-
-    HINTERNET hInternet = InternetOpenW(L"ProgramUpdater", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-    if (!hInternet) {
+    InternetHandle internet(InternetOpenW(L"ProgramUpdater", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0),
+                            InternetCloseHandle);
+    if (!internet) {
         Logger::logWarning(std::format("Failed to initialize WinINet: {}", GetLastError()));
         return false;
     }
-
-    HINTERNET hConnect = InternetOpenUrlW(hInternet, wideUrl.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
-    if (!hConnect) {
-        Logger::logWarning(std::format("Failed to open URL: {}", GetLastError()));
-        InternetCloseHandle(hInternet);
+    const auto wideUrl = stringToWstring(url);
+    InternetHandle request(InternetOpenUrlW(internet.get(), wideUrl.c_str(), nullptr, 0, INTERNET_FLAG_RELOAD, 0),
+                           InternetCloseHandle);
+    DWORD status = 0, length = sizeof(status);
+    if (!request ||
+        !HttpQueryInfoW(request.get(), HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &status, &length, nullptr) ||
+        status != HTTP_STATUS_OK) {
+        Logger::logWarning("Cannot download the update");
         return false;
     }
-
-    DWORD contentLength = 0;
-    DWORD bufferLength = sizeof(contentLength);
-    DWORD index = 0;
-    if (!HttpQueryInfoW(hConnect, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &contentLength, &bufferLength,
-                        &index)) {
-        Logger::logWarning(std::format("Warning: Could not get Content-Length: {}", GetLastError()));
-    } else {
-        Logger::logInfo(std::format("Expected file size: {} bytes", contentLength));
-    }
-
-    std::ofstream outFile(outputPath, std::ios::binary);
-    if (!outFile) {
-        Logger::logWarning(std::format("Failed to create output file: {}", outputPath));
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
-        return false;
-    }
-
+    DWORD expected = 0;
+    length = sizeof(expected);
+    HttpQueryInfoW(request.get(), HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &expected, &length, nullptr);
+    std::ofstream file(outputPath, std::ios::binary);
     char buffer[4096];
-    DWORD bytesRead;
-    size_t totalBytes = 0;
-    while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead)) {
-        if (bytesRead == 0)
+    DWORD bytes = 0;
+    size_t total = 0;
+    bool downloaded = false;
+    while (file) {
+        if (!InternetReadFile(request.get(), buffer, sizeof(buffer), &bytes))
             break;
-        outFile.write(buffer, bytesRead);
-        totalBytes += bytesRead;
+        if (!bytes) {
+            downloaded = true;
+            break;
+        }
+        file.write(buffer, bytes);
+        total += bytes;
     }
-
-    outFile.close();
-    InternetCloseHandle(hConnect);
-    InternetCloseHandle(hInternet);
-
-    Logger::logSuccess(std::format("Downloaded  {} bytes to {}", totalBytes, outputPath));
-
-    if (contentLength > 0 && totalBytes != contentLength) {
-        Logger::logWarning(std::format("Download incomplete: Expected  {} bytes, got {}", contentLength, totalBytes));
-        std::filesystem::remove(outputPath);
+    file.close();
+    if (!downloaded || !file || (expected && total != expected)) {
+        Logger::logWarning("Update download was incomplete or could not be saved");
+        std::error_code error;
+        std::filesystem::remove(outputPath, error);
         return false;
     }
-
+    Logger::logSuccess(std::format("Downloaded {} bytes to {}", total, outputPath));
     return true;
 }
 
@@ -160,10 +179,10 @@ bool Updater::isValidExecutable(const std::string &filePath) {
         return false;
     }
 
-    char header[2];
+    char header[2]{};
     file.read(header, 2);
+    const bool isValid = file.gcount() == 2 && header[0] == 'M' && header[1] == 'Z';
     file.close();
-    bool isValid = (header[0] == 'M' && header[1] == 'Z');
     if (!isValid) {
         Logger::logWarning(std::format("File is not a valid PE executable: {}", filePath));
     }
@@ -221,6 +240,8 @@ bool Updater::replaceExecutable(const std::string &newFilePath) {
         return false;
     }
 
+    if (sei.hProcess)
+        CloseHandle(sei.hProcess);
     return true;
 }
 
@@ -253,9 +274,11 @@ bool Updater::checkAndUpdate() {
 
     try {
         auto json = nlohmann::json::parse(jsonData);
-        std::string latestVersion = json["tag_name"].get<std::string>().substr(1);
+        std::string latestVersion = json.at("tag_name").get<std::string>();
+        if (latestVersion.starts_with('v'))
+            latestVersion.erase(0, 1);
 
-        if (latestVersion > currentVersion) {
+        if (newerVersion(latestVersion, currentVersion)) {
             Logger::logInfo(std::format("New version available: {} (current: {})", latestVersion, currentVersion));
 
             std::string downloadUrl = "https://github.com/" + githubAuthor + "/" + repoName + "/releases/download/v" +

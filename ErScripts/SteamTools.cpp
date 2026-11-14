@@ -120,7 +120,7 @@ std::wstring SteamTools::trim(std::wstring_view str) {
 
 std::map<std::string, std::vector<std::wstring>> SteamTools::parseVdfContent(std::wstring_view content) {
     std::map<std::string, std::vector<std::wstring>> appPaths;
-    std::wistringstream iss(content.data());
+    std::wistringstream iss{std::wstring(content)};
     std::wstring line, currentPath;
     bool inLibraryFolder = false;
     bool inAppsSection = false;
@@ -131,7 +131,8 @@ std::map<std::string, std::vector<std::wstring>> SteamTools::parseVdfContent(std
         if (line.empty())
             continue;
 
-        if (line.size() >= 3 && line[0] == L'"' && iswdigit(line[1]) && line[2] == L'"') {
+        if (line.size() >= 3 && line.front() == L'"' && line.back() == L'"' &&
+            std::all_of(line.begin() + 1, line.end() - 1, [](wchar_t c) { return c >= L'0' && c <= L'9'; })) {
             inLibraryFolder = true;
             currentPath.clear();
             continue;
@@ -144,7 +145,7 @@ std::map<std::string, std::vector<std::wstring>> SteamTools::parseVdfContent(std
             size_t start = line.find(L'"', 7);
             size_t end = line.find(L'"', start + 1);
             if (start == std::wstring::npos || end == std::wstring::npos) {
-                throw VdfParseError("Malformed path line: " + std::string(line.begin(), line.end()));
+                throw VdfParseError("Malformed library path");
             }
             currentPath = line.substr(start + 1, end - start - 1);
             std::replace(currentPath.begin(), currentPath.end(), L'/', L'\\');
@@ -180,11 +181,16 @@ std::map<std::string, std::vector<std::wstring>> SteamTools::parseVdfContent(std
             size_t sizeStart = line.find(L'"', appIdEnd + 1);
             size_t sizeEnd = line.find(L'"', sizeStart + 1);
             if (appIdEnd == std::wstring::npos || sizeEnd == std::wstring::npos) {
-                throw VdfParseError("Malformed app entry: " + std::string(line.begin(), line.end()));
+                throw VdfParseError("Malformed app entry");
             }
 
             std::wstring wAppId = line.substr(appIdStart + 1, appIdEnd - appIdStart - 1);
-            std::string appId(wAppId.begin(), wAppId.end());
+            std::string appId;
+            for (wchar_t c : wAppId) {
+                if (c < L'0' || c > L'9')
+                    throw VdfParseError("Invalid app identifier");
+                appId.push_back(static_cast<char>(c));
+            }
             if (!appId.empty() && !currentPath.empty()) {
                 fs::path basePath = fs::path(currentPath) / L"steamapps" / L"common";
                 std::wstring normalizedPath = basePath.wstring();

@@ -61,23 +61,28 @@ namespace gsi {
         int round = -1;
         std::uint64_t sessionCounter = 0;
         std::optional<std::uint64_t> providerTimestamp;
+        std::string providerID;
 
       public:
         PlayerState snapshot(Clock::time_point now = Clock::now()) const {
             return state.playing && now - state.received <= staleAfter ? state : PlayerState{};
         }
 
-        void update(const nlohmann::json &payload, Clock::time_point now = Clock::now()) {
+        bool update(const nlohmann::json &payload, Clock::time_point now = Clock::now()) {
             const auto provider = payload.find("provider");
+            const auto id = provider != payload.end() ? text(*provider, "steamid") : std::string{};
             std::optional<std::uint64_t> timestamp;
             if (provider != payload.end() && provider->is_object()) {
                 const auto value = provider->find("timestamp");
                 if (value != provider->end() && value->is_number_integer() && *value >= 0)
                     timestamp = value->get<std::uint64_t>();
             }
-            if (timestamp && providerTimestamp && *timestamp < *providerTimestamp)
-                return;
-            providerTimestamp = timestamp;
+            if (timestamp && providerTimestamp && id == providerID && now - state.received <= staleAfter &&
+                *timestamp < *providerTimestamp)
+                return false;
+            if (timestamp || id != providerID || now - state.received > staleAfter)
+                providerTimestamp = timestamp;
+            providerID = id;
 
             const auto player = localPlayer(payload);
             PlayerState next;
@@ -137,6 +142,7 @@ namespace gsi {
             mapName = nextMap;
             round = nextRound;
             phase = nextPhase;
+            return true;
         }
     };
 } // namespace gsi

@@ -688,10 +688,8 @@ void Overlay::Menu() noexcept {
     ImGui::EndChild();
     ImGui::Separator();
     static double savedAt = -100;
-    if (ImGui::Button("Save", {85, 28})) {
-        cfg->save("default");
+    if (ImGui::Button("Save", {85, 28}) && cfg->save("default"))
         savedAt = ImGui::GetTime();
-    }
     ImGui::SameLine();
     if (ImGui::Button("Load", {85, 28})) {
         cfg->load("default");

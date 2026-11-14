@@ -1,36 +1,39 @@
 #include "ErScripts.h"
 
 void ErScripts::Crosshair() {
-    std::thread([this]() {
-        std::vector<int> blackColor = {0, 0, 0};
+    startWorker("Crosshair", [this]() {
+        const std::array<int, 3> blackColor = {0, 0, 0};
         bool oldRecoilCrosshairState = false;
 
         while (!globals::finish) {
+            const auto settings = Config::snapshot();
+            const auto bounds = globals::getWindowBounds();
             globals::flushCrosshair();
             if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
 
                 if (globals::getPlayerState().sniper()) {
-                    std::vector<int> pixelColor1 = GetPixelColor(globals::posX + 1, globals::posY + 1);
-                    std::vector<int> pixelColor2 =
-                        GetPixelColor(globals::posX + 1, globals::posY + globals::height - 6);
+                    const auto pixelColor1 = GetPixelColor(bounds.x + 1, bounds.y + 1);
+                    const auto pixelColor2 = GetPixelColor(bounds.x + 1, bounds.y + bounds.height - 6);
 
-                    globals::isScope =
-                        (isColorSimilar(pixelColor1, blackColor, 20) && isColorSimilar(pixelColor2, blackColor, 20));
+                    globals::isScope = (pixelColor1 && pixelColor2 && isColorSimilar(*pixelColor1, blackColor, 20) &&
+                                        isColorSimilar(*pixelColor2, blackColor, 20));
                 } else {
                     globals::isScope = false;
                 }
 
-                if (cfg->recoilCrosshairState != oldRecoilCrosshairState) {
-                    if (cfg->recoilCrosshairState) {
+                if (settings->recoilCrosshairState != oldRecoilCrosshairState) {
+                    if (settings->recoilCrosshairState) {
                         CommandsSender(3, "cl_crosshair_recoil true");
                     } else {
                         CommandsSender(3, "cl_crosshair_recoil false");
                     }
 
-                    oldRecoilCrosshairState = cfg->recoilCrosshairState;
+                    oldRecoilCrosshairState = settings->recoilCrosshairState;
                 }
+            } else {
+                globals::isScope = false;
             }
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

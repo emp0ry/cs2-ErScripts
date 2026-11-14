@@ -159,6 +159,9 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\third_party\imgui;$(ProjectDir)..\third_party\json\single_include;$(ProjectDir)..\third_party\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>windowscodecs.lib;d3d11.lib;dxgi.lib;dwmapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <Target Name="CheckSubmodules" BeforeTargets="PrepareForBuild">
     <Error Condition="!Exists('$(ProjectDir)..\third_party\imgui\imgui.h') Or !Exists('$(ProjectDir)..\third_party\json\single_include\nlohmann\json.hpp') Or !Exists('$(ProjectDir)..\third_party\httplib\httplib.h')" Text="Initialize dependencies: git submodule update --init --recursive" />
@@ -199,7 +202,6 @@
     <ClCompile Include="RGBCrosshair.cpp" />
     <ClCompile Include="SimpleSound.cpp" />
     <ClCompile Include="AutoStop.cpp" />
-    <ClCompile Include="SoundsShellcodes.h" />
     <ClCompile Include="SteamTools.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="UIAccess.c" />
@@ -237,6 +239,7 @@
     <ClInclude Include="Rebuild.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SimpleSound.h" />
+    <ClInclude Include="SoundsShellcodes.h" />
     <ClInclude Include="SteamTools.h" />
     <ClInclude Include="UIAccess.h" />
     <ClInclude Include="Updater.h" />

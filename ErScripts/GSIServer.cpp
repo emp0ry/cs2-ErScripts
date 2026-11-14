@@ -42,27 +42,59 @@ void GSIServer::gsiServer() {
         }
     });
 
-    Logger::logInfo(std::format("Starting GSI server on 127.0.0.1:{}", port));
-    if (!server.listen("127.0.0.1", port)) {
-        Logger::logWarning(std::format("Failed to start GSI server on 127.0.0.1:{}", port));
+    server.set_read_timeout(2, 0);
+    server.set_write_timeout(2, 0);
+    server.set_payload_max_length(1024 * 1024);
+    bool bound;
+    if (port == 0) {
+        port = server.bind_to_any_port("127.0.0.1");
+        bound = port > 0;
+    } else {
+        bound = server.bind_to_port("127.0.0.1", port);
     }
+    if (!bound) {
+        Logger::logWarning(std::format("Failed to start GSI server on 127.0.0.1:{}", port));
+        return;
+    }
+    Logger::logInfo(std::format("Starting GSI server on 127.0.0.1:{}", port));
+    if (!server.listen_after_bind())
+        Logger::logWarning("GSI server stopped after a listener error");
 }
 
 void GSIServer::run() {
-    std::thread serverThread(&GSIServer::gsiServer, this);
-    serverThread.detach();
+    if (worker.joinable())
+        return;
+    worker = std::thread([this] {
+        try {
+            gsiServer();
+        } catch (const std::exception &error) {
+            server.stop();
+            server.decommission();
+            Logger::logWarning(std::format("GSI server stopped: {}", error.what()));
+        }
+    });
+    // stop() must not race with listen() before cpp-httplib marks the server running.
+    server.wait_until_ready();
+}
+
+GSIServer::~GSIServer() {
+    stop();
 }
 
 void GSIServer::stop() {
+    if (!worker.joinable())
+        return;
     Logger::logInfo("Stopping GSI server");
     server.stop();
+    worker.join();
 }
 
 void GSIServer::handleJsonPayload(const nlohmann::json &data) {
     std::lock_guard lock(payloadMutex);
     auto playerData = getLocalPlayerData(data);
 
-    globals::updatePlayerState(data);
+    if (!globals::updatePlayerState(data))
+        return;
     globals::bombState = handleBombState(data);
     globals::defusekitState = handleDefuseKitState(playerData);
     globals::roundStartState = handleRoundStartState(data);
@@ -76,8 +108,8 @@ void GSIServer::handleJsonPayload(const nlohmann::json &data) {
 }
 
 bool GSIServer::handleBombState(const nlohmann::json &data) {
-    return data.contains("round") && data["round"].contains("bomb") &&
-           data["round"]["bomb"].get<std::string>() == "planted";
+    const auto round = data.find("round");
+    return round != data.end() && gsi::text(*round, "bomb") == "planted";
 }
 
 bool GSIServer::handleDefuseKitState(const std::optional<nlohmann::json> &playerData) {
@@ -88,15 +120,15 @@ bool GSIServer::handleDefuseKitState(const std::optional<nlohmann::json> &player
 }
 
 bool GSIServer::handleRoundStartState(const nlohmann::json &data) {
-    return data.contains("round") && data["round"].contains("phase") &&
-           data["round"]["phase"].get<std::string>() == "live";
+    const auto round = data.find("round");
+    return round != data.end() && gsi::text(*round, "phase") == "live";
 }
 
 int GSIServer::handleLocalPlayerKills(const std::optional<nlohmann::json> &playerData) {
     if (!playerData || !playerData->contains("match_stats") || !(*playerData)["match_stats"].contains("kills")) {
         return 0;
     }
-    return (*playerData)["match_stats"]["kills"].get<int>();
+    return std::max(0, gsi::count((*playerData)["match_stats"], "kills"));
 }
 
 std::string GSIServer::handleSteamID(const nlohmann::json &data) {
@@ -119,7 +151,7 @@ bool GSIServer::handleIsBombInWeapons(const std::optional<nlohmann::json> &playe
 }
 
 bool GSIServer::handleIsLocalPlayerActivityPlaying(const std::optional<nlohmann::json> &playerData) {
-    return playerData && playerData->contains("activity") && (*playerData)["activity"].get<std::string>() == "playing";
+    return playerData && gsi::text(*playerData, "activity") == "playing";
 }
 
 bool GSIServer::handlActiveWeaponState(const std::optional<nlohmann::json> &playerData, const std::string weaponName) {

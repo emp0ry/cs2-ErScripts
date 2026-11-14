@@ -1,31 +1,23 @@
 #include "ErScripts.h"
 
 void ErScripts::BombTimer() {
-    std::thread([this]() {
+    startWorker("BombTimer", [] {
+        bool planted = false;
+        std::chrono::steady_clock::time_point start;
         while (!globals::finish) {
-            if (cfg->bombTimerState) {
-                static bool isbombTimerStarted = false;
-                static std::chrono::system_clock::time_point bombPlantedTime;
-
-                if (globals::bombState) {
-                    if (!isbombTimerStarted) {
-                        bombPlantedTime = std::chrono::system_clock::now();
-                        isbombTimerStarted = true;
-                    }
-
-                    if (isbombTimerStarted) {
-                        globals::bombTime = 40000 - std::chrono::duration<double, std::milli>(
-                                                        std::chrono::system_clock::now() - bombPlantedTime)
-                                                        .count();
-                        if (globals::bombTime <= 0)
-                            globals::bombTime = 0.0l;
-                    }
-                } else {
-                    globals::bombTime = 0.0l;
-                    isbombTimerStarted = false;
+            if (globals::bombState) {
+                const auto now = std::chrono::steady_clock::now();
+                if (!planted) {
+                    start = now;
+                    planted = true;
                 }
+                globals::bombTime =
+                    std::max(0.0, 40000.0 - std::chrono::duration<double, std::milli>(now - start).count());
+            } else {
+                planted = false;
+                globals::bombTime = 0.0;
             }
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

@@ -3,9 +3,7 @@
 #include "SimpleSound.h"
 #include "Logger.h"
 #include <fstream>
-#include <random>
-#include <windows.h>
-#include <shellapi.h>
+#include <atomic>
 #include <mmeapi.h>
 
 #pragma comment(lib, "winmm.lib")
@@ -20,6 +18,9 @@ SimpleSound::SimpleSound(const unsigned char *data, unsigned int size) {
 }
 
 SimpleSound::~SimpleSound() {
+    stop_.request_stop();
+    for (auto &request : playRequests_)
+        request.wait();
     if (!tempDefaultFile_.empty()) {
         removeTempFile(tempDefaultFile_);
     }
@@ -36,60 +37,74 @@ void SimpleSound::setVolume(int volume) noexcept {
 }
 
 void SimpleSound::play() {
+    playRequests_.remove_if([](std::future<void> &request) {
+        if (request.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+            return false;
+        try {
+            request.get();
+        } catch (const std::exception &error) {
+            Logger::logWarning(std::format("Sound playback failed: {}", error.what()));
+        }
+        return true;
+    });
     std::wstring filePath = tempSecondFile_.empty() ? tempDefaultFile_ : tempSecondFile_;
 
-    playRequests_.emplace_front(std::async(std::launch::async, [filePath, volume = volume_,
-                                                                tempDefaultFile = tempDefaultFile_]() {
-        std::wstring alias = generateAlias();
-
-        if (mciSendStringW((L"open \"" + filePath + L"\" type waveaudio alias " + alias).c_str(), NULL, 0, NULL) != 0) {
-            if (mciSendStringW((L"open \"" + tempDefaultFile + L"\" type waveaudio alias " + alias).c_str(), NULL, 0,
-                               NULL) != 0) {
-                Logger::logWarning("Failed to open WAV file");
+    playRequests_.emplace_front(
+        std::async(std::launch::async, [filePath, tempDefaultFile = tempDefaultFile_, stop = stop_.get_token()]() {
+            std::wstring alias = generateAlias();
+            const auto close = L"close " + alias;
+            const auto status = L"status " + alias + L" mode";
+            if (stop.stop_requested())
                 return;
+
+            auto error =
+                mciSendStringW((L"open \"" + filePath + L"\" type waveaudio alias " + alias).c_str(), NULL, 0, NULL);
+            if (error != 0) {
+                error = mciSendStringW((L"open \"" + tempDefaultFile + L"\" type waveaudio alias " + alias).c_str(),
+                                       NULL, 0, NULL);
+                if (error != 0) {
+                    Logger::logWarning(std::format("Cannot open WAV file (MCI error {})", error));
+                    return;
+                }
             }
-        }
 
-        if (mciSendStringW((L"play " + alias + L" wait").c_str(), NULL, 0, NULL) != 0) {
-            Logger::logWarning("Failed to play WAV");
-            mciSendStringW((L"close " + alias).c_str(), NULL, 0, NULL);
-            return;
-        }
-
-        mciSendStringW((L"close " + alias).c_str(), NULL, 0, NULL);
-    }));
+            if (!stop.stop_requested() && mciSendStringW((L"play " + alias).c_str(), NULL, 0, NULL) != 0) {
+                Logger::logWarning("Failed to play WAV");
+            } else {
+                while (!stop.stop_requested()) {
+                    wchar_t mode[32]{};
+                    if (mciSendStringW(status.c_str(), mode, static_cast<UINT>(std::size(mode)), nullptr) != 0) {
+                        Logger::logWarning("Cannot read WAV playback status");
+                        break;
+                    }
+                    if (std::wstring_view(mode) != L"playing")
+                        break;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+            }
+            mciSendStringW(close.c_str(), NULL, 0, NULL);
+        }));
 }
 
 bool SimpleSound::secondBuffer(const std::string &filePath) {
-    if (!tempSecondFile_.empty()) {
-        tempSecondFile_.clear();
+    tempSecondFile_.clear();
+    if (filePath.empty())
+        return false;
+    auto path = fs::path(std::u8string(filePath.begin(), filePath.end()));
+    std::error_code error;
+    if (!fs::is_regular_file(path, error)) {
+        path += L".WAV";
+        if (!fs::is_regular_file(path, error))
+            return false;
     }
-
-    bool fileExists = fs::exists(filePath);
-
-    if (fileExists) {
-        tempSecondFile_ = std::wstring(filePath.begin(), filePath.end());
-    } else {
-        fileExists = fs::exists(filePath + ".WAV");
-
-        if (fileExists) {
-            tempSecondFile_ = std::format(L"{}.WAV", std::wstring(filePath.begin(), filePath.end())).c_str();
-        }
-    }
-
-    return fileExists;
+    tempSecondFile_ = path.wstring();
+    return true;
 }
 
 bool SimpleSound::loadFromBuffer(std::wstring &tempFile, const unsigned char *data, unsigned int size) {
     if (!data || size == 0) {
         Logger::logWarning("Invalid buffer: null or zero size");
         return false;
-    }
-
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0');
-    for (unsigned int i = 0; i < (std::min)(size, 16u); ++i) {
-        oss << std::setw(2) << static_cast<unsigned>(data[i]) << " ";
     }
 
     tempFile = createTempFile(data, size);
@@ -99,7 +114,8 @@ bool SimpleSound::loadFromBuffer(std::wstring &tempFile, const unsigned char *da
 std::wstring SimpleSound::createTempFile(const unsigned char *data, unsigned int size) {
     wchar_t tempPath[MAX_PATH];
     wchar_t tempFile[MAX_PATH];
-    if (GetTempPathW(MAX_PATH, tempPath) == 0 || GetTempFileNameW(tempPath, L"WAV", 0, tempFile) == 0) {
+    const DWORD length = GetTempPathW(MAX_PATH, tempPath);
+    if (!length || length >= MAX_PATH || GetTempFileNameW(tempPath, L"WAV", 0, tempFile) == 0) {
         Logger::logWarning("Failed to create temporary file path");
         return L"";
     }
@@ -107,55 +123,36 @@ std::wstring SimpleSound::createTempFile(const unsigned char *data, unsigned int
     std::ofstream file(tempFile, std::ios::binary);
     if (!file.is_open()) {
         Logger::logWarning("Failed to open temporary file for writing");
+        DeleteFileW(tempFile);
         return L"";
     }
 
     file.write(reinterpret_cast<const char *>(data), size);
-    if (!file.good()) {
+    file.close();
+    if (!file) {
         Logger::logWarning("Failed to write to temporary file");
-        file.close();
-        removeTempFile(tempDefaultFile_);
+        DeleteFileW(tempFile);
         return L"";
     }
-
-    file.close();
 
     return std::wstring(tempFile);
 }
 bool SimpleSound::removeTempFile(std::wstring &tempFile) {
-    auto startTime = std::chrono::steady_clock::now();
-    const auto timeout = std::chrono::seconds(3);
-
-    while (fs::exists(tempFile)) {
-        try {
-            fs::permissions(tempFile, fs::perms::all, fs::perm_options::remove);
-
-            if (fs::remove(tempFile)) {
-                return true;
-            }
-        } catch (...) {
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+    std::error_code error;
+    do {
+        fs::remove(tempFile, error);
+        if (!error) {
+            tempFile.clear();
+            return true;
         }
-
-        if (std::chrono::steady_clock::now() - startTime >= timeout) {
-            Logger::logWarning("Failed to remove file within 3 seconds.");
-            break;
-        }
-
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-
+    } while (std::chrono::steady_clock::now() < deadline);
+    Logger::logWarning(std::format("Cannot remove temporary sound: {}", error.message()));
     return false;
 }
 
 std::wstring SimpleSound::generateAlias() {
-    const std::wstring chars = L"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, static_cast<int>(chars.size()) - 1);
-
-    std::wstring alias(8, L'\0');
-    for (int i = 0; i < 8; ++i) {
-        alias[i] = chars[dis(gen)];
-    }
-    return alias;
+    static std::atomic_uint64_t next{0};
+    return L"ers_sound_" + std::to_wstring(next.fetch_add(1, std::memory_order_relaxed));
 }

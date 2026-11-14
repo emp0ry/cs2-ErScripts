@@ -1,7 +1,10 @@
 #pragma once
 #include <string>
+#include <string_view>
 
 class Updater {
+    friend struct UpdaterTestAccess;
+
   public:
     Updater(const std::string &currentVersion, const std::string &githubAuthor, const std::string &repoName,
             const std::string &downloadExeName);
@@ -22,6 +25,7 @@ class Updater {
     std::wstring stringToWstring(const std::string &str);
     std::string downloadJsonData(const std::string &url);
     bool downloadFile(const std::string &url, const std::string &outputPath);
+    static bool newerVersion(std::string_view candidate, std::string_view current);
     bool isValidExecutable(const std::string &filePath);
     bool replaceExecutable(const std::string &newFilePath);
 };

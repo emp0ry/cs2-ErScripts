@@ -9,24 +9,31 @@
 #include <atomic>
 
 namespace globals {
+    // Render-thread coordinates. Workers use getWindowBounds().
     extern int width, height, posX, posY;
+    struct WindowBounds {
+        int width, height, x, y;
+        bool operator==(const WindowBounds &) const = default;
+    };
+    WindowBounds getWindowBounds();
+    void setWindowBounds(WindowBounds bounds);
     extern std::atomic_bool finish;
-    extern bool menuState;
+    extern std::atomic<bool> menuState;
 
     extern std::atomic_bool isScope;
-    void updatePlayerState(const nlohmann::json &payload);
+    bool updatePlayerState(const nlohmann::json &payload);
     gsi::PlayerState getPlayerState();
     std::optional<crosshair::Frame> getSniperFrame(const crosshair::Settings &settings, int height);
-    extern bool bombState;
-    extern bool defusekitState;
-    extern double bombTime;
-    extern bool knifeState;
-    extern bool pistolState;
-    extern bool revolverState, cz75aState;
-    extern bool roundStartState;
-    extern bool isBombInWeapons;
-    extern int localPlayerKills, localPlayerSlotNumber;
-    extern bool localPlayerIsActivityPlaying;
+    extern std::atomic<bool> bombState;
+    extern std::atomic<bool> defusekitState;
+    extern std::atomic<double> bombTime;
+    extern std::atomic<bool> knifeState;
+    extern std::atomic<bool> pistolState;
+    extern std::atomic_bool revolverState, cz75aState;
+    extern std::atomic<bool> roundStartState;
+    extern std::atomic<bool> isBombInWeapons;
+    extern std::atomic_int localPlayerKills, localPlayerSlotNumber;
+    extern std::atomic<bool> localPlayerIsActivityPlaying;
     extern std::string steamid, nickname;
 
     extern bool previewMode;
@@ -38,6 +45,6 @@ namespace globals {
     bool hasPendingCrosshair();
     void flushCrosshair();
 
-    extern int cs2_ping;
+    extern std::atomic<int> cs2_ping;
 
 } // namespace globals

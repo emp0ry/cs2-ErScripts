@@ -162,9 +162,9 @@
     <ClCompile Include="KillSound.cpp">
       <Filter>Functions\Functions</Filter>
     </ClCompile>
-    <ClCompile Include="SoundsShellcodes.h">
+    <ClInclude Include="SoundsShellcodes.h">
       <Filter>Functions\Simple Sound</Filter>
-    </ClCompile>
+    </ClInclude>
     <ClCompile Include="Updater.cpp">
       <Filter>Functions\Updater</Filter>
     </ClCompile>

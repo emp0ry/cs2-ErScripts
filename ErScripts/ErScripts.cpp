@@ -1,6 +1,5 @@
 #include "ErScripts.h"
 #include "ConfigExport.h"
-#include <unordered_set>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -9,7 +8,24 @@
 
 std::atomic<HWND> ErScripts::hwnd = nullptr;
 std::wstring ErScripts::config;
-bool ErScripts::bindsInit = false;
+std::atomic_bool ErScripts::bindsInit = false;
+
+ErScripts::~ErScripts() {
+    globals::finish = true;
+    for (auto &worker : workers)
+        if (worker.joinable())
+            worker.join();
+}
+
+void ErScripts::startWorker(const char *name, std::function<void()> work) {
+    workers.emplace_back([name, work = std::move(work)] {
+        try {
+            work();
+        } catch (const std::exception &error) {
+            Logger::logWarning(std::format("{} stopped: {}", name, error.what()));
+        }
+    });
+}
 
 namespace fs = std::filesystem;
 
@@ -75,14 +91,18 @@ void ErScripts::Initalization() {
         }
     }
 
-    globals::nickname = SteamTools::getSteamNickname();
-    Logger::logSuccess(std::format("Steam nickname Found: {}", globals::nickname));
+    try {
+        globals::nickname = SteamTools::getSteamNickname();
+        Logger::logSuccess(std::format("Steam nickname found: {}", globals::nickname));
+    } catch (const std::exception &error) {
+        Logger::logWarning(std::format("Steam nickname unavailable: {}", error.what()));
+    }
 
     Logger::logSuccess("CS2 initialization completed successfully");
 }
 
 void ErScripts::ConsoleLogStream() {
-    std::thread([this]() {
+    startWorker("ConsoleLogStream", [this]() {
         FileMonitor monitor(consoleLog);
         monitor.start();
         Logger::logInfo("Start CS2 console.log monitoring");
@@ -95,6 +115,7 @@ void ErScripts::ConsoleLogStream() {
             Logger::logWarning("Video settings unavailable; tracking the CS2 window and console instead");
         }
         fs::file_time_type lastVideoWrite{};
+        bool videoReadFailed = false;
         auto nextVideoCheck = std::chrono::steady_clock::time_point{};
         SteamTools::Config batch;
         bool readingConvars = false;
@@ -116,7 +137,11 @@ void ErScripts::ConsoleLogStream() {
                             globals::setVideoSize(*size);
                             lastVideoWrite = written;
                         }
-                    } catch (const std::exception &) {
+                        videoReadFailed = false;
+                    } catch (const std::exception &failure) {
+                        if (!videoReadFailed)
+                            Logger::logWarning(std::format("Cannot read video settings: {}", failure.what()));
+                        videoReadFailed = true;
                     }
                 }
             }
@@ -153,12 +178,16 @@ void ErScripts::ConsoleLogStream() {
                     } else if (line.find(L"Misc: rate ") != std::wstring::npos &&
                                line.find(L" latency ") != std::wstring::npos) {
                         if (std::regex_search(line, match, regexPing) && match.size() > 1) {
-                            globals::cs2_ping = std::stoi(match[1].str());
+                            int ping;
+                            if (std::wistringstream(match[1].str()) >> ping)
+                                globals::cs2_ping = ping;
                         }
                     } else if (line.find(L"[*] ErScripts Bind Initalization") != std::wstring::npos) {
                         bindsInit = true;
                     } else if (line.find(L"[Client] source   : slot ") != std::wstring::npos) {
-                        globals::localPlayerSlotNumber = std::stoi(line.substr(line.find(L"slot ") + wcslen(L"slot ")));
+                        int slot;
+                        if (std::wistringstream(line.substr(line.find(L"slot ") + wcslen(L"slot "))) >> slot)
+                            globals::localPlayerSlotNumber = slot;
                     }
                 }
             }
@@ -170,7 +199,7 @@ void ErScripts::ConsoleLogStream() {
 
         monitor.stop();
         Logger::logInfo("Stop CS2 console.log monitoring");
-    }).detach();
+    });
 }
 
 bool ErScripts::setPaths() {
@@ -237,33 +266,30 @@ bool ErScripts::configsValidation() {
     }
 })";
 
-    bool returnState = false;
-
-    std::wifstream cfgFile(config);
+    bool returnState = true;
 
     for (int i = 1; i <= 12; i++) {
-        std::wstring cfg = config + std::to_wstring(i) + L".cfg";
-        std::wifstream cfgFile(cfg);
+        std::wstring filePath = config + std::to_wstring(i) + L".cfg";
+        std::wifstream cfgFile(filePath);
 
         if (!cfgFile.good()) {
-            std::ofstream file(cfg);
+            std::ofstream file(filePath);
             if (file.is_open()) {
                 file.close();
-                Logger::logSuccess(std::format(L"Created config: {}", cfg));
+                Logger::logSuccess(std::format(L"Created config: {}", filePath));
             } else {
-                Logger::logWarning(std::format(L"Failed to create config: {}", cfg));
+                Logger::logWarning(std::format(L"Failed to create config: {}", filePath));
                 std::cout << "[*] Press Enter to exit...";
                 std::cin.get();
                 std::exit(1);
             }
-        } else {
-            returnState = true;
         }
     }
 
     std::wifstream gsiFile(gsi);
 
     if (!gsiFile.good()) {
+        returnState = false;
         std::ofstream file(gsi);
         if (file.is_open()) {
             file << gamestateContent;
@@ -287,13 +313,14 @@ void ErScripts::InitBinds() {
     const auto timeoutDuration = std::chrono::seconds(10);
     bool timerStart = false;
 
-    int prevExitBind = cfg->erScriptsExitBind;
+    int prevExitBind = Config::snapshot()->erScriptsExitBind;
     std::chrono::steady_clock::time_point changeTime;
     bool isDelayActive = false;
 
     while (!globals::finish) {
-        if (prevExitBind != cfg->erScriptsExitBind) {
-            prevExitBind = cfg->erScriptsExitBind;
+        const auto settings = Config::snapshot();
+        if (prevExitBind != settings->erScriptsExitBind) {
+            prevExitBind = settings->erScriptsExitBind;
             changeTime = std::chrono::steady_clock::now();
             isDelayActive = true;
         } else if (isDelayActive) {
@@ -303,16 +330,17 @@ void ErScripts::InitBinds() {
                 isDelayActive = false;
             }
         } else {
-            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000)
+            if (GetAsyncKeyState(settings->erScriptsExitBind) & 0x8000)
                 globals::finish = true;
         }
 
         if (GetWindowState() && GetCursorState() && globals::localPlayerIsActivityPlaying) {
-            std::wstring cfg = config + +L"1.cfg";
+            std::wstring filePath = config + L"1.cfg";
 
-            std::fstream configFile(cfg, std::ios::out | std::ios::trunc);
+            std::fstream configFile(filePath, std::ios::out | std::ios::trunc);
             if (!configFile.is_open()) {
                 Logger::logWarning("InitBinds: Failed to open config file!");
+                globals::finish = true;
                 return;
             }
 
@@ -337,8 +365,10 @@ void ErScripts::InitBinds() {
                 Keyboard(VK_F13, true);
                 std::this_thread::sleep_for(std::chrono::milliseconds((rand() % 5) + 1));
                 Keyboard(VK_F13, false);
-                startTime = std::chrono::steady_clock::now();
-                timerStart = true;
+                if (!timerStart) {
+                    startTime = std::chrono::steady_clock::now();
+                    timerStart = true;
+                }
             }
         }
 
@@ -358,25 +388,30 @@ void ErScripts::InitBinds() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    if (globals::finish || !bindsInit) {
+    if (globals::finish)
+        return;
+    if (!bindsInit) {
         Logger::logWarning("Initialization failed: Could not initialize erscripts binds");
-        std::cout << "[*] Press Enter to exit...";
-        std::cin.get();
-        std::exit(1);
+        globals::finish = true;
     } else {
         Logger::logSuccess("ErScripts binds initialized");
     }
 }
 
 bool ErScripts::CommandsSender(const int num, const std::string &command) {
+    // A CFG write and its key pulse form one transaction across all feature workers.
+    static std::mutex commandMutex;
+    std::lock_guard lock(commandMutex);
+    if (num < 1 || num > 12)
+        return false;
     if (GetWindowState() && GetCursorState()) {
         if (!bindsInit) {
             Logger::logWarning(std::format("CommandsSender {}: Binds not initialized!!!", num));
             return false;
         }
-        std::wstring cfg = config + std::to_wstring(num) + L".cfg";
+        std::wstring filePath = config + std::to_wstring(num) + L".cfg";
 
-        std::fstream configFile(cfg, std::ios::out | std::ios::trunc);
+        std::fstream configFile(filePath, std::ios::out | std::ios::trunc);
         if (!configFile.is_open()) {
             Logger::logWarning("CommandsSender: Failed to open config file!");
             return false;
@@ -384,6 +419,10 @@ bool ErScripts::CommandsSender(const int num, const std::string &command) {
 
         configFile.write(command.c_str(), command.length());
         configFile.close();
+        if (!configFile) {
+            Logger::logWarning("CommandsSender: Failed to write config file");
+            return false;
+        }
 
         if (!(GetAsyncKeyState(VK_LWIN) & 0x8000) && !(GetAsyncKeyState(VK_RWIN) & 0x8000)) {
             Keyboard(VK_F13 + (num - 1), true);
@@ -465,31 +504,18 @@ const void ErScripts::GetWindowInfo(int &width, int &height, int &posX, int &pos
     posY = point.y;
 }
 
-const std::vector<int> ErScripts::GetPixelColor(int x, int y) {
-    std::vector<int> color(3, -1);
-
-    HDC hdc = GetDC(nullptr);
-
-    if (!hdc)
-        return color;
-
-    COLORREF pixelColor = GetPixel(hdc, x, y);
-
-    color[0] = GetRValue(pixelColor);
-    color[1] = GetGValue(pixelColor);
-    color[2] = GetBValue(pixelColor);
-
-    ReleaseDC(nullptr, hdc);
-
-    return color;
+std::optional<std::array<int, 3>> ErScripts::GetPixelColor(int x, int y) {
+    HDC dc = GetDC(nullptr);
+    if (!dc)
+        return std::nullopt;
+    const COLORREF color = GetPixel(dc, x, y);
+    ReleaseDC(nullptr, dc);
+    if (color == CLR_INVALID)
+        return std::nullopt;
+    return std::array<int, 3>{GetRValue(color), GetGValue(color), GetBValue(color)};
 }
 
-const bool ErScripts::isColorSimilar(const std::vector<int> &color, const std::vector<int> &targetColor, int range) {
-    if (color.size() != 3 || targetColor.size() != 3) {
-        Logger::logWarning("isColorSimilar: Invalid color vector size!");
-        return false;
-    }
-
-    return (std::abs(color[0] - targetColor[0]) <= range && std::abs(color[1] - targetColor[1]) <= range &&
-            std::abs(color[2] - targetColor[2]) <= range);
+bool ErScripts::isColorSimilar(const std::array<int, 3> &color, const std::array<int, 3> &targetColor, int range) {
+    return std::abs(color[0] - targetColor[0]) <= range && std::abs(color[1] - targetColor[1]) <= range &&
+           std::abs(color[2] - targetColor[2]) <= range;
 }

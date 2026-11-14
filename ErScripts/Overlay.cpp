@@ -1,6 +1,7 @@
 #include "overlay.h"
 #include "D3DResize.h"
 #include <thread>
+#include <array>
 
 std::atomic<float> Overlay::g_ScrollDelta = 0.f;
 
@@ -116,12 +117,22 @@ void Overlay::OverlayLoop() noexcept {
                       nullptr,
                       L"GDI+ Hook Window Class",
                       nullptr};
-    ::RegisterClassEx(&wc);
+    if (!::RegisterClassEx(&wc)) {
+        Logger::logWarning("Cannot register overlay window class");
+        globals::finish = true;
+        return;
+    }
     window_handle =
         ::CreateWindow(wc.lpszClassName, globals::previewMode ? L"ErScripts Preview" : L"GDI+ Window (Lightshot.exe)",
                        (globals::previewMode ? WS_OVERLAPPEDWINDOW : WS_POPUP), 0, 0, globals::width, globals::height,
                        nullptr, nullptr, wc.hInstance, nullptr);
 
+    if (!window_handle) {
+        Logger::logWarning("Cannot create overlay window");
+        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+        globals::finish = true;
+        return;
+    }
     if (!globals::previewMode)
         SetWindowLongPtr(window_handle, GWL_EXSTYLE,
                          WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
@@ -131,6 +142,7 @@ void Overlay::OverlayLoop() noexcept {
 
     if (!CreateDeviceD3D()) {
         CleanupDeviceD3D();
+        ::DestroyWindow(window_handle);
         ::UnregisterClass(wc.lpszClassName, wc.hInstance);
         globals::finish = true;
         return;
@@ -158,7 +170,7 @@ void Overlay::OverlayLoop() noexcept {
 
     menu_font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/segoeui.ttf", 16.f, nullptr, small_range);
     if (menu_font == nullptr) {
-        Logger::logWarning("Failed to load font arial.ttf, falling back to default font");
+        Logger::logWarning("Failed to load font segoeui.ttf, falling back to default font");
         menu_font = io.Fonts->AddFontDefault();
     }
 
@@ -176,8 +188,19 @@ void Overlay::OverlayLoop() noexcept {
 
     ImGui::StyleColorsDark();
 
-    ImGui_ImplWin32_Init(window_handle);
-    ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
+    const bool win32Ready = ImGui_ImplWin32_Init(window_handle);
+    const bool dx11Ready = win32Ready && ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
+    if (!dx11Ready) {
+        Logger::logWarning("Cannot initialize overlay rendering");
+        if (win32Ready)
+            ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+        CleanupDeviceD3D();
+        ::DestroyWindow(window_handle);
+        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+        globals::finish = true;
+        return;
+    }
 
     const float clear_color[4]{0};
 
@@ -213,6 +236,7 @@ void Overlay::OverlayLoop() noexcept {
                 globals::height = client.bottom;
             }
         }
+        globals::setWindowBounds({globals::width, globals::height, globals::posX, globals::posY});
         if (!ResizeRenderTarget()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
             continue;
@@ -245,6 +269,8 @@ void Overlay::OverlayLoop() noexcept {
                 Overlay::Menu();
         }
 
+        cfg->publish();
+
         if (cfg->fpsLimiterState && !cfg->vsyncState) {
             LimitFPS(cfg->fpsLimiter);
         }
@@ -258,6 +284,10 @@ void Overlay::OverlayLoop() noexcept {
 
         HRESULT hr = g_pSwapChain->Present(cfg->vsyncState, 0);
         g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
+        if (FAILED(hr)) {
+            Logger::logWarning(std::format("Overlay presentation failed: 0x{:08X}", static_cast<unsigned>(hr)));
+            globals::finish = true;
+        }
     }
 
     ImGui_ImplDX11_Shutdown();
@@ -319,14 +349,14 @@ void toggleKey(int vkKey, bool &toggleState, ImGuiKey imguiKey, ImGuiKey imguiMo
         io.AddKeyEvent(imguiKey, true);
 
         if (imguiModKey) {
-            ImGui::GetKeyData(imguiModKey)->Down = true;
+            io.AddKeyEvent(imguiModKey, true);
         }
         toggleState = false;
     } else if (!toggleState && !(GetAsyncKeyState(vkKey) & 0x8000)) {
         io.AddKeyEvent(imguiKey, false);
 
         if (imguiModKey) {
-            ImGui::GetKeyData(imguiModKey)->Down = false;
+            io.AddKeyEvent(imguiModKey, false);
         }
         toggleState = true;
     }
@@ -414,12 +444,14 @@ void Overlay::Handler() noexcept {
         io.AddMousePosEvent((float)cursorPos.x, (float)cursorPos.y);
     }
 
-    if (g_ScrollDelta) {
-        io.AddMouseWheelEvent(0.0f, g_ScrollDelta);
-        g_ScrollDelta = 0.0f;
-    }
+    if (const float scroll = g_ScrollDelta.exchange(0.f); scroll != 0.f)
+        io.AddMouseWheelEvent(0.0f, scroll);
 
-    static bool keyState[256] = {true};
+    static auto keyState = [] {
+        std::array<bool, 256> keys;
+        keys.fill(true);
+        return keys;
+    }();
 
     for (int vkKey = 'A'; vkKey <= 'Z'; ++vkKey) {
         toggleKey(vkKey, keyState[vkKey], io);
@@ -496,10 +528,10 @@ bool Overlay::CreateDeviceD3D() noexcept {
         return false;
 
     CreateRenderTarget();
+    if (!g_mainRenderTargetView)
+        return false;
 
     bombTexture = LoadTextureFromPNGShellcode(c4Icon, c4IconLen);
-    settingsTexture = LoadTextureFromPNGShellcode(settingsIcon, settingsIconLen);
-    reloadTexture = LoadTextureFromPNGShellcode(reloadIcon, reloadIconLen);
 
     return true;
 }
@@ -511,8 +543,6 @@ void Overlay::CleanupDeviceD3D() noexcept {
     SafeRelease(g_pd3dDeviceContext);
     SafeRelease(g_pd3dDevice);
     SafeRelease(bombTexture);
-    SafeRelease(settingsTexture);
-    SafeRelease(reloadTexture);
 }
 
 void Overlay::CreateRenderTarget() noexcept {

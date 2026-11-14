@@ -26,6 +26,7 @@ class FileMonitor {
     std::thread monitorThread_;
     std::mutex linesMutex_;
     std::deque<std::wstring> newLines_;
+    size_t queuedChars_ = 0;
     std::streamoff lastOffset_{0};
 
     void pollFile();

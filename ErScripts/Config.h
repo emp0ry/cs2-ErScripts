@@ -6,13 +6,21 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <cmath>
+#include <limits>
+#include <type_traits>
 
 class Config {
   public:
     static constexpr const char *defaultChatMessage = "Customize CS2 with ErScripts: erscripts.emp0ry.com";
 
+    // The render thread edits cfg. Workers only read published immutable snapshots.
+    static std::shared_ptr<const Config> snapshot();
+    void publish() const;
+    bool operator==(const Config &) const = default;
+
     void load(const std::string &filename);
-    void save(const std::string &filename) const;
+    bool save(const std::string &filename) const;
 
     bool triggerState{false};
     int triggerBind{0};
@@ -99,13 +107,24 @@ class Config {
     int erScriptsExitBind{VK_END};
 
   private:
-    template <typename T> void read(const nlohmann::json &src, T &dest) {
+    template <typename T> bool read(const nlohmann::json &src, T &dest) {
         try {
-            if (!src.is_null()) {
-                dest = src.get<T>();
+            if (src.is_null())
+                return false;
+            if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool>) {
+                if (!src.is_number_integer() || src < std::numeric_limits<T>::lowest() ||
+                    src > std::numeric_limits<T>::max())
+                    throw std::runtime_error("Expected an integer within range");
             }
+            const auto value = src.get<T>();
+            if constexpr (std::is_floating_point_v<T>)
+                if (!std::isfinite(value))
+                    throw std::runtime_error("Expected a finite number");
+            dest = value;
+            return true;
         } catch (const std::exception &e) {
             Logger::logWarning(std::format("Config Error Code: {}", e.what()));
+            return false;
         }
     }
 

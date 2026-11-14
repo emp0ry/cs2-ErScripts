@@ -45,8 +45,6 @@ class Overlay {
     ImFont *bold_font = nullptr;
 
     ID3D11ShaderResourceView *bombTexture = nullptr;
-    ID3D11ShaderResourceView *settingsTexture = nullptr;
-    ID3D11ShaderResourceView *reloadTexture = nullptr;
 
     bool isFinish = true;
 
@@ -73,7 +71,6 @@ class Overlay {
     void CircularTimer(const ImVec2 &pos, const float min, const float max, const float &time, const int points_count,
                        const float radius, const float thickness, const bool top, const ImColor &color);
     ID3D11ShaderResourceView *LoadTextureFromPNGShellcode(unsigned char *icon_png, unsigned int icon_png_size);
-    bool ImageButton(const char *str_id, ImTextureID imageTexture, const ImVec2 &size);
 
     void OverlayLoop() noexcept;
 };

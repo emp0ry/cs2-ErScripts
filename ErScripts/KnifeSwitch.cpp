@@ -1,10 +1,11 @@
 #include "ErScripts.h"
 
 void ErScripts::KnifeSwitch() {
-    std::thread([this]() {
+    startWorker("KnifeSwitch", [this]() {
         bool oldKnifeState = false;
         while (!globals::finish) {
-            if (cfg->knifeSwitchState) {
+            const auto settings = Config::snapshot();
+            if (settings->knifeSwitchState) {
                 if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
                     if (globals::knifeState != oldKnifeState) {
                         CommandsSender(4, "switchhands");
@@ -15,5 +16,5 @@ void ErScripts::KnifeSwitch() {
 
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

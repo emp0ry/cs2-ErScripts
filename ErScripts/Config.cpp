@@ -1,7 +1,10 @@
 #include "config.h"
 #include <algorithm>
+#include <atomic>
+#include <filesystem>
 
 namespace {
+    std::atomic<std::shared_ptr<const Config>> published{std::make_shared<const Config>()};
     const nlohmann::json &configValue(const nlohmann::json &root, std::initializer_list<const char *> path) {
         static const nlohmann::json empty;
         const auto *current = &root;
@@ -17,11 +20,16 @@ namespace {
     }
 } // namespace
 
-void Config::load(const std::string &filename) {
-    triggerState = autoStopState = angleBindState = autoPistolState = false;
-    if (!std::filesystem::exists("configs"))
-        std::filesystem::create_directory("configs");
+std::shared_ptr<const Config> Config::snapshot() {
+    return published.load();
+}
 
+void Config::publish() const {
+    if (*this != *snapshot())
+        published.store(std::make_shared<const Config>(*this));
+}
+
+void Config::load(const std::string &filename) {
     std::ifstream file("configs\\" + filename + ".json");
     if (!file.is_open())
         return;
@@ -49,6 +57,7 @@ void Config::load(const std::string &filename) {
         }
     }
 
+    triggerState = autoStopState = angleBindState = autoPistolState = false;
     read(configValue(json, {"pixel-trigger", "bind"}), triggerBind);
     readArray(configValue(json, {"pixel-trigger", "displacement"}), triggerDisplacement);
     read(configValue(json, {"pixel-trigger", "threshold"}), triggerThreshold);
@@ -142,9 +151,14 @@ void Config::load(const std::string &filename) {
     gradient.delayMs = std::clamp(gradient.delayMs, 1, 100);
     bombTimerScale = std::clamp(bombTimerScale, .5f, 2.f);
     keystrokesScale = std::clamp(keystrokesScale, .5f, 2.f);
+    triggerThreshold = std::clamp(triggerThreshold, 0, 255);
+    triggerDelayMs = std::clamp(triggerDelayMs, 0, 100);
+    for (int &offset : triggerDisplacement)
+        offset = std::clamp(offset, 0, 20);
+    autoAcceptWaitingTime = std::clamp(autoAcceptWaitingTime, 1, 30);
 }
 
-void Config::save(const std::string &filename) const {
+bool Config::save(const std::string &filename) const {
     nlohmann::ordered_json json;
 
     json["pixel-trigger"]["state"] = triggerState;
@@ -238,20 +252,31 @@ void Config::save(const std::string &filename) const {
     json["er-scripts"]["menu"]["bind"] = erScriptsMenuBind;
     json["er-scripts"]["exit"]["bind"] = erScriptsExitBind;
 
-    if (!std::filesystem::exists("configs"))
-        std::filesystem::create_directory("configs");
-
-    std::ofstream file("configs\\" + filename + ".json");
-    if (file.is_open()) {
-        file << json.dump(4);
+    std::error_code error;
+    std::filesystem::create_directories("configs", error);
+    if (error) {
+        Logger::logWarning(std::format("Cannot create config directory: {}", error.message()));
+        return false;
     }
+    const auto path = std::filesystem::path("configs") / (filename + ".json");
+    auto temporary = path;
+    temporary += L".tmp";
+    std::ofstream file(temporary, std::ios::binary | std::ios::trunc);
+    file << json.dump(4);
+    file.close();
+    if (file && MoveFileExW(temporary.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+        return true;
+    Logger::logWarning("Cannot save config. Check the configs folder permissions.");
+    std::filesystem::remove(temporary, error);
+    return false;
 }
 
 void Config::readArray(const nlohmann::json &src, float (&dest)[2]) {
     try {
         if (!src.is_null() && src.is_array() && src.size() == 2) {
-            dest[0] = src[0].get<float>();
-            dest[1] = src[1].get<float>();
+            float values[2]{};
+            if (read(src[0], values[0]) && read(src[1], values[1]))
+                std::copy(std::begin(values), std::end(values), std::begin(dest));
         }
     } catch (const std::exception &e) {
         Logger::logWarning(std::format("Config Array Error: {}", e.what()));
@@ -261,8 +286,9 @@ void Config::readArray(const nlohmann::json &src, float (&dest)[2]) {
 void Config::readArray(const nlohmann::json &src, int (&dest)[2]) {
     try {
         if (!src.is_null() && src.is_array() && src.size() == 2) {
-            dest[0] = src[0].get<int>();
-            dest[1] = src[1].get<int>();
+            int values[2]{};
+            if (read(src[0], values[0]) && read(src[1], values[1]))
+                std::copy(std::begin(values), std::end(values), std::begin(dest));
         }
     } catch (const std::exception &e) {
         Logger::logWarning(std::format("Config Array Error: {}", e.what()));
@@ -272,9 +298,9 @@ void Config::readArray(const nlohmann::json &src, int (&dest)[2]) {
 void Config::readRGB(const nlohmann::json &src, RGBColor &dest) {
     try {
         if (!src.is_null() && src.is_array() && src.size() == 3) {
-            dest.r = src[0].get<int>();
-            dest.g = src[1].get<int>();
-            dest.b = src[2].get<int>();
+            RGBColor value{};
+            if (read(src[0], value.r) && read(src[1], value.g) && read(src[2], value.b))
+                dest = value;
         }
     } catch (const std::exception &e) {
         Logger::logWarning(std::format("Config Array Error: {}", e.what()));

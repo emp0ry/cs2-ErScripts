@@ -1,16 +1,17 @@
 #include "ErScripts.h"
 
 void ErScripts::AutoAccept() {
-    std::thread([this]() {
-        const std::vector<int> targetColor = {54, 183, 82};
+    startWorker("AutoAccept", [this]() {
+        const std::array<int, 3> targetColor = {54, 183, 82};
 
         while (!globals::finish) {
-            if (cfg->autoAcceptState) {
-                if (foundMatch) {
-                    foundMatch = false;
+            const auto settings = Config::snapshot();
+            if (settings->autoAcceptState) {
+                if (foundMatch.exchange(false)) {
 
-                    POINT mousePos;
-                    GetCursorPos(&mousePos);
+                    POINT mousePos{};
+                    if (!GetCursorPos(&mousePos))
+                        continue;
 
                     bool isInCS2 = GetWindowState();
 
@@ -21,15 +22,17 @@ void ErScripts::AutoAccept() {
                     auto startTime = std::chrono::steady_clock::now();
 
                     while (
+                        !globals::finish && Config::snapshot()->autoAcceptState &&
                         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime)
-                            .count() <= cfg->autoAcceptWaitingTime) {
-                        int buttonX = static_cast<int>(round(globals::width / 2.f + globals::posX)),
-                            buttonY = static_cast<int>(round(globals::height / 2.215f + globals::posY));
+                                .count() <= Config::snapshot()->autoAcceptWaitingTime) {
+                        const auto bounds = globals::getWindowBounds();
+                        int buttonX = static_cast<int>(round(bounds.width / 2.f + bounds.x)),
+                            buttonY = static_cast<int>(round(bounds.height / 2.215f + bounds.y));
 
                         if (GetWindowState()) {
-                            std::vector color = GetPixelColor(buttonX, buttonY);
+                            const auto color = GetPixelColor(buttonX, buttonY);
 
-                            if (isColorSimilar(targetColor, color, 20)) {
+                            if (color && isColorSimilar(targetColor, *color, 20)) {
                                 colorState = true;
                                 Logger::logInfo("AutoAccept button clicking");
 
@@ -46,14 +49,14 @@ void ErScripts::AutoAccept() {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
 
-                    if (!isInCS2) {
-                        Keyboard(56, true);
+                    if (!isInCS2 && !globals::finish) {
+                        Keyboard(VK_MENU, true);
                         std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                        Keyboard(15, true);
+                        Keyboard(VK_TAB, true);
                         std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                        Keyboard(15, false);
+                        Keyboard(VK_TAB, false);
                         std::this_thread::sleep_for(std::chrono::milliseconds((std::rand() % 32) + 16));
-                        Keyboard(56, false);
+                        Keyboard(VK_MENU, false);
                     }
 
                     SetCursorPos(mousePos.x, mousePos.y);
@@ -61,5 +64,5 @@ void ErScripts::AutoAccept() {
             }
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

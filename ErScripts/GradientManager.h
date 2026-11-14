@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Globals.h"
 #include <vector>
 #include <thread>
 #include <mutex>
 
 struct RGBColor {
     int r, g, b;
+    bool operator==(const RGBColor &) const = default;
 };
 
 struct GradientConfig {
@@ -16,6 +16,7 @@ struct GradientConfig {
     float endHue = 1.0f;
     float saturation = 1.0f;
     float value = 1.0f;
+    bool operator==(const GradientConfig &) const = default;
 };
 
 class GradientManager {

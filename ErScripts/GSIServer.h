@@ -7,10 +7,13 @@
 #include <optional>
 
 class GSIServer {
+    friend struct GSIServerTestAccess;
+
   private:
-    const int port = 23561;
+    int port = 23561;
     httplib::Server server;
     std::mutex payloadMutex;
+    std::thread worker;
 
     std::optional<nlohmann::json> getLocalPlayerData(const nlohmann::json &data);
 
@@ -30,6 +33,7 @@ class GSIServer {
     bool handlActiveWeaponState(const std::optional<nlohmann::json> &playerData, const std::string weaponName);
 
   public:
+    ~GSIServer();
     void run();
     void stop();
 };

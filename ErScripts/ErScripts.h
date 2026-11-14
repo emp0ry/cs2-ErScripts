@@ -7,9 +7,16 @@
 #include "Globals.h"
 #include <windows.h>
 #include <string>
+#include <functional>
+#include <thread>
+#include <vector>
 
 class ErScripts {
   public:
+    ErScripts() = default;
+    ~ErScripts();
+    ErScripts(const ErScripts &) = delete;
+    ErScripts &operator=(const ErScripts &) = delete;
     void Initalization();
     void ConsoleLogStream();
     static const bool GetCursorState();
@@ -42,13 +49,15 @@ class ErScripts {
     std::wstring gsi;
     std::wstring consoleLog;
 
-    bool foundMatch = false;
+    std::atomic_bool foundMatch = false;
+    std::vector<std::thread> workers;
+    void startWorker(const char *name, std::function<void()> work);
 
-    static bool bindsInit;
+    static std::atomic_bool bindsInit;
 
     bool setPaths();
     bool configsValidation();
 
-    const std::vector<int> GetPixelColor(int x, int y);
-    const bool isColorSimilar(const std::vector<int> &color, const std::vector<int> &targetColor, int range);
+    std::optional<std::array<int, 3>> GetPixelColor(int x, int y);
+    bool isColorSimilar(const std::array<int, 3> &color, const std::array<int, 3> &targetColor, int range);
 };

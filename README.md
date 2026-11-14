@@ -31,7 +31,7 @@ Fine-tune your crosshair, keep round information visible and back up your CS2 se
 </p>
 
 <p align="center">
-  <a href="https://github.com/emp0ry/cs2-ErScripts/releases/tag/v2.0.0"><b>Download 2.0.0</b></a> ·
+  <a href="https://github.com/emp0ry/cs2-ErScripts/releases/tag/v2.0.1"><b>Download 2.0.1</b></a> ·
   <a href="https://erscripts.emp0ry.com/">Website</a> ·
   <a href="https://github.com/emp0ry/cs2-ErScripts/issues">Report a bug</a>
 </p>
@@ -39,6 +39,12 @@ Fine-tune your crosshair, keep round information visible and back up your CS2 se
 <p align="center">
   <img src="https://erscripts.emp0ry.com/img/screenshots/general.png" alt="ErScripts 2.0.0 General menu" width="820">
 </p>
+
+## What's new in 2.0.1
+
+- Managed worker shutdown and synchronized runtime settings.
+- Safer configuration saves, exports, GSI updates, and graphics resource cleanup.
+- UI Access initialization is disabled in Debug builds and retained in Release builds.
 
 ## What's new in 2.0.0
 

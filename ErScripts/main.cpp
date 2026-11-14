@@ -9,6 +9,11 @@
 #include "ConfigExport.h"
 
 int main(int argc, char *argv[]) {
+    const auto closeHandle = [](HANDLE handle) {
+        if (handle)
+            CloseHandle(handle);
+    };
+    std::unique_ptr<void, decltype(closeHandle)> instanceMutex(nullptr, closeHandle);
     ImGui_ImplWin32_EnableDpiAwareness();
     bool preview = false, checkUpdates = true;
     for (int i = 1; i < argc; ++i) {
@@ -37,11 +42,15 @@ int main(int argc, char *argv[]) {
 
     if (!IsDebuggerPresent()) {
 
-        CreateMutexA(0, FALSE, "Local\\erscripts");
+        instanceMutex.reset(CreateMutexA(nullptr, FALSE, "Local\\erscripts"));
         if (GetLastError() == ERROR_ALREADY_EXISTS) {
 
             Updater::cleanupTempFiles();
             MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
+            return -1;
+        }
+        if (!instanceMutex) {
+            Logger::logWarning("Cannot create the application instance mutex");
             return -1;
         }
 
@@ -51,6 +60,7 @@ int main(int argc, char *argv[]) {
                 return 0;
         }
 
+#ifndef _DEBUG
         DWORD dwErr = PrepareForUIAccess();
         if (dwErr != ERROR_SUCCESS) {
             Logger::logWarning(std::format("Failed to prepare for UI Access: {}", dwErr));
@@ -58,6 +68,7 @@ int main(int argc, char *argv[]) {
             std::cin.get();
             return -1;
         }
+#endif
     }
 
     SetConsoleTitleA(std::format("ErScripts {}", APP_VERSION).c_str());
@@ -69,6 +80,7 @@ int main(int argc, char *argv[]) {
 
     cfg->load("default");
     gradient.setConfig(cfg->gradient);
+    cfg->publish();
 
     ErScripts es;
     es.Initalization();
@@ -85,6 +97,8 @@ int main(int argc, char *argv[]) {
     es.KillSound();
     es.RoundStartAlert();
     es.InitBinds();
+    if (globals::finish)
+        return 1;
     es.PixelTrigger();
     es.Crosshair();
     es.RGBCrosshair();
@@ -97,12 +111,13 @@ int main(int argc, char *argv[]) {
     es.ChatSpammer();
 
     while (!globals::finish) {
-        static int prevExitBind = cfg->erScriptsExitBind;
+        const auto settings = Config::snapshot();
+        static int prevExitBind = settings->erScriptsExitBind;
         static std::chrono::steady_clock::time_point changeTime;
         static bool isDelayActive = false;
 
-        if (prevExitBind != cfg->erScriptsExitBind) {
-            prevExitBind = cfg->erScriptsExitBind;
+        if (prevExitBind != settings->erScriptsExitBind) {
+            prevExitBind = settings->erScriptsExitBind;
             changeTime = std::chrono::steady_clock::now();
             isDelayActive = true;
         } else if (isDelayActive) {
@@ -112,7 +127,7 @@ int main(int argc, char *argv[]) {
                 isDelayActive = false;
             }
         } else {
-            if (GetAsyncKeyState(cfg->erScriptsExitBind) & 0x8000)
+            if (GetAsyncKeyState(settings->erScriptsExitBind) & 0x8000)
                 globals::finish = true;
         }
 
@@ -122,7 +137,7 @@ int main(int argc, char *argv[]) {
             static auto lastPing = std::chrono::steady_clock::now();
             static auto lastSettings = lastPing;
             const auto now = std::chrono::steady_clock::now();
-            if (cfg->watermarkState && now - lastPing >= std::chrono::seconds(cfg->watermarkPingUpdateRate)) {
+            if (settings->watermarkState && now - lastPing >= std::chrono::seconds(settings->watermarkPingUpdateRate)) {
                 ErScripts::CommandsSender(5, "sys_info");
                 lastPing = now;
             }
@@ -137,5 +152,5 @@ int main(int argc, char *argv[]) {
 
     gsi.stop();
 
-    exit(0);
+    return 0;
 }

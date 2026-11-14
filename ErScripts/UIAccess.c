@@ -131,7 +131,7 @@ static BOOL CheckForUIAccess(DWORD *pdwErr, DWORD *pfUIAccess) {
 DWORD PrepareForUIAccess() {
     DWORD dwErr;
     HANDLE hTokenUIAccess;
-    BOOL fUIAccess;
+    DWORD fUIAccess;
 
     if (CheckForUIAccess(&dwErr, &fUIAccess)) {
         if (fUIAccess) {

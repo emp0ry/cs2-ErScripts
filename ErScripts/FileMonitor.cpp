@@ -15,8 +15,14 @@ FileMonitor::~FileMonitor() {
     stop();
 }
 void FileMonitor::start() {
-    if (!running_.exchange(true))
-        monitorThread_ = std::thread(&FileMonitor::pollFile, this);
+    if (!running_.exchange(true)) {
+        try {
+            monitorThread_ = std::thread(&FileMonitor::pollFile, this);
+        } catch (...) {
+            running_ = false;
+            throw;
+        }
+    }
 }
 void FileMonitor::stop() {
     running_ = false;
@@ -29,10 +35,12 @@ std::optional<std::deque<std::wstring>> FileMonitor::getNewLines() {
         return std::nullopt;
     auto result = std::move(newLines_);
     newLines_.clear();
+    queuedChars_ = 0;
     return result;
 }
 void FileMonitor::pollFile() {
     std::string pending;
+    bool droppingLine = false;
     while (running_) {
         std::ifstream file(std::filesystem::path(filePath_), std::ios::binary);
         if (!file) {
@@ -43,18 +51,25 @@ void FileMonitor::pollFile() {
         if (file.tellg() < lastOffset_) {
             lastOffset_ = 0;
             pending.clear();
+            droppingLine = false;
         }
         file.seekg(lastOffset_);
         std::array<char, 16384> buffer;
-        while (file.read(buffer.data(), buffer.size()) || file.gcount()) {
+        size_t bytes = 0;
+        while (running_ && bytes < 1024 * 1024 && (file.read(buffer.data(), buffer.size()) || file.gcount())) {
             pending.append(buffer.data(), static_cast<size_t>(file.gcount()));
             lastOffset_ += file.gcount();
+            bytes += static_cast<size_t>(file.gcount());
         }
         std::deque<std::wstring> lines;
         size_t begin = 0, end;
         while ((end = pending.find('\n', begin)) != std::string::npos) {
             auto line = pending.substr(begin, end - begin);
             begin = end + 1;
+            if (droppingLine) {
+                droppingLine = false;
+                continue;
+            }
             if (!line.empty() && line.back() == '\r')
                 line.pop_back();
             if (line.empty())
@@ -65,10 +80,28 @@ void FileMonitor::pollFile() {
             lines.push_back(std::move(wide));
         }
         pending.erase(0, begin);
+        if (pending.size() > 1024 * 1024) {
+            pending.clear();
+            if (!droppingLine)
+                Logger::logWarning("Console line exceeded 1 MiB; skipping it");
+            droppingLine = true;
+        }
         if (!lines.empty()) {
-            std::lock_guard lock(linesMutex_);
-            newLines_.insert(newLines_.end(), std::make_move_iterator(lines.begin()),
-                             std::make_move_iterator(lines.end()));
+            bool dropped = false;
+            {
+                std::lock_guard lock(linesMutex_);
+                for (auto &line : lines) {
+                    queuedChars_ += line.size();
+                    newLines_.push_back(std::move(line));
+                }
+                while (newLines_.size() > 16384 || queuedChars_ > 4 * 1024 * 1024) {
+                    queuedChars_ -= newLines_.front().size();
+                    newLines_.pop_front();
+                    dropped = true;
+                }
+            }
+            if (dropped)
+                Logger::logWarning("Console queue exceeded its limit; discarded the oldest lines");
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }

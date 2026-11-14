@@ -1,13 +1,14 @@
 #include "ErScripts.h"
 
 void ErScripts::ChatSpammer() {
-    std::thread([this]() {
+    startWorker("ChatSpammer", [this]() {
         bool state = false;
         bool statePrev = false;
 
         while (!globals::finish) {
-            if (cfg->chatSpammerState) {
-                bool bindState = GetAsyncKeyState(cfg->chatSpammerBind) & 0x8000;
+            const auto settings = Config::snapshot();
+            if (settings->chatSpammerState) {
+                bool bindState = GetAsyncKeyState(settings->chatSpammerBind) & 0x8000;
 
                 if (bindState && !statePrev) {
                     state = !state;
@@ -15,11 +16,13 @@ void ErScripts::ChatSpammer() {
 
                 statePrev = bindState;
 
-                if (state || !cfg->chatSpammerBind) {
-                    CommandsSender(9, std::format("say {}", cfg->chatSpammerText));
+                if (state || !settings->chatSpammerBind) {
+                    CommandsSender(9, std::format("say {}", settings->chatSpammerText));
                 }
+            } else {
+                state = statePrev = false;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
-    }).detach();
+    });
 }

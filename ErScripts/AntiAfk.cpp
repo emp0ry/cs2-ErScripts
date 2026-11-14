@@ -1,10 +1,11 @@
 #include "ErScripts.h"
 
 void ErScripts::AntiAfk() {
-    std::thread([]() {
+    startWorker("AntiAfk", []() {
         bool oldRoundStartState = false;
         while (!globals::finish) {
-            if (cfg->antiAfkState) {
+            const auto settings = Config::snapshot();
+            if (settings->antiAfkState) {
                 if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
                     if (globals::roundStartState != oldRoundStartState) {
                         oldRoundStartState = globals::roundStartState;
@@ -22,5 +23,5 @@ void ErScripts::AntiAfk() {
 
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

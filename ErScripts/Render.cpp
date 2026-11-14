@@ -23,7 +23,7 @@ void Overlay::RenderWatermark() noexcept {
     std::string text = "ErScripts " APP_VERSION;
     if (!globals::nickname.empty())
         text += " | " + globals::nickname;
-    text += std::format(" | {} ms | {}", globals::cs2_ping, clock);
+    text += std::format(" | {} ms | {}", globals::cs2_ping.load(), clock);
     constexpr float fontSize = 15.f, paddingX = 10.f, paddingY = 6.f, margin = 8.f;
     const float available = std::max(1.f, globals::width - 2 * margin - 2 * paddingX);
     const char *end = nullptr;
@@ -50,6 +50,7 @@ void Overlay::RenderWatermark() noexcept {
 }
 
 void Overlay::Render() noexcept {
+    const double bombTime = globals::bombTime.load();
     const auto settings = globals::getConfig().value_or(SteamTools::Config{});
     const auto viewport = globals::getVideoSize();
     RenderWatermark();
@@ -68,7 +69,7 @@ void Overlay::Render() noexcept {
     }
 
     if (cfg->bombTimerState) {
-        if (globals::bombTime || globals::menuState) {
+        if (bombTime || globals::menuState) {
             static bool isBombTimerWindowInitilized = false;
 
             ImGui::SetNextWindowBgAlpha(cfg->bombTimerTransparency);
@@ -128,17 +129,16 @@ void Overlay::Render() noexcept {
             ImVec4 timeColor = ImVec4(1.0f, 0.3f, 0.0f, 1.0f);
             ImDrawList *window_draw_list = ImGui::GetWindowDrawList();
 
-            if (globals::bombTime) {
-                if ((globals::defusekitState && globals::bombTime >= 5000) ||
-                    (!globals::defusekitState && globals::bombTime >= 10000)) {
+            if (bombTime) {
+                if ((globals::defusekitState && bombTime >= 5000) || (!globals::defusekitState && bombTime >= 10000)) {
                     timeColor = ImVec4(0.3f, 1.0f, 0.0f, 1.0f);
                 }
 
-                CircularTimer(timerCenter, 0.0f, 40000.0f, static_cast<float>(globals::bombTime),
+                CircularTimer(timerCenter, 0.0f, 40000.0f, static_cast<float>(bombTime),
                               static_cast<int>(32 * cfg->bombTimerScale), 22.0f * cfg->bombTimerScale,
                               4.0f * cfg->bombTimerScale, true, timeColor);
 
-                std::string timeText = FormatElapsedTime(globals::bombTime);
+                std::string timeText = FormatElapsedTime(bombTime);
                 RenderText(window_draw_list, bold_font, timeText, timerCenter, 14.0f * cfg->bombTimerScale,
                            ImColor(timeColor), true, true, false, false);
             } else if (globals::menuState) {

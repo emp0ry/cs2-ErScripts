@@ -35,7 +35,7 @@ inline void PressAndRelease(char key, std::vector<int> &recentDelays) {
 }
 
 void ErScripts::AutoStop() {
-    std::thread([this]() {
+    startWorker("AutoStop", [this]() {
         std::vector<int> recentDelays;
         bool aWasPressed = false;
         bool dWasPressed = false;
@@ -44,11 +44,12 @@ void ErScripts::AutoStop() {
         bool statePrev = false;
 
         while (!globals::finish) {
-            if (cfg->autoStopState) {
+            const auto settings = Config::snapshot();
+            if (settings->autoStopState) {
                 if (ErScripts::GetWindowState() && ErScripts::GetCursorState()) {
-                    bool bindState = GetAsyncKeyState(cfg->autoStopBind) & 0x8000;
+                    bool bindState = GetAsyncKeyState(settings->autoStopBind) & 0x8000;
 
-                    if (cfg->autoStopToggleState) {
+                    if (settings->autoStopToggleState) {
                         if (bindState && !statePrev) {
                             state = !state;
                         }
@@ -74,7 +75,12 @@ void ErScripts::AutoStop() {
                     }
                 }
             }
+            if (!settings->autoStopState || !state || !GetWindowState() || !GetCursorState()) {
+                aWasPressed = dWasPressed = false;
+                if (!settings->autoStopState || !GetWindowState() || !GetCursorState())
+                    state = statePrev = false;
+            }
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

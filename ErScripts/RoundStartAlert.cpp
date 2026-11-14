@@ -3,20 +3,22 @@
 #include "SoundsShellcodes.h"
 
 void ErScripts::RoundStartAlert() {
-    std::thread([this]() {
+    startWorker("RoundStartAlert", [this]() {
         SimpleSound sound(alertSound, alertSoundLen);
-        sound.secondBuffer(cfg->roundStartAlertFileName);
+        const auto initial = Config::snapshot();
+        sound.secondBuffer(initial->roundStartAlertFileName);
 
-        std::string lastCustomFile = cfg->roundStartAlertFileName;
+        std::string lastCustomFile = initial->roundStartAlertFileName;
 
         bool oldRoundStartState = globals::roundStartState;
 
         while (!globals::finish) {
-            if (cfg->roundStartAlertState) {
-                if (cfg->roundStartAlertFileName != lastCustomFile) {
-                    sound.secondBuffer(cfg->roundStartAlertFileName);
+            const auto settings = Config::snapshot();
+            if (settings->roundStartAlertState) {
+                if (settings->roundStartAlertFileName != lastCustomFile) {
+                    sound.secondBuffer(settings->roundStartAlertFileName);
 
-                    lastCustomFile = cfg->roundStartAlertFileName;
+                    lastCustomFile = settings->roundStartAlertFileName;
                 }
 
                 if (globals::roundStartState != oldRoundStartState) {
@@ -24,7 +26,7 @@ void ErScripts::RoundStartAlert() {
 
                     if (globals::roundStartState) {
                         if (!ErScripts::GetWindowState()) {
-                            sound.setVolume(cfg->roundStartAlertVolume);
+                            sound.setVolume(settings->roundStartAlertVolume);
                             sound.play();
                         }
                     }
@@ -33,5 +35,5 @@ void ErScripts::RoundStartAlert() {
 
             std::this_thread::sleep_for(std::chrono::microseconds(15625));
         }
-    }).detach();
+    });
 }

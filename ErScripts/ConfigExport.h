@@ -17,6 +17,7 @@ class ConfigExport {
     static ConfigExport &instance();
     ~ConfigExport();
     Status status();
+    // The render thread owns start/cancel; status, flush and consume may run on other threads.
     void start(bool live, const std::filesystem::path &source = {});
     void cancel();
     void flush();
@@ -30,7 +31,8 @@ class ConfigExport {
     std::string capture, token;
     unsigned section = 0;
     size_t liveRows = 0;
+    bool writing = false;
     std::chrono::steady_clock::time_point deadline{};
-    void prepare(bool live, const std::filesystem::path &source);
-    void finish();
+    void prepare(std::stop_token stop, bool live, const std::filesystem::path &source);
+    void finish(std::unique_lock<std::mutex> &lock);
 };

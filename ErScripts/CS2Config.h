@@ -88,6 +88,7 @@ namespace cs2config {
         std::map<std::string, std::string> convars, binds, aliases, session;
         void vcfg(std::string_view source) {
             const auto input = tokens(source);
+            std::map<std::string, std::string> variables, bindings;
             std::vector<std::string> stack;
             for (size_t i = 0; i < input.size();) {
                 if (input[i].brace) {
@@ -110,12 +111,16 @@ namespace cs2config {
                 if (stack.empty() || !identifier(name))
                     continue;
                 if (stack.back() == "convars")
-                    convars[name] = value.text;
+                    variables[name] = value.text;
                 if (stack.back() == "bindings")
-                    binds[name] = value.text;
+                    bindings[name] = value.text;
             }
             if (!stack.empty())
                 throw std::runtime_error("Unclosed settings section");
+            for (auto &[name, value] : variables)
+                convars[name] = std::move(value);
+            for (auto &[name, value] : bindings)
+                binds[name] = std::move(value);
         }
         bool convarLine(std::string_view source) {
             const auto whitespace = [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; };
