@@ -1,50 +1,38 @@
-#include "ConfigExport.h"
-#include "CrosshairDrawing.h"
-#include "D3DResize.h"
-#include "ErScripts.h"
-#include "GSIServer.h"
-#include "Overlay.h"
-#include "SimpleSound.h"
-#include "SniperDynamics.h"
-#include "Updater.h"
+#include "features/AutoStop.h"
+#include "core/Config.h"
+#include "core/Config.h"
+#include "core/Globals.h"
+#include "platform/Input.h"
+#include "game/GameConsole.h"
+#include "game/GameConsole.h"
+#include "graphics/ImagesShellCodes.h"
+#include <cstdlib>
+#include <algorithm>
+#include "core/ConfigExport.h"
+#include "graphics/CrosshairDrawing.h"
+#include "graphics/D3DResize.h"
+#include "features/Features.h"
+#include "platform/FileMonitor.h"
+#include "game/GSIServer.h"
+#include "graphics/Overlay.h"
+#include "platform/SimpleSound.h"
+#include "graphics/SniperDynamics.h"
+#include "update/Updater.h"
+#include "TestSupport.h"
 #include <atomic>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <mmsystem.h>
+#include <barrier>
 
 namespace fs = std::filesystem;
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 
-void check(bool condition, const char *message) {
-    if (!condition)
-        throw std::runtime_error(message);
-}
-
-template <typename F> void until(F predicate) {
-    const auto deadline = std::chrono::steady_clock::now() + 3s;
-    while (!predicate()) {
-        check(std::chrono::steady_clock::now() < deadline, "Operation timed out");
-        std::this_thread::sleep_for(5ms);
-    }
-}
-
-struct Fixture {
-    fs::path original = fs::current_path();
-    fs::path folder = original / ("test-data-" + std::to_string(GetCurrentProcessId()));
-    Fixture() {
-        check(fs::create_directory(folder), "Test directory already exists");
-        fs::current_path(folder);
-    }
-    ~Fixture() {
-        std::error_code error;
-        fs::current_path(original, error);
-        fs::remove_all(folder, error);
-    }
-};
-
 struct ConfigExportTestAccess {
     static void join(ConfigExport &exporter) {
+        std::lock_guard owner(exporter.workerMutex);
         if (exporter.worker.joinable())
             exporter.worker.join();
     }
@@ -86,6 +74,58 @@ struct SimpleSoundTestAccess {
     }
 };
 
+void delayTests() {
+    std::mt19937 rng(42);
+    std::vector<int> recent;
+    for (int i = 0; i < 1000; ++i) {
+        const auto before = recent;
+        const auto value = autostop::randomDelay(recent, 5, 30, rng);
+        check(value >= 5 && value <= 30 && recent.size() <= 10 &&
+                  std::find(before.begin(), before.end(), value) == before.end(),
+              "Delay repeats within history");
+    }
+    recent = {1, 2, 3};
+    for (int i = 0; i < 100; ++i)
+        check(autostop::randomDelay(recent, 1, 3, rng) >= 1 && recent.size() <= 3, "Exhausted range failed");
+    check(autostop::randomDelay(recent, 7, 7, rng) == 7, "Single-value range failed");
+    autostop::randomDelay(recent, INT_MIN, INT_MAX, rng);
+}
+
+void inputLifetimeTests() {
+    using Event = std::pair<int, bool>;
+    static std::array<Event, 8> events;
+    static size_t count = 0;
+    count = 0;
+    const auto send = +[](int key, bool down) noexcept {
+        if (count == events.size())
+            return false;
+        events[count++] = {key, down};
+        return true;
+    };
+    bool active = false;
+    try {
+        input::KeyPress alt(VK_MENU, send);
+        input::KeyPress tab(VK_TAB, send);
+        active = alt.active() && tab.active();
+        throw std::runtime_error("Stop during a key chord");
+    } catch (const std::runtime_error &) {
+    }
+    check(active, "Test input was not accepted");
+    check(count == 4 && events[0] == Event{VK_MENU, true} && events[1] == Event{VK_TAB, true} &&
+              events[2] == Event{VK_TAB, false} && events[3] == Event{VK_MENU, false},
+          "Exception did not release synthesized keys in reverse order");
+    count = 0;
+    const auto denied = +[](int key, bool down) noexcept {
+        events[count++] = {key, down};
+        return false;
+    };
+    {
+        input::KeyPress key('W', denied);
+        check(!key.active(), "Rejected input was reported as delivered");
+    }
+    check(count == 1 && events[0] == Event{'W', true}, "Failed press produced an unrelated key release");
+}
+
 void configTests() {
     fs::create_directory("configs");
     Config config;
@@ -100,6 +140,9 @@ void configTests() {
     check(config == initial, "Invalid section changed settings");
     config.load("missing");
     check(config == initial, "Missing file changed settings");
+    cs2config::write("configs/huge.json", std::string(4 * 1024 * 1024 + 1, ' '));
+    config.load("huge");
+    check(config == initial, "Oversized configuration changed settings");
 
     config.bombTimerPos[0] = 12;
     config.bombTimerPos[1] = 34;
@@ -233,7 +276,7 @@ nlohmann::json payload(int clip = 5, int timestamp = 100) {
 
 void playerTests() {
     const auto time = gsi::Clock::time_point{} + 100s;
-    gsi::AmmoTracker tracker;
+    gsi::Tracker tracker;
     check(tracker.update(payload(), time), "Initial payload rejected");
     const auto session = tracker.snapshot(time).weaponSession;
     check(tracker.snapshot(time).sniper(), "Sniper not identified");
@@ -254,13 +297,28 @@ void playerTests() {
     spectator["player"]["steamid"] = "spectated";
     tracker.update(spectator, time + 27s);
     check(!tracker.snapshot(time + 27s).playing, "Spectated player treated as local");
-    tracker.update(nlohmann::json::array({1, 2}), time + 28s);
-    check(!tracker.snapshot(time + 28s).playing, "Malformed payload activated player");
+    check(!tracker.update(nlohmann::json::array({1, 2}), time + 28s), "Malformed payload accepted");
+    tracker.update(payload(5, 3), time + 28s);
+    auto invalidProvider = payload(4, 4);
+    invalidProvider["provider"]["appid"] = 123;
+    check(!tracker.update(invalidProvider, time + 29s) && tracker.snapshot(time + 29s).clip == 5,
+          "Foreign game payload corrupted active state");
+    invalidProvider = payload(4, 4);
+    invalidProvider["provider"]["timestamp"] = -1;
+    check(!tracker.update(invalidProvider, time + 29s), "Negative provider time accepted");
+    auto switched = payload(10, 4);
+    switched["player"]["weapons"]["weapon_0"]["name"] = "weapon_ssg08";
+    switched["player"]["weapons"]["weapon_0"]["ammo_clip_max"] = 10;
+    const auto beforeSwitch = tracker.snapshot(time + 29s).weaponSession;
+    tracker.update(switched, time + 29s);
+    check(tracker.snapshot(time + 29s).weaponSession != beforeSwitch &&
+              tracker.snapshot(time + 29s).confirmedShots == 0,
+          "Weapon switch retained shot state");
 
     crosshair::Settings settings;
     settings.modernFields = 15;
     crosshair::SniperDynamics dynamics;
-    gsi::AmmoTracker shots;
+    gsi::Tracker shots;
     shots.update(payload(), time);
     dynamics.update(shots.snapshot(time), time);
     const auto idle = dynamics.frame(settings, 1080, time).spread;
@@ -270,6 +328,52 @@ void playerTests() {
     check(fired.spread > idle && fired.shotFeedback > 0, "Sniper shot feedback missing");
     check(std::abs(dynamics.frame(settings, 1080, time + 10s).spread - idle) < .01f, "Sniper recovery failed");
     check(dynamics.frame(settings, 1080, time + 30s).spread == 0, "Stale sniper dynamics remained active");
+}
+
+void gameStateTests() {
+    const auto now = gsi::Clock::time_point{} + 100s;
+    gsi::Tracker tracker;
+    auto game = payload();
+    game["round"]["bomb"] = "planted";
+    game["player"]["weapons"]["weapon_0"]["type"] = "Pistol";
+    game["player"]["weapons"]["weapon_0"]["name"] = "weapon_cz75a";
+    check(tracker.update(game, now), "Game state rejected");
+    const auto initial = tracker.gameSnapshot(now);
+    check(initial.connected && initial.inGame && initial.alive && initial.bombPlanted && initial.defuseKit &&
+              initial.roundLive && initial.pistol && initial.cz75 && !initial.revolver && initial.kills == 7,
+          "Packet fields were not published together");
+    check(tracker.gameSnapshot(now + gsi::staleAfter + 1ms) == gsi::GameState{},
+          "Stale weapon, bomb or player state remained active");
+    auto invalid = game;
+    invalid["provider"]["appid"] = 999;
+    check(!tracker.update(invalid, now + 1s) && tracker.gameSnapshot(now + 1s) == initial,
+          "Invalid provider changed game state");
+    auto older = game;
+    older["provider"]["timestamp"] = 99;
+    older["round"]["bomb"] = "defused";
+    check(!tracker.update(older, now + 1s) && tracker.gameSnapshot(now + 1s) == initial,
+          "Out-of-order packet changed non-sniper state");
+    game["provider"]["timestamp"] = 101;
+    game["player"]["match_stats"]["kills"] = "invalid";
+    tracker.update(game, now + 1s);
+    check(tracker.gameSnapshot(now + 1s).kills == -1, "Invalid kill count became a zero-count history");
+    game["provider"]["timestamp"] = 1;
+    tracker.update(game, now + 30s);
+    check(tracker.gameSnapshot(now + 30s).session != initial.session, "Reconnect retained old event history");
+    const auto reconnected = tracker.gameSnapshot(now + 30s).session;
+    game["map"]["name"] = "other-map";
+    game["provider"]["timestamp"] = 2;
+    tracker.update(game, now + 31s);
+    check(tracker.gameSnapshot(now + 31s).session != reconnected, "Map transition retained old event history");
+    game["player"]["weapons"]["weapon_1"] = game["player"]["weapons"]["weapon_0"];
+    tracker.update(game, now + 32s);
+    check(!tracker.gameSnapshot(now + 32s).pistol && !tracker.snapshot(now + 32s).sniper(),
+          "Ambiguous active weapons enabled automation");
+    game["player"]["weapons"].erase("weapon_1");
+    game["player"]["state"]["health"] = 0;
+    tracker.update(game, now + 33s);
+    check(tracker.gameSnapshot(now + 33s).inGame && !tracker.gameSnapshot(now + 33s).alive,
+          "Dead local player was treated as alive");
 }
 
 void geometryTests() {
@@ -305,9 +409,24 @@ void geometryTests() {
     check(std::abs(sample.w - (alpha + alpha * (1 - alpha) * (1 - alpha))) < .0001f, "Alpha compositing changed");
     check(crosshair::number("nan") == std::nullopt && crosshair::number("1.2junk") == std::nullopt,
           "Invalid crosshair number accepted");
+    for (int i = 0; i <= 255; ++i) {
+        const float channel = static_cast<float>(i) / 255.f;
+        check(std::abs(crosshair::srgb(crosshair::linear(channel)) - channel) < .00001f,
+              "sRGB round trip changed channel values");
+    }
+    settings.modernFields = 15;
+    settings.size = settings.thickness = 0;
+    settings.gap = -3840;
+    for (int height : {1, 240, 1080, 4320}) {
+        const auto zero = crosshair::dimensions(settings, height);
+        check(zero.length == 0 && zero.thickness == 0 && zero.gap < 0, "Zero-size or negative-gap geometry changed");
+        for (const auto &span : crosshair::rasterize(crosshair::build(settings, height), {-16, -16, 16, 16}))
+            check(span.x0 >= -16 && span.x1 <= 16 && span.y >= -16 && span.y < 16, "Boundary geometry escaped clip");
+    }
 }
 
 void exportTests() {
+    GameConsole console;
     fs::create_directory("source");
     const auto source = fs::absolute("source");
     const std::string convars = R"("root" { "convars" { "sensitivity" "1.25" "cl_crosshairstyle" "4" } })";
@@ -352,14 +471,14 @@ void exportTests() {
     check(!exporter.status().ready && !exporter.status().busy, "Cancelled export revived");
     startLive();
     ConfigExportTestAccess::expire(exporter);
-    exporter.flush();
+    exporter.flush(console);
     check(!exporter.status().busy && !exporter.status().ready, "Export timeout failed");
     std::this_thread::sleep_for(2ms);
     exporter.start(true, source);
     ConfigExportTestAccess::join(exporter);
     const auto deadline = ConfigExportTestAccess::deadline(exporter);
     globals::menuState = false;
-    exporter.flush();
+    exporter.flush(console);
     check(exporter.status().queued && ConfigExportTestAccess::deadline(exporter) == deadline,
           "Failed command extended the capture deadline");
     exporter.cancel();
@@ -368,6 +487,37 @@ void exportTests() {
     exporter.cancel();
     ConfigExportTestAccess::join(exporter);
     check(!exporter.status().busy && !exporter.status().ready, "Preparation cancellation failed");
+    std::barrier start(12);
+    std::vector<std::jthread> callers;
+    for (int i = 0; i < 12; ++i)
+        callers.emplace_back([&] {
+            start.arrive_and_wait();
+            exporter.start(true, source);
+        });
+    callers.clear();
+    ConfigExportTestAccess::join(exporter);
+    const auto first = exporter.status();
+    check(first.busy && first.queued && !first.ready, "Concurrent starts corrupted export state");
+    exporter.cancel();
+    exporter.start(true, source);
+    ConfigExportTestAccess::join(exporter);
+    check(exporter.status().folder != first.folder && exporter.status().queued,
+          "New session reused export destination");
+    exporter.consume(L"obsolete_export_end");
+    check(exporter.status().queued, "Obsolete capture changed a new session");
+    exporter.cancel();
+    callers.clear();
+    for (int i = 0; i < 4; ++i)
+        callers.emplace_back([&] {
+            for (int n = 0; n < 8; ++n) {
+                exporter.start(true, source);
+                exporter.cancel();
+            }
+        });
+    callers.clear();
+    exporter.cancel();
+    ConfigExportTestAccess::join(exporter);
+    check(!exporter.status().busy && !exporter.status().ready, "Concurrent cancellation revived a session");
 }
 
 void monitorTests() {
@@ -405,6 +555,70 @@ void monitorTests() {
         return lines && lines->front() == L"restart";
     });
     monitor.stop();
+    append("saved partial");
+    monitor.start();
+    std::this_thread::sleep_for(100ms);
+    monitor.stop();
+    append(" tail\n");
+    monitor.start();
+    until([&] {
+        auto lines = monitor.getNewLines();
+        return lines && lines->front() == L"saved partial tail";
+    });
+    fs::rename(file, "rotated.log");
+    cs2config::write(file, "replacement starts at zero despite being larger than the old offset\n");
+    until([&] {
+        auto lines = monitor.getNewLines();
+        return lines && lines->front().starts_with(L"replacement starts at zero");
+    });
+    append(std::string(1024 * 1024 + 1, 'x') + "\nafter large line\n");
+    until([&] {
+        auto lines = monitor.getNewLines();
+        if (!lines)
+            return false;
+        check(lines->size() == 1, "Oversized log line was emitted");
+        return lines->front() == L"after large line";
+    });
+    append("\xff\nvalid\n");
+    until([&] {
+        auto lines = monitor.getNewLines();
+        return lines && lines->size() == 1 && lines->front() == L"valid";
+    });
+    std::string burst;
+    for (int i = 0; i < 20000; ++i)
+        burst += "line\n";
+    append(burst);
+    std::this_thread::sleep_for(200ms);
+    const auto bounded = monitor.getNewLines();
+    check(bounded && bounded->size() <= 16384, "Monitor queue exceeded its line limit");
+    monitor.stop();
+    std::vector<std::jthread> operations;
+    for (int i = 0; i < 4; ++i)
+        operations.emplace_back([&] {
+            for (int n = 0; n < 8; ++n) {
+                monitor.start();
+                monitor.stop();
+            }
+        });
+    operations.clear();
+    monitor.stop();
+    const auto oldSize = fs::file_size(file);
+    cs2config::write(file, "rewritten from byte zero\n" + std::string(static_cast<size_t>(oldSize) + 32, 'y') + "\n");
+    monitor.start();
+    until([&] {
+        auto lines = monitor.getNewLines();
+        return lines && lines->front() == L"rewritten from byte zero";
+    });
+    monitor.stop();
+    cs2config::write(file, "old unfinished event");
+    FileMonitor initial(file.wstring());
+    initial.start();
+    append(" continuation\nfresh event\n");
+    until([&] {
+        auto lines = initial.getNewLines();
+        return lines && lines->size() == 1 && lines->front() == L"fresh event";
+    });
+    initial.stop();
 }
 
 void soundTests() {
@@ -437,7 +651,9 @@ void soundTests() {
     {
         SimpleSound sound(wav.data(), static_cast<unsigned int>(wav.size()));
         file = SimpleSoundTestAccess::file(sound);
-        sound.play();
+        for (int i = 0; i < 40; ++i)
+            sound.play();
+        check(SimpleSoundTestAccess::requests(sound) <= 16, "Concurrent sound requests exceeded the limit");
         std::this_thread::sleep_for(50ms);
         stopped = std::chrono::steady_clock::now();
     }
@@ -447,36 +663,150 @@ void soundTests() {
 void serverTests() {
     GSIServer server;
     GSIServerTestAccess::useTestPort(server);
-    server.run();
+    check(server.run(), "GSI listener failed to start");
     httplib::Client client("127.0.0.1", GSIServerTestAccess::port(server));
     client.set_connection_timeout(1, 0);
     client.set_read_timeout(2, 0);
+    client.set_keep_alive(true);
     const auto good = client.Post("/", payload(5, 1000).dump(), "application/json");
-    check(good && good->status == 200 && globals::localPlayerKills == 7, "GSI request failed");
+    check(good && good->status == 200 && globals::getGameState().kills == 7, "GSI request failed");
     auto older = payload(4, 999);
     older["player"]["match_stats"]["kills"] = 99;
     const auto late = client.Post("/", older.dump(), "application/json");
-    check(late && late->status == 200 && globals::localPlayerKills == 7, "Late GSI changed feature state");
+    check(late && late->status == 200 && globals::getGameState().kills == 7, "Late GSI changed feature state");
     const auto bad = client.Post("/", "{bad", "application/json");
     check(bad && bad->status == 400, "Invalid GSI JSON accepted");
     auto malformed = payload(4, 1001);
     malformed["round"] = {{"bomb", 42}, {"phase", false}};
     malformed["player"]["match_stats"]["kills"] = "invalid";
     const auto typed = client.Post("/", malformed.dump(), "application/json");
-    check(typed && typed->status == 200 && !globals::bombState && globals::localPlayerKills == 0,
+    check(typed && typed->status == 200 && !globals::getGameState().bombPlanted && globals::getGameState().kills == -1,
           "Malformed GSI field changed unrelated state or escaped validation");
     {
         GSIServer occupied;
         GSIServerTestAccess::useTestPort(occupied, -1);
-        occupied.run();
+        check(!occupied.run(), "Invalid GSI listener reported successful startup");
     }
+    {
+        httplib::Client other("127.0.0.1", GSIServerTestAccess::port(server));
+        other.set_read_timeout(0, 500000);
+        const auto result = other.Post("/", payload(5, 1002).dump(), "application/json");
+        check(result && result->status == 200, "Idle keep-alive client blocked another GSI request");
+    }
+    auto switching = payload(5, 1002);
+    switching["player"]["weapons"]["weapon_0"]["type"] = "Pistol";
+    const auto publish = [&](bool revolver) {
+        switching["player"]["weapons"]["weapon_0"]["name"] = revolver ? "weapon_revolver" : "weapon_cz75a";
+        switching["player"]["state"]["defusekit"] = revolver;
+        switching["player"]["match_stats"]["kills"] = revolver ? 77 : 33;
+        check(globals::updateGameState(switching), "Concurrent snapshot packet rejected");
+    };
+    publish(true);
+    std::atomic_bool inconsistent = false;
+    std::jthread reader([&](std::stop_token stop) {
+        while (!stop.stop_requested()) {
+            const auto game = globals::getGameState();
+            if (!game.pistol || game.cz75 == game.revolver || game.defuseKit != game.revolver ||
+                game.kills != (game.revolver ? 77 : 33))
+                inconsistent = true;
+        }
+    });
+    for (int i = 0; i < 1000; ++i)
+        publish(i % 2 == 0);
+    reader.request_stop();
+    reader.join();
+    check(!inconsistent, "Concurrent readers observed a partial GSI packet");
+    globals::localPlayerSlotNumber = 42;
+    publish(true);
+    check(globals::localPlayerSlotNumber == 42, "A continuous GSI session cleared the local slot");
+    switching["map"]["name"] = "new-session";
+    switching["provider"]["timestamp"] = 1003;
+    check(globals::updateGameState(switching) && globals::localPlayerSlotNumber == -1,
+          "New session retained an old server's player slot");
+
     const auto before = std::chrono::steady_clock::now();
     server.stop();
     server.stop();
     check(std::chrono::steady_clock::now() - before < 3s, "GSI shutdown blocked");
 }
 
+void serverShutdownTests() {
+    for (bool body : {false, true}) {
+        GSIServer server;
+        GSIServerTestAccess::useTestPort(server);
+        server.run();
+        struct Connection {
+            SOCKET socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            ~Connection() {
+                if (socket != INVALID_SOCKET)
+                    closesocket(socket);
+            }
+        } connection;
+        check(connection.socket != INVALID_SOCKET, "Cannot create partial-request socket");
+        sockaddr_in address{};
+        address.sin_family = AF_INET;
+        address.sin_port = htons(static_cast<unsigned short>(GSIServerTestAccess::port(server)));
+        address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        check(connect(connection.socket, reinterpret_cast<sockaddr *>(&address), sizeof(address)) == 0,
+              "Cannot connect partial-request client");
+        const std::string prefix = body ? "POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 1000000\r\n\r\n{"
+                                        : "POST / HTTP/1.1\r\nHost: localhost\r\nX-Slow: ";
+        check(send(connection.socket, prefix.data(), static_cast<int>(prefix.size()), 0) ==
+                  static_cast<int>(prefix.size()),
+              "Cannot send partial request");
+        std::array<Connection, 8> queued;
+        for (auto &pending : queued) {
+            check(pending.socket != INVALID_SOCKET &&
+                      connect(pending.socket, reinterpret_cast<sockaddr *>(&address), sizeof(address)) == 0,
+                  "Cannot connect queued GSI client");
+            check(send(pending.socket, prefix.data(), static_cast<int>(prefix.size()), 0) ==
+                      static_cast<int>(prefix.size()),
+                  "Cannot send queued partial request");
+        }
+        std::jthread producer([&](std::stop_token stop) {
+            const auto deadline = std::chrono::steady_clock::now() + 4s;
+            while (!stop.stop_requested() && std::chrono::steady_clock::now() < deadline) {
+                if (send(connection.socket, " ", 1, 0) != 1)
+                    break;
+                std::this_thread::sleep_for(20ms);
+            }
+            shutdown(connection.socket, SD_BOTH);
+        });
+        std::this_thread::sleep_for(100ms);
+        const auto before = std::chrono::steady_clock::now();
+        server.stop();
+        const auto elapsed = std::chrono::steady_clock::now() - before;
+        producer.request_stop();
+        producer.join();
+        std::cout << "Partial GSI " << (body ? "body" : "header")
+                  << " shutdown: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << " ms\n";
+        check(elapsed < 3s, "Continuously incomplete HTTP request blocked shutdown");
+    }
+}
+
 struct OverlayTestAccess {
+    static void failure() {
+        WNDCLASSEXW existing{};
+        existing.cbSize = sizeof(existing);
+        existing.lpfnWndProc = DefWindowProcW;
+        existing.hInstance = GetModuleHandleW(nullptr);
+        existing.lpszClassName = Overlay::windowClassName;
+        check(RegisterClassExW(&existing) != 0, "Cannot reserve the fixture window class");
+        globals::previewMode = true;
+        globals::finish = false;
+        {
+            Overlay overlay;
+            overlay.OverlayLoop();
+            check(globals::finish && !overlay.window_handle && !overlay.g_pd3dDevice && !ImGui::GetCurrentContext(),
+                  "Failed overlay initialization retained resources");
+        }
+        WNDCLASSEXW retained{};
+        retained.cbSize = sizeof(retained);
+        check(GetClassInfoExW(existing.hInstance, existing.lpszClassName, &retained),
+              "Overlay unregistered a window class it did not own");
+        check(UnregisterClassW(existing.lpszClassName, existing.hInstance), "Fixture window class was not released");
+        globals::previewMode = false;
+    }
     static void test() {
         Overlay overlay;
         overlay.window_handle = CreateWindowExW(0, L"STATIC", L"ErScripts resource test", WS_OVERLAPPEDWINDOW, 0, 0,
@@ -551,24 +881,37 @@ struct OverlayTestAccess {
 
 void timerTests() {
     globals::finish = false;
-    globals::bombState = false;
     cfg->bombTimerState = false;
     cfg->publish();
+    auto game = payload(5, 2000);
+    int timestamp = 2000;
+    const auto send = [&](const char *bomb) {
+        game["provider"]["timestamp"] = ++timestamp;
+        game["round"]["bomb"] = bomb;
+        check(globals::updateGameState(game), "Bomb state packet rejected");
+    };
+    send("defused");
     {
-        ErScripts scripts;
+        GameConsole console;
+        Features scripts(console);
         scripts.BombTimer();
-        globals::bombState = true;
+        send("planted");
         until([] { return globals::bombTime > 0; });
         const auto first = globals::bombTime.load();
         std::this_thread::sleep_for(50ms);
         cfg->bombTimerState = true;
         cfg->publish();
         check(globals::bombTime < first - 20, "Enabling the display restarted the planted bomb timer");
-        globals::bombState = false;
+        send("defused");
         until([] { return globals::bombTime == 0; });
-        globals::bombState = true;
+        send("planted");
         until([] { return globals::bombTime > 39900; });
-        globals::bombState = false;
+        std::this_thread::sleep_for(50ms);
+        const auto beforeMapChange = globals::bombTime.load();
+        game["map"]["name"] = "new-map";
+        send("planted");
+        until([&] { return globals::bombTime > beforeMapChange + 20; });
+        send("defused");
     }
 }
 
@@ -578,7 +921,8 @@ void workerTests() {
     globals::finish = false;
     const auto before = std::chrono::steady_clock::now();
     {
-        ErScripts scripts;
+        GameConsole console;
+        Features scripts(console);
         scripts.AutoAccept();
         scripts.BombTimer();
         scripts.KillSound();
@@ -601,17 +945,23 @@ void workerTests() {
 int main() {
     try {
         Fixture fixture;
-        const std::pair<const char *, void (*)()> tests[] = {{"configuration", configTests},
-                                                             {"parsing and versions", parsingTests},
-                                                             {"GSI and sniper dynamics", playerTests},
-                                                             {"crosshair geometry", geometryTests},
-                                                             {"export", exportTests},
-                                                             {"file monitoring", monitorTests},
-                                                             {"sound lifetime", soundTests},
-                                                             {"GSI server lifecycle", serverTests},
-                                                             {"D3D and WIC resources", OverlayTestAccess::test},
-                                                             {"bomb timer transitions", timerTests},
-                                                             {"feature worker lifecycle", workerTests}};
+        const std::pair<const char *, void (*)()> tests[] = {
+            {"input lifetime", inputLifetimeTests},
+            {"bounded AutoStop delays", delayTests},
+            {"configuration", configTests},
+            {"parsing and versions", parsingTests},
+            {"GSI and sniper dynamics", playerTests},
+            {"coherent game snapshots", gameStateTests},
+            {"crosshair geometry", geometryTests},
+            {"export", exportTests},
+            {"file monitoring", monitorTests},
+            {"sound lifetime", soundTests},
+            {"GSI server lifecycle", serverTests},
+            {"partial GSI request shutdown", serverShutdownTests},
+            {"D3D and WIC resources", OverlayTestAccess::test},
+            {"overlay initialization failure", OverlayTestAccess::failure},
+            {"bomb timer transitions", timerTests},
+            {"feature worker lifecycle", workerTests}};
         for (const auto &[name, test] : tests) {
             test();
             std::cout << "PASS: " << name << '\n';

@@ -1,0 +1,39 @@
+#include "resource.h"
+#include "app/AppVersion.h"
+#include <winres.h>
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+IDI_ICON1 ICON "erscripts.ico"
+
+1 VERSIONINFO
+FILEVERSION APP_VERSION_NUM
+PRODUCTVERSION APP_VERSION_NUM
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+FILEFLAGS VS_FF_DEBUG
+#else
+FILEFLAGS 0
+#endif
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+FILESUBTYPE 0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "emp0ry"
+            VALUE "FileDescription", "ErScripts"
+            VALUE "FileVersion", APP_VERSION
+            VALUE "InternalName", "ErScripts"
+            VALUE "OriginalFilename", "ErScripts.exe"
+            VALUE "ProductName", "ErScripts"
+            VALUE "ProductVersion", APP_VERSION
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END

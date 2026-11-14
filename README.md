@@ -118,6 +118,8 @@ Auto Stop, Pixel Trigger, Angle Bind and Auto Pistol require an explicit risk ac
 
 ## Build
 
+Source layout: `src/app` owns startup and shutdown; `src/game` integrates CS2 and Steam; `src/features` owns feature workers; `src/graphics` renders the existing overlay; `src/platform` owns native input, files and audio; `src/update` implements automatic updates. Configuration and shared snapshots are in `src/core`. Windows resources are in `resources`; the Visual Studio solution remains `ErScripts.sln`.
+
 Requires Windows 10/11, Visual Studio with the C++ desktop workload, Windows SDK and the v143 toolset. The application uses C++20.
 
 ```powershell
@@ -134,7 +136,13 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-`--preview` opens the menu without CS2. `--no-update` keeps a local build from replacing itself with a published release.
+`--preview` opens the menu without CS2. `--no-update` skips automatic updates.
+
+Updates require an uploaded EXE with a valid `sha256:` digest and matching size in the [GitHub release API](https://docs.github.com/en/rest/releases/assets). Downloads use HTTPS certificate validation, a 64 MiB limit and Windows CNG SHA-256 verification before execution. A verified temporary EXE waits on the original process handle, preserves the previous EXE, installs and restarts the new version, and restores the previous file if installation or startup fails. Successful startup means reaching the executable entry point, not a full CS2 integration test. The previous EXE remains in `.erscripts-update-*/previous.exe` for recovery.
+
+SHA-256 detects corruption and mismatched artifacts; an EXE and digest controlled by the same GitHub source do not independently authenticate the publisher. No signing keys or publisher certificates are configured.
+
+GSI packets publish one consistent game-state snapshot. State expires after 25 seconds without a valid packet. Partial HTTP requests are interrupted after two seconds so shutdown cannot be held open by a client sending incomplete data.
 
 Dependencies are pinned in `.gitmodules`: [Dear ImGui 1.91.5](https://github.com/ocornut/imgui), [JSON for Modern C++ 3.11.3](https://github.com/nlohmann/json), and [cpp-httplib 0.19.0](https://github.com/yhirose/cpp-httplib).
 

@@ -135,7 +135,6 @@
       </AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <BufferSecurityCheck>true</BufferSecurityCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StringPooling>
       </StringPooling>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
@@ -145,8 +144,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
-      <AdditionalDependencies>windowscodecs.lib;d3d11.lib;dxgi.lib;dwmapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bcrypt.lib;winhttp.lib;windowscodecs.lib;d3d11.lib;dxgi.lib;dwmapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -154,33 +152,45 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <RuntimeLibrary Condition="'$(Configuration)' == 'Release'">MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\third_party\imgui;$(ProjectDir)..\third_party\json\single_include;$(ProjectDir)..\third_party\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\src;$(ProjectDir)..\third_party\imgui;$(ProjectDir)..\third_party\json\single_include;$(ProjectDir)..\third_party\httplib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\src;$(ProjectDir)..\resources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
     <Link>
-      <AdditionalDependencies>windowscodecs.lib;d3d11.lib;dxgi.lib;dwmapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel Condition="'$(Configuration)' == 'Release'">RequireAdministrator</UACExecutionLevel>
+      <AdditionalDependencies>bcrypt.lib;winhttp.lib;windowscodecs.lib;d3d11.lib;dxgi.lib;dwmapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Target Name="CheckSubmodules" BeforeTargets="PrepareForBuild">
     <Error Condition="!Exists('$(ProjectDir)..\third_party\imgui\imgui.h') Or !Exists('$(ProjectDir)..\third_party\json\single_include\nlohmann\json.hpp') Or !Exists('$(ProjectDir)..\third_party\httplib\httplib.h')" Text="Initialize dependencies: git submodule update --init --recursive" />
   </Target>
   <ItemGroup>
-    <ClCompile Include="AntiAfk.cpp" />
-    <ClCompile Include="AutoAccept.cpp" />
-    <ClCompile Include="AutoPistol.cpp" />
-    <ClCompile Include="BombTime.cpp" />
-    <ClCompile Include="ChatSpammer.cpp" />
-    <ClCompile Include="Config.cpp" />
-    <ClCompile Include="ConfigExport.cpp" />
-    <ClCompile Include="Crosshair.cpp" />
-    <ClCompile Include="CS2Binds.cpp" />
-    <ClCompile Include="ErScripts.cpp" />
-    <ClCompile Include="FileMonitor.cpp" />
-    <ClCompile Include="Globals.cpp" />
-    <ClCompile Include="GradientManager.cpp" />
-    <ClCompile Include="GSIServer.cpp" />
+    <ClCompile Include="..\src\app\Application.cpp" />
+    <ClCompile Include="..\src\features\Features.cpp" />
+    <ClCompile Include="..\src\game\GameConsole.cpp" />
+    <ClCompile Include="..\src\game\GameWindow.cpp" />
+    <ClCompile Include="..\src\features\AntiAfk.cpp" />
+    <ClCompile Include="..\src\features\AutoAccept.cpp" />
+    <ClCompile Include="..\src\features\AutoPistol.cpp" />
+    <ClCompile Include="..\src\features\BombTime.cpp" />
+    <ClCompile Include="..\src\features\ChatSpammer.cpp" />
+    <ClCompile Include="..\src\core\Config.cpp" />
+    <ClCompile Include="..\src\core\ConfigExport.cpp" />
+    <ClCompile Include="..\src\features\Crosshair.cpp" />
+    <ClCompile Include="..\src\features\CS2Binds.cpp" />
+    <ClCompile Include="..\src\platform\FileMonitor.cpp" />
+    <ClCompile Include="..\src\core\Globals.cpp" />
+    <ClCompile Include="..\src\core\GradientManager.cpp" />
+    <ClCompile Include="..\src\game\GSIServer.cpp" />
+    <ClCompile Include="..\src\game\GSIState.cpp" />
     <ClCompile Include="..\third_party\imgui\imgui.cpp" />
     <ClCompile Include="..\third_party\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\third_party\imgui\imgui_draw.cpp" />
@@ -188,44 +198,49 @@
     <ClCompile Include="..\third_party\imgui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="..\third_party\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\third_party\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="KillSay.cpp" />
-    <ClCompile Include="KillSound.cpp" />
-    <ClCompile Include="KnifeSwitch.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="Menu.cpp" />
-    <ClCompile Include="Rebuild.cpp" />
-    <ClCompile Include="RoundStartAlert.cpp" />
-    <ClCompile Include="Overlay.cpp" />
-    <ClCompile Include="OverlayHelper.cpp" />
-    <ClCompile Include="PixelTrigger.cpp" />
-    <ClCompile Include="Render.cpp" />
-    <ClCompile Include="RGBCrosshair.cpp" />
-    <ClCompile Include="SimpleSound.cpp" />
-    <ClCompile Include="AutoStop.cpp" />
-    <ClCompile Include="SteamTools.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="UIAccess.c" />
-    <ClCompile Include="Updater.cpp" />
+    <ClCompile Include="..\src\platform\Input.cpp" />
+    <ClCompile Include="..\src\features\KillSay.cpp" />
+    <ClCompile Include="..\src\features\KillSound.cpp" />
+    <ClCompile Include="..\src\features\KnifeSwitch.cpp" />
+    <ClCompile Include="..\src\core\Logger.cpp" />
+    <ClCompile Include="..\src\graphics\Menu.cpp" />
+    <ClCompile Include="..\src\features\RoundStartAlert.cpp" />
+    <ClCompile Include="..\src\graphics\Overlay.cpp" />
+    <ClCompile Include="..\src\graphics\OverlayHelper.cpp" />
+    <ClCompile Include="..\src\features\PixelTrigger.cpp" />
+    <ClCompile Include="..\src\graphics\Render.cpp" />
+    <ClCompile Include="..\src\features\RGBCrosshair.cpp" />
+    <ClCompile Include="..\src\platform\SimpleSound.cpp" />
+    <ClCompile Include="..\src\features\AutoStop.cpp" />
+    <ClCompile Include="..\src\game\SteamTools.cpp" />
+    <ClCompile Include="..\src\app\main.cpp" />
+    <ClCompile Include="..\src\platform\UIAccess.c" />
+    <ClCompile Include="..\src\update\Updater.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CrosshairSettings.h" />
-    <ClInclude Include="CrosshairDrawing.h" />
-    <ClInclude Include="CrosshairGeometry.h" />
-    <ClInclude Include="AppVersion.h" />
-    <ClInclude Include="CS2Config.h" />
-    <ClInclude Include="GameVideo.h" />
-    <ClInclude Include="D3DResize.h" />
-    <ClInclude Include="ConfigExport.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="ErScripts.h" />
-    <ClInclude Include="FileMonitor.h" />
-    <ClInclude Include="Globals.h" />
-    <ClInclude Include="GradientManager.h" />
-    <ClInclude Include="GSIServer.h" />
-    <ClInclude Include="GSIPlayerState.h" />
-    <ClInclude Include="SniperDynamics.h" />
-    <ClInclude Include="SniperProfiles.h" />
-    <ClInclude Include="ImagesShellCodes.h" />
+    <ClInclude Include="..\src\app\Application.h" />
+    <ClInclude Include="..\src\features\Features.h" />
+    <ClInclude Include="..\src\game\GameConsole.h" />
+    <ClInclude Include="..\src\game\GameWindow.h" />
+    <ClInclude Include="..\src\graphics\CrosshairSettings.h" />
+    <ClInclude Include="..\src\graphics\CrosshairDrawing.h" />
+    <ClInclude Include="..\src\graphics\CrosshairGeometry.h" />
+    <ClInclude Include="..\src\platform\Input.h" />
+    <ClInclude Include="..\src\features\AutoStop.h" />
+    <ClInclude Include="..\src\app\AppVersion.h" />
+    <ClInclude Include="..\src\game\CS2Config.h" />
+    <ClInclude Include="..\src\game\GameVideo.h" />
+    <ClInclude Include="..\src\graphics\D3DResize.h" />
+    <ClInclude Include="..\src\core\ConfigExport.h" />
+    <ClInclude Include="..\src\core\Config.h" />
+    <ClInclude Include="..\src\platform\FileMonitor.h" />
+    <ClInclude Include="..\src\core\Globals.h" />
+    <ClInclude Include="..\src\core\GradientManager.h" />
+    <ClInclude Include="..\src\game\GSIServer.h" />
+    <ClInclude Include="..\src\game\GSIState.h" />
+    <ClInclude Include="..\src\graphics\SniperDynamics.h" />
+    <ClInclude Include="..\src\graphics\SniperProfiles.h" />
+    <ClInclude Include="..\src\graphics\ImagesShellCodes.h" />
     <ClInclude Include="..\third_party\imgui\imconfig.h" />
     <ClInclude Include="..\third_party\imgui\imgui.h" />
     <ClInclude Include="..\third_party\imgui\backends\imgui_impl_dx11.h" />
@@ -234,21 +249,20 @@
     <ClInclude Include="..\third_party\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\third_party\imgui\imstb_textedit.h" />
     <ClInclude Include="..\third_party\imgui\imstb_truetype.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="Overlay.h" />
-    <ClInclude Include="Rebuild.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="SimpleSound.h" />
-    <ClInclude Include="SoundsShellcodes.h" />
-    <ClInclude Include="SteamTools.h" />
-    <ClInclude Include="UIAccess.h" />
-    <ClInclude Include="Updater.h" />
+    <ClInclude Include="..\src\core\Logger.h" />
+    <ClInclude Include="..\src\graphics\Overlay.h" />
+    <ClInclude Include="..\resources\resource.h" />
+    <ClInclude Include="..\src\platform\SimpleSound.h" />
+    <ClInclude Include="..\src\platform\SoundsShellcodes.h" />
+    <ClInclude Include="..\src\game\SteamTools.h" />
+    <ClInclude Include="..\src\platform\UIAccess.h" />
+    <ClInclude Include="..\src\update\Updater.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ErScripts.rc" />
+    <ResourceCompile Include="..\resources\ErScripts.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="erscripts.ico" />
+    <Image Include="..\resources\erscripts.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

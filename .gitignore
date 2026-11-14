@@ -48,3 +48,5 @@ exports/
 /work/
 /outputs/
 /docs/crosshair-renderer.md
+
+.erscripts-update-*/
