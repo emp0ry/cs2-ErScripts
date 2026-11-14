@@ -1,7 +1,0 @@
-#ifndef ERSCRIPTS_APP_VERSION_H
-#define ERSCRIPTS_APP_VERSION_H
-
-#define APP_VERSION "2.0.1"
-#define APP_VERSION_NUM 2, 0, 1, 0
-
-#endif

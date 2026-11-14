@@ -1,0 +1,54 @@
+#pragma once
+
+#include "graphics/crosshair_settings.hpp"
+
+#include <filesystem>
+#include <map>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
+#include <windows.h>
+
+class VdfParseError : public std::runtime_error {
+  public:
+    explicit VdfParseError(const std::string& message);
+};
+
+class SteamTools {
+    friend struct SteamToolsTestAccess;
+
+  public:
+    struct GameConfig {
+        std::vector<std::wstring> possibleFolders;
+    };
+
+    using Config = crosshair::Settings;
+
+    static std::optional<std::wstring> getAppInstallPath(std::string_view appId, const GameConfig& config);
+
+    static std::wstring getLaunchOptions(std::string_view appId);
+    static std::filesystem::path getCS2ConfigFolder();
+
+    static std::string getSteamNickname();
+
+    static std::optional<Config> getCrosshairSettings(std::string_view appId);
+
+    static void printCrosshairSettings(const std::optional<SteamTools::Config>& ch);
+
+  private:
+    static std::wstring getSteamInstallPath();
+
+    static std::wstring getSteamUserID();
+
+    static std::wstring getSteamConfigPath();
+
+    static std::map<std::string, std::vector<std::wstring>> parseVdfContent(std::wstring_view content);
+
+    static std::wstring parseLaunchOptions(const std::wstring& filePath, std::string_view appId);
+
+    static std::wstring trim(std::wstring_view str);
+
+    static Config parseCrosshairSettings(const std::wstring& filePath);
+};

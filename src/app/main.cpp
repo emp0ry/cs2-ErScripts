@@ -1,14 +1,15 @@
-#include "update/Updater.h"
-#include "platform/UIAccess.h"
-#include "app/Application.h"
-#include <backends/imgui_impl_win32.h>
+#include "app/app_version.h"
+#include "app/application.hpp"
+#include "core/globals.hpp"
+#include "core/logger.hpp"
+#include "platform/ui_access.h"
+#include "update/updater.hpp"
 
-#include "app/AppVersion.h"
-#include "core/Logger.h"
-#include "core/Globals.h"
 #include <iostream>
 
-int main(int argc, char *argv[]) try {
+#include <backends/imgui_impl_win32.h>
+
+int main(int argc, char* argv[]) try {
     if (const auto result = Updater::applyPendingUpdate())
         return *result;
     Updater::completeRestart();
@@ -26,13 +27,13 @@ int main(int argc, char *argv[]) try {
         if (argument == "--no-update")
             checkUpdates = false;
     }
-    Logger::EnableANSIColors();
+    Logger::enableAnsiColors();
     if (!preview && !IsDebuggerPresent()) {
 
         instanceMutex.reset(CreateMutexA(nullptr, FALSE, "Local\\erscripts"));
         if (GetLastError() == ERROR_ALREADY_EXISTS) {
 
-            MessageBoxA(NULL, "ErScripts is already running!", 0, MB_OK);
+            MessageBoxA(nullptr, "ErScripts is already running!", nullptr, MB_OK);
             return -1;
         }
         if (!instanceMutex) {
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) try {
     }
 
     return Application{}.run(preview);
-} catch (const std::exception &error) {
+} catch (const std::exception& error) {
     globals::finish = true;
     Logger::logWarning(std::format("Application failed: {}", error.what()));
     return 1;

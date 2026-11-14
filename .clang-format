@@ -6,4 +6,14 @@ NamespaceIndentation: All
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
-SortIncludes: Never
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<(backends/|imgui|nlohmann/|httplib)'
+    Priority: 3
+  - Regex: '^<'
+    Priority: 2
+PointerAlignment: Left
+ReferenceAlignment: Left

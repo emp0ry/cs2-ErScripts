@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="app">
+      <UniqueIdentifier>{d354dfd5-3e07-50c6-b252-37092509802d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{fabf721a-5d1b-5ae3-98e4-e0dd9f907e0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{f6153cd5-0330-536e-83e7-dc4b66e2a2e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features">
+      <UniqueIdentifier>{c04211b0-5228-59c9-b856-23f84a381037}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{8f4789a0-1151-50dc-a45b-8bc2b053f36a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{d320d5c6-e310-5e13-82e1-3c351a6f9800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="update">
+      <UniqueIdentifier>{f271bb49-c899-55e2-bbd1-e86fa02a651f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{efdbffc4-edd4-5661-aa85-b30d0e77faa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{dad3b583-cd87-583f-86bc-965f0de6d7e2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\app\application.cpp"><Filter>app</Filter></ClCompile>
+    <ClCompile Include="..\src\features\features.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\game\game_console.cpp"><Filter>game</Filter></ClCompile>
+    <ClCompile Include="..\src\game\game_window.cpp"><Filter>game</Filter></ClCompile>
+    <ClCompile Include="..\src\features\anti_afk.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\auto_accept.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\auto_pistol.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\bomb_timer.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\chat_spammer.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\core\config.cpp"><Filter>core</Filter></ClCompile>
+    <ClCompile Include="..\src\core\config_export.cpp"><Filter>core</Filter></ClCompile>
+    <ClCompile Include="..\src\features\crosshair.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\cs2_binds.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\platform\file_monitor.cpp"><Filter>platform</Filter></ClCompile>
+    <ClCompile Include="..\src\core\globals.cpp"><Filter>core</Filter></ClCompile>
+    <ClCompile Include="..\src\core\color_gradient.cpp"><Filter>core</Filter></ClCompile>
+    <ClCompile Include="..\src\game\gsi_server.cpp"><Filter>game</Filter></ClCompile>
+    <ClCompile Include="..\src\game\gsi_state.cpp"><Filter>game</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\imgui.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\imgui_demo.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\imgui_draw.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\backends\imgui_impl_dx11.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\backends\imgui_impl_win32.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\imgui_tables.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\third_party\imgui\imgui_widgets.cpp"><Filter>third_party</Filter></ClCompile>
+    <ClCompile Include="..\src\platform\input.cpp"><Filter>platform</Filter></ClCompile>
+    <ClCompile Include="..\src\features\kill_say.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\kill_sound.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\features\knife_switch.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\core\logger.cpp"><Filter>core</Filter></ClCompile>
+    <ClCompile Include="..\src\graphics\menu.cpp"><Filter>graphics</Filter></ClCompile>
+    <ClCompile Include="..\src\features\round_start_alert.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\graphics\overlay.cpp"><Filter>graphics</Filter></ClCompile>
+    <ClCompile Include="..\src\graphics\overlay_drawing.cpp"><Filter>graphics</Filter></ClCompile>
+    <ClCompile Include="..\src\features\pixel_trigger.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\graphics\render.cpp"><Filter>graphics</Filter></ClCompile>
+    <ClCompile Include="..\src\features\rgb_crosshair.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\platform\simple_sound.cpp"><Filter>platform</Filter></ClCompile>
+    <ClCompile Include="..\src\features\auto_stop.cpp"><Filter>features</Filter></ClCompile>
+    <ClCompile Include="..\src\game\steam_tools.cpp"><Filter>game</Filter></ClCompile>
+    <ClCompile Include="..\src\app\main.cpp"><Filter>app</Filter></ClCompile>
+    <ClCompile Include="..\src\platform\ui_access.c"><Filter>platform</Filter></ClCompile>
+    <ClCompile Include="..\src\update\updater.cpp"><Filter>update</Filter></ClCompile>
+    <ClInclude Include="..\src\app\application.hpp"><Filter>app</Filter></ClInclude>
+    <ClInclude Include="..\src\features\features.hpp"><Filter>features</Filter></ClInclude>
+    <ClInclude Include="..\src\game\game_console.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\game\game_window.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\crosshair_settings.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\crosshair_drawing.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\crosshair_geometry.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\src\platform\input.hpp"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="..\src\features\auto_stop.hpp"><Filter>features</Filter></ClInclude>
+    <ClInclude Include="..\src\app\app_version.h"><Filter>app</Filter></ClInclude>
+    <ClInclude Include="..\src\game\cs2_config.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\game\game_video.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\d3d_resize.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\src\core\config_export.hpp"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="..\src\core\config.hpp"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="..\src\platform\file_monitor.hpp"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="..\src\core\globals.hpp"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="..\src\core\color_gradient.hpp"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="..\src\game\gsi_server.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\game\gsi_state.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\sniper_dynamics.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\sniper_profiles.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\image_data.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\imconfig.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\imgui.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\backends\imgui_impl_dx11.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\backends\imgui_impl_win32.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\imgui_internal.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\imstb_rectpack.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\imstb_textedit.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\third_party\imgui\imstb_truetype.h"><Filter>third_party</Filter></ClInclude>
+    <ClInclude Include="..\src\core\logger.hpp"><Filter>core</Filter></ClInclude>
+    <ClInclude Include="..\src\graphics\overlay.hpp"><Filter>graphics</Filter></ClInclude>
+    <ClInclude Include="..\resources\resource.h"><Filter>resources</Filter></ClInclude>
+    <ClInclude Include="..\src\platform\simple_sound.hpp"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="..\src\platform\sound_data.hpp"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="..\src\game\steam_tools.hpp"><Filter>game</Filter></ClInclude>
+    <ClInclude Include="..\src\platform\ui_access.h"><Filter>platform</Filter></ClInclude>
+    <ClInclude Include="..\src\update\updater.hpp"><Filter>update</Filter></ClInclude>
+    <ResourceCompile Include="..\resources\erscripts.rc"><Filter>resources</Filter></ResourceCompile>
+    <Image Include="..\resources\erscripts.ico"><Filter>resources</Filter></Image>
+  </ItemGroup>
+</Project>

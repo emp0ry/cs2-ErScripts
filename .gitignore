@@ -50,3 +50,5 @@ exports/
 /docs/crosshair-renderer.md
 
 .erscripts-update-*/
+
+/windows/configs/

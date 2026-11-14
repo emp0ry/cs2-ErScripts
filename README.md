@@ -40,6 +40,14 @@ Fine-tune your crosshair, keep round information visible and back up your CS2 se
   <img src="https://erscripts.emp0ry.com/img/screenshots/general.png" alt="ErScripts 2.0.0 General menu" width="820">
 </p>
 
+## What's new in 2.0.2
+
+- SHA-256 verification through Windows CNG before automatic update execution or installation, with native restart and rollback.
+- Consistent GSI snapshots, bounded log monitoring, safer input release and configuration export concurrency.
+- Correct UTF-8 and escaped quotes in Steam VDF files, validated registry values and overlay positioning recovery.
+- Time-based gradient animation without a permanent worker thread, synchronized logging and reliable audio cleanup.
+- Consistent C++20 source naming, private JSON parsing, formatting, static analysis and CMake presets.
+
 ## What's new in 2.0.1
 
 - Managed worker shutdown and synchronized runtime settings.
@@ -122,6 +130,8 @@ Source layout: `src/app` owns startup and shutdown; `src/game` integrates CS2 an
 
 Requires Windows 10/11, Visual Studio with the C++ desktop workload, Windows SDK and the v143 toolset. The application uses C++20.
 
+Project-owned C++ files use `snake_case.cpp` and `snake_case.hpp`. The C UIAccess interface, resource definitions and version macros retain `.h`. Methods, variables and constants use `camelCase`; private instance members end in `_`. C++20 provides the required facilities without experimental module integration or a newer language requirement. Third-party code and external API names retain their own conventions.
+
 ```powershell
 git clone --recurse-submodules https://github.com/emp0ry/cs2-ErScripts.git
 cd cs2-ErScripts
@@ -132,9 +142,12 @@ Open `ErScripts.sln`, select **Release | x64** and build. If you cloned without 
 Alternatively, use CMake 3.24 or newer from a Visual Studio Developer PowerShell with Ninja:
 
 ```powershell
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake --preset windows-release
+cmake --build --preset windows-release
+ctest --preset windows-release
 ```
+
+Use `windows-debug` for Debug builds. Presets use the architecture selected by the Developer shell on first configuration; use separate build directories when changing architecture. Run `clang-format --dry-run --Werror` on owned source files and `clang-tidy -p build/windows-debug src/game/game_console.cpp` from the same shell for local checks. The Visual Studio project is in `windows/erscripts.vcxproj`.
 
 `--preview` opens the menu without CS2. `--no-update` skips automatic updates.
 

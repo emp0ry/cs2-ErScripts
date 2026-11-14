@@ -1,0 +1,20 @@
+Checks: >-
+  -*,
+  bugprone-dangling-handle,
+  bugprone-use-after-move,
+  bugprone-sizeof-expression,
+  performance-unnecessary-copy-initialization,
+  modernize-use-nullptr,
+  readability-identifier-naming
+HeaderFilterRegex: '.*(src|tests)[/\\].*'
+CheckOptions:
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.FunctionCase: camelBack
+  readability-identifier-naming.FunctionIgnoredRegexp: '^(PrepareForUIAccess|ImGui_Impl.*)$'
+  readability-identifier-naming.MethodCase: camelBack
+  readability-identifier-naming.VariableCase: camelBack
+  readability-identifier-naming.ParameterCase: camelBack
+  readability-identifier-naming.PrivateMemberCase: camelBack
+  readability-identifier-naming.PrivateMemberSuffix: '_'
+  readability-identifier-naming.NamespaceCase: lower_case
